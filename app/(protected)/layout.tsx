@@ -7,7 +7,6 @@ import {
 
 import {
   useRouter,
-  usePathname,
 } from 'next/navigation'
 
 import Sidebar
@@ -28,37 +27,39 @@ export default function ProtectedLayout({
   const router =
     useRouter()
 
-  const pathname =
-    usePathname()
-
-  const [loading, setLoading] =
-    useState(true)
+  const [authorized, setAuthorized] =
+    useState(false)
 
   useEffect(() => {
 
-    const checkSession =
+    const checkAuth =
       async () => {
 
       const {
         data,
-      } = await supabase.auth.getSession()
+        error,
+      } = await supabase.auth.getUser()
 
-      // NO SESSION
-      if (!data.session) {
+      // NO USER
+      if (
+        error ||
+        !data?.user
+      ) {
 
         router.push('/login')
         return
       }
 
-      setLoading(false)
+      // AUTHORIZED
+      setAuthorized(true)
     }
 
-    checkSession()
+    checkAuth()
 
-  }, [pathname])
+  }, [])
 
-  // LOADING SCREEN
-  if (loading) {
+  // LOADING
+  if (!authorized) {
 
     return (
 
@@ -77,7 +78,7 @@ export default function ProtectedLayout({
           font-bold
           text-blue-900
         ">
-          Loading...
+          Logging in...
         </div>
 
       </div>
