@@ -27,39 +27,64 @@ export default function ProtectedLayout({
   const router =
     useRouter()
 
-  const [authorized, setAuthorized] =
+  const [loading, setLoading] =
+    useState(true)
+
+  const [authenticated,
+    setAuthenticated] =
     useState(false)
 
   useEffect(() => {
 
-    const checkAuth =
+    // CHECK CURRENT SESSION
+    const checkSession =
       async () => {
 
       const {
-        data,
-        error,
-      } = await supabase.auth.getUser()
+        data: { session },
+      } = await supabase.auth.getSession()
 
-      // NO USER
-      if (
-        error ||
-        !data?.user
-      ) {
+      if (session) {
 
-        router.push('/login')
-        return
+        setAuthenticated(true)
       }
 
-      // AUTHORIZED
-      setAuthorized(true)
+      setLoading(false)
     }
 
-    checkAuth()
+    checkSession()
+
+    // LISTEN AUTH CHANGES
+    const {
+      data: listener,
+    } =
+      supabase.auth.onAuthStateChange(
+        (
+          event,
+          session
+        ) => {
+
+          if (session) {
+
+            setAuthenticated(true)
+
+          } else {
+
+            setAuthenticated(false)
+
+            router.push('/login')
+          }
+        }
+      )
+
+    return () => {
+      listener.subscription.unsubscribe()
+    }
 
   }, [])
 
   // LOADING
-  if (!authorized) {
+  if (loading) {
 
     return (
 
@@ -78,11 +103,17 @@ export default function ProtectedLayout({
           font-bold
           text-blue-900
         ">
-          Logging in...
+          Loading...
         </div>
 
       </div>
     )
+  }
+
+  // NOT AUTHENTICATED
+  if (!authenticated) {
+
+    return null
   }
 
   return (
