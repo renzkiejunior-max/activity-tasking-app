@@ -5,11 +5,11 @@ import type {
   NextRequest,
 } from 'next/server'
 
-export function middleware(
+export function proxy(
   request: NextRequest
 ) {
 
-  // GET TOKEN
+  // TOKEN
   const token =
     request.cookies.get(
       'sb-access-token'
@@ -20,7 +20,7 @@ export function middleware(
     request.nextUrl.pathname ===
     '/login'
 
-  // IF NO TOKEN
+  // NOT LOGGED IN
   if (
     !token &&
     !isLoginPage
@@ -34,7 +34,7 @@ export function middleware(
     )
   }
 
-  // IF LOGGED IN
+  // ALREADY LOGGED IN
   if (
     token &&
     isLoginPage
@@ -51,7 +51,6 @@ export function middleware(
   return NextResponse.next()
 }
 
-// PROTECTED ROUTES
 export const config = {
 
   matcher: [
