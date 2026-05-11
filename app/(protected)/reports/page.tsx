@@ -4,7 +4,7 @@ import { useEffect, useState }
 from 'react'
 
 import { supabase }
-from '../../lib/supabase'
+from '../../../lib/supabase'
 
 import html2pdf
 from 'html2pdf.js'

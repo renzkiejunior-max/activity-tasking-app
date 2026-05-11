@@ -26,48 +26,7 @@ export default function RootLayout({
 
         <AuthProvider>
 
-          <div className="
-            flex
-            min-h-screen
-          ">
-
-            {/* SIDEBAR */}
-            <Sidebar />
-
-            {/* MAIN AREA */}
-            <div className="
-              flex-1
-              flex
-              flex-col
-
-              lg:ml-72
-            ">
-
-              {/* TOPBAR */}
-              <Topbar />
-
-              {/* CONTENT */}
-              <main className="
-
-                flex-1
-
-                p-4
-                md:p-8
-
-                pt-24
-                md:pt-8
-
-                overflow-x-hidden
-
-              ">
-
-                {children}
-
-              </main>
-
-            </div>
-
-          </div>
+          {children}
 
         </AuthProvider>
 

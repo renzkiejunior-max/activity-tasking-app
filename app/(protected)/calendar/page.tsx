@@ -7,7 +7,7 @@ import Calendar from 'react-calendar'
 import 'react-calendar/dist/Calendar.css'
 
 import { supabase }
-from '../../lib/supabase'
+from '../../../lib/supabase'
 
 export default function Page() {
 

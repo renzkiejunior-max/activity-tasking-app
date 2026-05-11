@@ -6,10 +6,10 @@ import {
 } from 'react'
 
 import { supabase }
-from '../../lib/supabase'
+from '../../../lib/supabase'
 
 import { useAuth }
-from '../../contexts/AuthContext'
+from '../../../contexts/AuthContext'
 
 import {
   PieChart,

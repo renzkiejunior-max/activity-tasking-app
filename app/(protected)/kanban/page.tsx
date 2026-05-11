@@ -12,7 +12,7 @@ import {
 } from '@hello-pangea/dnd'
 
 import { supabase }
-from '../../lib/supabase'
+from '../../../lib/supabase'
 
 const columns = [
   'pending',

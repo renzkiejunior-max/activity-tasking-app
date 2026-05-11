@@ -6,14 +6,14 @@ import {
 } from 'react'
 
 import { supabase }
-from '../../lib/supabase'
+from '../../../lib/supabase'
 
 import {
   useAuth,
-} from '../../contexts/AuthContext'
+} from '../../../contexts/AuthContext'
 
 import ProtectedRoute
-from '../../components/ProtectedRoute'
+from '../../../components/ProtectedRoute'
 
 export default function Page() {
 
