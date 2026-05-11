@@ -36,25 +36,31 @@ export default function ProtectedLayout({
 
   useEffect(() => {
 
-    // CHECK CURRENT SESSION
-    const checkSession =
+    // CHECK SESSION
+    const checkAuth =
       async () => {
 
       const {
         data: { session },
-      } = await supabase.auth.getSession()
+      } =
+        await supabase.auth.getSession()
 
+      // LOGGED IN
       if (session) {
 
         setAuthenticated(true)
+
+      } else {
+
+        router.push('/login')
       }
 
       setLoading(false)
     }
 
-    checkSession()
+    checkAuth()
 
-    // LISTEN AUTH CHANGES
+    // AUTH LISTENER
     const {
       data: listener,
     } =
@@ -83,7 +89,7 @@ export default function ProtectedLayout({
 
   }, [])
 
-  // LOADING
+  // LOADING SCREEN
   if (loading) {
 
     return (
@@ -113,7 +119,13 @@ export default function ProtectedLayout({
   // NOT AUTHENTICATED
   if (!authenticated) {
 
-    return null
+    return (
+
+      <div className="
+        min-h-screen
+      " />
+
+    )
   }
 
   return (
