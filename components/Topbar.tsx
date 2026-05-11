@@ -26,6 +26,11 @@ export default function Topbar() {
     setNotificationCount] =
     useState(0)
 
+  // MOBILE AUTO HIDE
+  const [showMobileBar,
+    setShowMobileBar] =
+    useState(true)
+
   // FETCH EMPLOYEE
   const fetchEmployee =
     async () => {
@@ -85,6 +90,7 @@ export default function Topbar() {
       )
   }
 
+  // INITIAL LOAD
   useEffect(() => {
 
     fetchEmployee()
@@ -141,6 +147,59 @@ export default function Topbar() {
     }
 
   }, [userData])
+
+  // MOBILE AUTO HIDE
+  useEffect(() => {
+
+    let timeout: any
+
+    const showBar = () => {
+
+      setShowMobileBar(true)
+
+      clearTimeout(timeout)
+
+      timeout = setTimeout(() => {
+
+        setShowMobileBar(false)
+
+      }, 3000)
+    }
+
+    // TOUCH EVENTS
+    window.addEventListener(
+      'touchstart',
+      showBar
+    )
+
+    window.addEventListener(
+      'mousemove',
+      showBar
+    )
+
+    // INITIAL HIDE TIMER
+    timeout = setTimeout(() => {
+
+      setShowMobileBar(false)
+
+    }, 3000)
+
+    return () => {
+
+      window.removeEventListener(
+        'touchstart',
+        showBar
+      )
+
+      window.removeEventListener(
+        'mousemove',
+        showBar
+      )
+
+      clearTimeout(timeout)
+    }
+
+  }, [])
 
   return (
 
@@ -343,6 +402,7 @@ export default function Topbar() {
               max-w-52
             ">
 
+              {/* NAME */}
               <p className="
                 font-bold
                 text-blue-900
@@ -357,6 +417,7 @@ export default function Topbar() {
 
               </p>
 
+              {/* EMAIL */}
               <p className="
                 text-xs
                 text-gray-500
@@ -370,6 +431,7 @@ export default function Topbar() {
 
               </p>
 
+              {/* ROLE */}
               <p className="
                 text-xs
                 text-orange-600
@@ -392,8 +454,8 @@ export default function Topbar() {
 
       </header>
 
-      {/* MOBILE FOOTER BAR */}
-      <div className="
+      {/* MOBILE FOOTER */}
+      <div className={`
 
         md:hidden
 
@@ -418,7 +480,17 @@ export default function Topbar() {
         flex
         items-center
         justify-between
-      ">
+
+        transition-transform
+        duration-500
+
+        ${
+          showMobileBar
+            ? 'translate-y-0'
+            : 'translate-y-full'
+        }
+
+      `}>
 
         {/* HOME */}
         <Link

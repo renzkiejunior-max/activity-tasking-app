@@ -38,7 +38,13 @@ export default function Page() {
       return
     }
 
-    window.location.href = '/dashboard'
+    // WAIT SESSION SAVE
+    setTimeout(() => {
+
+  window.location.href =
+    '/dashboard'
+
+}, 1000)
   }
 
   return (
