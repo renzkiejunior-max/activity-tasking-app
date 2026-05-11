@@ -6,10 +6,10 @@ import {
 } from 'react'
 
 import { supabase }
-from '../../lib/supabase'
+from '../../../lib/supabase'
 
 import ProtectedRoute
-from '../../components/ProtectedRoute'
+from '../../../components/ProtectedRoute'
 
 export default function Page() {
 

@@ -5,13 +5,14 @@ import {
   useState,
 } from 'react'
 
-import Link from 'next/link'
+import Link
+from 'next/link'
 
 import { useAuth }
-from '../contexts/AuthContext'
+from '@/contexts/AuthContext'
 
 import { supabase }
-from '../lib/supabase'
+from '@/lib/supabase'
 
 export default function Topbar() {
 
@@ -143,73 +144,311 @@ export default function Topbar() {
 
   return (
 
-    <header className="
+    <>
 
-      sticky
-      top-0
+      {/* DESKTOP TOPBAR */}
+      <header className="
 
-      z-30
+        hidden
+        md:flex
 
-      bg-white/95
-      backdrop-blur
+        sticky
+        top-0
 
-      border-b
-      border-gray-200
+        z-30
 
-      shadow-sm
+        bg-white/95
+        backdrop-blur
 
-      px-4
-      md:px-8
+        border-b
+        border-gray-200
 
-      py-4
+        shadow-sm
 
-      flex
-      items-center
-      justify-between
+        px-8
+        py-4
 
-    ">
+        items-center
+        justify-between
 
-      {/* LEFT */}
-      <div className="
-        min-w-0
       ">
 
-        <h1 className="
-          text-lg
-          md:text-2xl
+        {/* LEFT */}
+        <div>
 
-          font-bold
+          <h1 className="
+            text-2xl
+            font-bold
+            text-blue-900
+          ">
 
-          text-blue-900
+            PDRRMO Operations Portal
 
-          truncate
+          </h1>
+
+          <p className="
+            text-sm
+            text-gray-500
+            mt-1
+          ">
+
+            Calendar of Activities Tracker
+
+          </p>
+
+        </div>
+
+        {/* RIGHT */}
+        <div className="
+          flex
+          items-center
+          gap-4
         ">
 
-          Activity Tasking System
+          {/* NOTIFICATIONS */}
+          <Link
+            href="/notifications"
+          >
 
-        </h1>
+            <button className="
+              relative
 
-        <p className="
-          hidden sm:block
+              w-11 h-11
 
-          text-sm
-          text-gray-500
+              rounded-2xl
 
-          mt-1
-        ">
+              bg-orange-100
+              hover:bg-orange-200
 
-          Office Management Portal
+              transition
 
-        </p>
+              flex
+              items-center
+              justify-center
 
-      </div>
+              text-xl
 
-      {/* RIGHT */}
+              shadow-sm
+            ">
+
+              🔔
+
+              {/* BADGE */}
+              <span className="
+                absolute
+
+                -top-1
+                -right-1
+
+                bg-orange-500
+                text-white
+
+                text-[10px]
+                font-bold
+
+                min-w-5
+                h-5
+
+                px-1
+
+                rounded-full
+
+                flex
+                items-center
+                justify-center
+
+                shadow
+              ">
+
+                {notificationCount}
+
+              </span>
+
+            </button>
+
+          </Link>
+
+          {/* USER */}
+          <div className="
+            flex
+            items-center
+            gap-3
+
+            bg-gray-50
+            border
+
+            rounded-2xl
+
+            px-3
+            py-2
+
+            shadow-sm
+          ">
+
+            {/* PHOTO */}
+            {employee?.photo_url ? (
+
+              <img
+                src={
+                  employee.photo_url
+                }
+                alt="Profile"
+                className="
+                  w-12 h-12
+
+                  rounded-full
+
+                  object-cover
+
+                  border-2
+                  border-blue-200
+
+                  shadow
+                "
+              />
+
+            ) : (
+
+              <div className="
+                w-12 h-12
+
+                rounded-full
+
+                bg-linear-to-br
+                from-blue-700
+                to-blue-900
+
+                text-white
+
+                flex
+                items-center
+                justify-center
+
+                font-bold
+                text-lg
+              ">
+
+                {
+                  userData?.email
+                    ?.charAt(0)
+                    ?.toUpperCase()
+                }
+
+              </div>
+
+            )}
+
+            {/* INFO */}
+            <div className="
+              max-w-52
+            ">
+
+              <p className="
+                font-bold
+                text-blue-900
+
+                truncate
+              ">
+
+                {
+                  employee?.name ||
+                  'Loading...'
+                }
+
+              </p>
+
+              <p className="
+                text-xs
+                text-gray-500
+
+                truncate
+              ">
+
+                {
+                  userData?.email
+                }
+
+              </p>
+
+              <p className="
+                text-xs
+                text-orange-600
+
+                capitalize
+                font-medium
+              ">
+
+                {
+                  userData?.role
+                }
+
+              </p>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </header>
+
+      {/* MOBILE FOOTER BAR */}
       <div className="
+
+        md:hidden
+
+        fixed
+        bottom-0
+        left-0
+        right-0
+
+        z-50
+
+        bg-white/95
+        backdrop-blur
+
+        border-t
+        border-gray-200
+
+        shadow-2xl
+
+        px-6
+        py-3
+
         flex
         items-center
-        gap-4
+        justify-between
       ">
+
+        {/* HOME */}
+        <Link
+          href="/dashboard"
+        >
+
+          <button className="
+            flex
+            flex-col
+            items-center
+
+            text-blue-900
+          ">
+
+            <span className="
+              text-2xl
+            ">
+              🏠
+            </span>
+
+            <span className="
+              text-xs
+              font-medium
+            ">
+              Home
+            </span>
+
+          </button>
+
+        </Link>
 
         {/* NOTIFICATIONS */}
         <Link
@@ -219,38 +458,37 @@ export default function Topbar() {
           <button className="
             relative
 
-            w-11 h-11
-
-            rounded-2xl
-
-            bg-orange-100
-            hover:bg-orange-200
-
-            transition
-
             flex
+            flex-col
             items-center
-            justify-center
 
-            text-xl
-
-            shadow-sm
+            text-orange-600
           ">
 
-            🔔
+            <span className="
+              text-2xl
+            ">
+              🔔
+            </span>
+
+            <span className="
+              text-xs
+              font-medium
+            ">
+              Alerts
+            </span>
 
             {/* BADGE */}
             <span className="
               absolute
 
-              -top-1
-              -right-1
+              top-0
+              right-0
 
-              bg-orange-500
+              bg-red-500
               text-white
 
               text-[10px]
-              font-bold
 
               min-w-5
               h-5
@@ -262,8 +500,6 @@ export default function Topbar() {
               flex
               items-center
               justify-center
-
-              shadow
             ">
 
               {notificationCount}
@@ -274,24 +510,13 @@ export default function Topbar() {
 
         </Link>
 
-        {/* USER */}
+        {/* PROFILE */}
         <div className="
           flex
+          flex-col
           items-center
-          gap-3
-
-          bg-gray-50
-          border
-
-          rounded-2xl
-
-          px-3
-          py-2
-
-          shadow-sm
         ">
 
-          {/* PHOTO */}
           {employee?.photo_url ? (
 
             <img
@@ -300,7 +525,7 @@ export default function Topbar() {
               }
               alt="Profile"
               className="
-                w-12 h-12
+                w-10 h-10
 
                 rounded-full
 
@@ -308,22 +533,17 @@ export default function Topbar() {
 
                 border-2
                 border-blue-200
-
-                shadow
               "
             />
 
           ) : (
 
             <div className="
-              w-12 h-12
+              w-10 h-10
 
               rounded-full
 
-              bg-linear-to-br
-              from-blue-700
-              to-blue-900
-
+              bg-blue-900
               text-white
 
               flex
@@ -331,7 +551,6 @@ export default function Topbar() {
               justify-center
 
               font-bold
-              text-lg
             ">
 
               {
@@ -344,63 +563,18 @@ export default function Topbar() {
 
           )}
 
-          {/* USER INFO */}
-          <div className="
-            hidden sm:block
-
-            max-w-52
+          <span className="
+            text-xs
+            mt-1
+            text-gray-700
           ">
-
-            {/* NAME */}
-            <p className="
-              font-bold
-              text-blue-900
-
-              truncate
-            ">
-
-              {
-                employee?.name ||
-                'Loading...'
-              }
-
-            </p>
-
-            {/* EMAIL */}
-            <p className="
-              text-xs
-              text-gray-500
-
-              truncate
-            ">
-
-              {
-                userData?.email
-              }
-
-            </p>
-
-            {/* ROLE */}
-            <p className="
-              text-xs
-              text-orange-600
-
-              capitalize
-              font-medium
-            ">
-
-              {
-                userData?.role
-              }
-
-            </p>
-
-          </div>
+            Profile
+          </span>
 
         </div>
 
       </div>
 
-    </header>
+    </>
   )
 }

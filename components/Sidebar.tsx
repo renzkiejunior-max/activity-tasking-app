@@ -1,14 +1,17 @@
 'use client'
 
-import { useState } from 'react'
+import { useState }
+from 'react'
 
-import Link from 'next/link'
+import Link
+from 'next/link'
 
-import { usePathname }
-from 'next/navigation'
+import {
+  usePathname,
+} from 'next/navigation'
 
 import { useAuth }
-from '../contexts/AuthContext'
+from '@/contexts/AuthContext'
 
 const roleLinks: any = {
 
@@ -103,7 +106,7 @@ const roleLinks: any = {
       href: '/notifications',
     },
 
-        {
+    {
       name: 'Operations Map',
       href: '/operations-map',
     },
@@ -188,7 +191,6 @@ export default function Sidebar() {
       userData?.role
     ] || []
 
-  // MOBILE MENU
   const [open, setOpen] =
     useState(false)
 
@@ -196,7 +198,7 @@ export default function Sidebar() {
 
     <>
 
-      {/* MOBILE TOPBAR */}
+      {/* MOBILE HEADER */}
       <div className="
         md:hidden
 
@@ -208,7 +210,6 @@ export default function Sidebar() {
         z-50
 
         bg-blue-900
-        text-white
 
         px-4 py-3
 
@@ -219,27 +220,48 @@ export default function Sidebar() {
         shadow-lg
       ">
 
-        {/* TITLE */}
-        <div>
+        {/* LEFT */}
+        <div className="
+          flex
+          items-center
+          gap-3
+        ">
 
-          <h1 className="
-            text-lg
-            font-bold
-            text-orange-400
-          ">
-            Office System
-          </h1>
+          {/* LOGO */}
+          <img
+            src="/PDRRMO.png"
+            alt="PDRRMO"
+            className="
+              w-16 h-16
 
-          <p className="
-            text-xs
-            text-blue-200
-          ">
-            Management Portal
-          </p>
+
+            "
+          />
+
+          {/* TITLE */}
+          <div>
+
+            <h1 className="
+              text-lg
+              font-bold
+              text-orange-400
+              leading-tight
+            ">
+              TMS
+            </h1>
+
+            <p className="
+              text-xs
+              text-blue-100
+            ">
+              Task Management System
+            </p>
+
+          </div>
 
         </div>
 
-        {/* MENU BUTTON */}
+        {/* BUTTON */}
         <button
 
           onClick={() =>
@@ -254,6 +276,7 @@ export default function Sidebar() {
 
             rounded-xl
 
+            text-white
             text-xl
           "
         >
@@ -288,62 +311,83 @@ export default function Sidebar() {
       )}
 
       {/* SIDEBAR */}
-<aside className={`
+      <aside className={`
 
-  fixed
-  top-0
-  left-0
+        fixed
+        top-0
+        left-0
 
-  h-screen
-  w-72
+        h-screen
+        w-72
 
-  bg-blue-900
-  text-white
+        bg-blue-900
+        text-white
 
-  shadow-2xl
+        shadow-2xl
 
-  transform
-  transition-transform
-  duration-300
+        transform
+        transition-transform
+        duration-300
 
-  flex
-  flex-col
+        flex
+        flex-col
 
-  z-20
+        z-20
 
-  ${
-    open
-      ? 'translate-x-0'
-      : '-translate-x-full'
-  }
+        ${
+          open
+            ? 'translate-x-0'
+            : '-translate-x-full'
+        }
 
-  md:translate-x-0
-`}
->
+        md:translate-x-0
+      `}>
 
         {/* DESKTOP HEADER */}
         <div className="
-          hidden md:block
+          hidden md:flex
+
+          items-center
+          gap-4
 
           p-6
+
           border-b
           border-blue-800
         ">
 
-          <h1 className="
-            text-3xl
-            font-bold
-            text-orange-400
-          ">
-            Office System
-          </h1>
+          {/* LOGO */}
+          <img
+            src="/PDRRMO.png"
+            alt="PDRRMO"
+            className="
+              w-24 h-24
 
-          <p className="
-            text-blue-200
-            mt-2
-          ">
-            Management Portal
-          </p>
+
+            "
+          />
+
+          {/* TITLE */}
+          <div>
+
+            <h1 className="
+              text-3xl
+              font-bold
+              text-orange-400
+              leading-tight
+            ">
+              TMS
+            </h1>
+
+            <p className="
+              text-sm
+              text-blue-100
+              mt-1
+            ">
+              Task Management System
+            </p>
+
+          </div>
 
         </div>
 
@@ -353,125 +397,122 @@ export default function Sidebar() {
           md:hidden
         " />
 
-{/* USER INFO */}
-<div className="
-  px-6
-  py-5
+        {/* USER */}
+        <div className="
+          px-6
+          py-5
 
-  border-b
-  border-blue-800
-">
+          border-b
+          border-blue-800
+        ">
 
-  <div className="
-    flex
-    items-center
-    gap-4
-  ">
+          <div className="
+            flex
+            items-center
+            gap-4
+          ">
 
-    {/* PROFILE PHOTO */}
-    {userData?.photo_url ? (
+            {/* PHOTO */}
+            {userData?.photo_url ? (
 
-      <img
-        src={
-          userData.photo_url
-        }
-        alt="Profile"
-        className="
-          w-14 h-14
+              <img
+                src={
+                  userData.photo_url
+                }
+                alt="Profile"
+                className="
+                  w-14 h-14
 
-          rounded-full
+                  rounded-full
 
-          object-cover
+                  object-cover
 
-          border-2
-          border-orange-400
+                  border-2
+                  border-orange-400
 
-          shadow-lg
-        "
-      />
+                  shadow-lg
+                "
+              />
 
-    ) : (
+            ) : (
 
-      <div className="
-        w-14 h-14
+              <div className="
+                w-14 h-14
 
-        rounded-full
+                rounded-full
 
-        bg-orange-500
+                bg-orange-500
 
-        flex
-        items-center
-        justify-center
+                flex
+                items-center
+                justify-center
 
-        text-xl
-        font-bold
+                text-xl
+                font-bold
 
-        shadow-lg
-      ">
+                shadow-lg
+              ">
 
-        {
-          userData?.name
-            ?.charAt(0)
-            ?.toUpperCase()
-        }
+                {
+                  userData?.name
+                    ?.charAt(0)
+                    ?.toUpperCase()
+                }
 
-      </div>
+              </div>
 
-    )}
+            )}
 
-    {/* INFO */}
-    <div className="
-      min-w-0
-    ">
+            {/* INFO */}
+            <div className="
+              min-w-0
+            ">
 
-      {/* NAME */}
-      <h2 className="
-        font-bold
-        text-lg
+              <h2 className="
+                font-bold
+                text-lg
 
-        truncate
-      ">
+                truncate
+              ">
 
-        {
-          userData?.name ||
-          'User'
-        }
+                {
+                  userData?.name ||
+                  'User'
+                }
 
-      </h2>
+              </h2>
 
-      {/* EMAIL */}
-      <p className="
-        text-xs
-        text-blue-200
+              <p className="
+                text-xs
+                text-blue-200
 
-        truncate
-      ">
+                truncate
+              ">
 
-        {
-          userData?.email
-        }
+                {
+                  userData?.email
+                }
 
-      </p>
+              </p>
 
-      {/* ROLE */}
-      <p className="
-        text-sm
-        text-orange-300
+              <p className="
+                text-sm
+                text-orange-300
 
-        capitalize
-      ">
+                capitalize
+              ">
 
-        {
-          userData?.role
-        }
+                {
+                  userData?.role
+                }
 
-      </p>
+              </p>
 
-    </div>
+            </div>
 
-  </div>
+          </div>
 
-</div>
+        </div>
 
         {/* NAVIGATION */}
         <nav className="
@@ -555,7 +596,8 @@ export default function Sidebar() {
           text-blue-200
         ">
 
-          Operations Management System
+          Provincial Disaster Risk
+          Reduction and Management Office
 
         </div>
 
