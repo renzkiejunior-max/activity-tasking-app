@@ -1,22 +1,21 @@
 'use client'
 
-import {
-  useEffect,
-  useState,
-} from 'react'
-
-import {
-  useRouter,
-} from 'next/navigation'
-
 import Sidebar
 from '@/components/Sidebar'
 
 import Topbar
 from '@/components/Topbar'
 
-import { supabase }
-from '@/lib/supabase'
+import { useAuth }
+from '@/contexts/AuthContext'
+
+import {
+  useRouter,
+} from 'next/navigation'
+
+import {
+  useEffect,
+} from 'react'
 
 export default function ProtectedLayout({
   children,
@@ -24,72 +23,32 @@ export default function ProtectedLayout({
   children: React.ReactNode
 }) {
 
+  const {
+    userData,
+    loading,
+  } = useAuth()
+
   const router =
     useRouter()
 
-  const [loading, setLoading] =
-    useState(true)
-
-  const [authenticated,
-    setAuthenticated] =
-    useState(false)
-
+  // REDIRECT
   useEffect(() => {
 
-    // CHECK SESSION
-    const checkAuth =
-      async () => {
+    if (
+      !loading &&
+      !userData
+    ) {
 
-      const {
-        data: { session },
-      } =
-        await supabase.auth.getSession()
+      router.push('/login')
 
-      // LOGGED IN
-      if (session) {
-
-        setAuthenticated(true)
-
-      } else {
-
-        router.push('/login')
-      }
-
-      setLoading(false)
     }
 
-    checkAuth()
+  }, [
+    userData,
+    loading,
+  ])
 
-    // AUTH LISTENER
-    const {
-      data: listener,
-    } =
-      supabase.auth.onAuthStateChange(
-        (
-          event,
-          session
-        ) => {
-
-          if (session) {
-
-            setAuthenticated(true)
-
-          } else {
-
-            setAuthenticated(false)
-
-            router.push('/login')
-          }
-        }
-      )
-
-    return () => {
-      listener.subscription.unsubscribe()
-    }
-
-  }, [])
-
-  // LOADING SCREEN
+  // LOADING
   if (loading) {
 
     return (
@@ -109,23 +68,19 @@ export default function ProtectedLayout({
           font-bold
           text-blue-900
         ">
+
           Loading...
+
         </div>
 
       </div>
     )
   }
 
-  // NOT AUTHENTICATED
-  if (!authenticated) {
+  // NOT LOGGED IN
+  if (!userData) {
 
-    return (
-
-      <div className="
-        min-h-screen
-      " />
-
-    )
+    return null
   }
 
   return (

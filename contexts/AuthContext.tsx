@@ -8,7 +8,7 @@ import {
 } from 'react'
 
 import { supabase }
-from '../lib/supabase'
+from '@/lib/supabase'
 
 const AuthContext =
   createContext<any>(null)
@@ -19,36 +19,37 @@ export function AuthProvider({
   children: React.ReactNode
 }) {
 
-  const [userData, setUserData] =
+  const [userData,
+    setUserData] =
     useState<any>(null)
 
-  const [loading, setLoading] =
+  const [loading,
+    setLoading] =
     useState(true)
 
   // LOAD USER
   const loadUser =
     async () => {
 
-      // AUTH USER
       const {
-        data: { user },
-      } = await supabase
-        .auth
-        .getUser()
+        data: {
+          user,
+        },
+      } =
+        await supabase.auth.getUser()
 
-      // NO LOGIN
+      // NOT LOGGED IN
       if (!user) {
 
         setUserData(null)
-
         setLoading(false)
 
         return
       }
 
-      // USERS TABLE
+      // GET USER TABLE
       const {
-        data: userRecord,
+        data,
       } = await supabase
 
         .from('users')
@@ -56,75 +57,36 @@ export function AuthProvider({
         .select('*')
 
         .eq(
-          'email',
-          user.email
+          'id',
+          user.id
         )
 
         .single()
 
-      // EMPLOYEE TABLE
-      const {
-        data: employee,
-      } = await supabase
-
-        .from('employees')
-
-        .select('*')
-
-        .eq(
-          'email',
-          user.email
-        )
-
-        .single()
-
-      // FINAL USER DATA
-      setUserData({
-
-        // AUTH
-        id: user.id,
-
-        email:
-          user.email,
-
-        // ROLE
-        role:
-          userRecord?.role ||
-          'staff',
-
-        // EMPLOYEE INFO
-        name:
-          employee?.name ||
-          'User',
-
-        photo_url:
-          employee?.photo_url ||
-          null,
-
-      })
+      setUserData(data)
 
       setLoading(false)
-  }
+    }
 
   useEffect(() => {
 
     loadUser()
 
-    // REALTIME AUTH
+    // LISTENER
     const {
       data: listener,
-    } = supabase.auth
-      .onAuthStateChange(
-        async () => {
+    } =
+      supabase.auth.onAuthStateChange(
+        () => {
 
-        await loadUser()
+          loadUser()
 
-      })
+        }
+      )
 
     return () => {
 
-      listener.subscription
-        .unsubscribe()
+      listener.subscription.unsubscribe()
 
     }
 
@@ -133,16 +95,18 @@ export function AuthProvider({
   return (
 
     <AuthContext.Provider
+
       value={{
+
         userData,
         loading,
+
       }}
     >
 
       {children}
 
     </AuthContext.Provider>
-
   )
 }
 
