@@ -10,8 +10,57 @@ from '../../../lib/supabase'
 
 export default function Page() {
 
-  const [notifications, setNotifications] =
+  const [notifications,
+    setNotifications] =
     useState<any[]>([])
+
+  // FORMAT DATE
+  const formatDate = (
+    date: string
+  ) => {
+
+    if (!date)
+      return 'N/A'
+
+    return new Date(
+      date
+    ).toLocaleDateString(
+      'en-US',
+      {
+
+        year: 'numeric',
+
+        month: 'long',
+
+        day: 'numeric',
+
+      }
+    )
+  }
+
+  // FORMAT TIME
+  const formatTime = (
+    time: string
+  ) => {
+
+    if (!time)
+      return 'N/A'
+
+    return new Date(
+      `1970-01-01T${time}`
+    ).toLocaleTimeString(
+      'en-US',
+      {
+
+        hour: 'numeric',
+
+        minute: '2-digit',
+
+        hour12: true,
+
+      }
+    )
+  }
 
   // FETCH NOTIFICATIONS
   const fetchNotifications =
@@ -19,6 +68,35 @@ export default function Page() {
 
       const today =
         new Date()
+
+      // CURRENT USER
+      const {
+        data: {
+          user,
+        },
+      } = await supabase
+
+        .auth.getUser()
+
+      if (!user) return
+
+      // GET EMPLOYEE
+      const {
+        data: employee,
+      } = await supabase
+
+        .from('employees')
+
+        .select('*')
+
+        .eq(
+          'user_id',
+          user.id
+        )
+
+        .single()
+
+      if (!employee) return
 
       const generatedNotifications:
         any[] = []
@@ -34,9 +112,17 @@ export default function Page() {
 
         .select('*')
 
-        .order('created_at', {
-          ascending: false,
-        })
+        .eq(
+          'user_id',
+          user.id
+        )
+
+        .order(
+          'created_at',
+          {
+            ascending: false,
+          }
+        )
 
       dbNotifications?.forEach(
         (notif) => {
@@ -65,72 +151,6 @@ export default function Page() {
       )
 
       // =========================
-      // UPCOMING ACTIVITIES
-      // =========================
-      const {
-        data: activities
-      } = await supabase
-
-        .from('activities')
-        .select('*')
-
-      activities?.forEach(
-        (activity) => {
-
-          if (
-            !activity.activity_date
-          ) return
-
-          const activityDate =
-            new Date(
-              activity.activity_date
-            )
-
-          const diffTime =
-            activityDate.getTime() -
-            today.getTime()
-
-          const diffDays =
-            Math.ceil(
-              diffTime /
-              (
-                1000 *
-                60 *
-                60 *
-                24
-              )
-            )
-
-          if (diffDays >= 0) {
-
-            generatedNotifications.push({
-
-              id:
-                'activity-' +
-                activity.id,
-
-              title:
-                'Upcoming Activity',
-
-              message:
-`${activity.title}
-
-Scheduled on:
-${activity.activity_date}`,
-
-              days_before:
-                diffDays,
-
-              type:
-                'activity',
-
-            })
-          }
-
-        }
-      )
-
-      // =========================
       // ASSIGNMENTS
       // =========================
       const {
@@ -145,8 +165,17 @@ ${activity.activity_date}`,
             name,
             photo_url
           ),
-          activities(title)
+          activities(
+            title,
+            activity_date,
+            activity_time
+          )
         `)
+
+        .eq(
+          'employee_id',
+          employee.id
+        )
 
       assignments?.forEach(
         (assign) => {
@@ -205,7 +234,7 @@ Activity:
 ${assign.activities?.title}
 
 Deadline:
-${assign.deadline}`,
+${formatDate(assign.deadline)}`,
 
                 days_before:
                   diffDays,
@@ -245,7 +274,13 @@ Status:
 ${assign.status?.toUpperCase()}
 
 Activity:
-${assign.activities?.title}`,
+${assign.activities?.title}
+
+Date:
+${formatDate(assign.activities?.activity_date)}
+
+Time:
+${formatTime(assign.activities?.activity_time)}`,
 
             days_before: 0,
 
@@ -268,7 +303,7 @@ ${assign.activities?.title}`,
       setNotifications(
         generatedNotifications
       )
-  }
+    }
 
   // REALTIME
   useEffect(() => {
@@ -404,7 +439,7 @@ ${assign.activities?.title}`,
         border-gray-400
         bg-gray-50
       `
-  }
+    }
 
   // ICONS
   const getIcon =
@@ -462,7 +497,7 @@ ${assign.activities?.title}`,
       }
 
       return '🔔'
-  }
+    }
 
   return (
 
@@ -480,15 +515,19 @@ ${assign.activities?.title}`,
           font-bold
           text-blue-900
         ">
+
           Notifications Center
+
         </h1>
 
         <p className="
           text-gray-600
         ">
+
           Operational updates,
           realtime alerts,
           and workflow notifications
+
         </p>
 
       </div>
@@ -508,7 +547,9 @@ ${assign.activities?.title}`,
             text-6xl
             mb-4
           ">
+
             🔔
+
           </div>
 
           <h2 className="
@@ -516,7 +557,9 @@ ${assign.activities?.title}`,
             font-bold
             text-blue-900
           ">
+
             No Notifications
+
           </h2>
 
         </div>
@@ -604,11 +647,13 @@ ${assign.activities?.title}`,
                     <div className="
                       text-3xl
                     ">
+
                       {
                         getIcon(
                           notif.type
                         )
                       }
+
                     </div>
 
                   )}
@@ -621,7 +666,9 @@ ${assign.activities?.title}`,
                       font-bold
                       text-blue-900
                     ">
+
                       {notif.title}
+
                     </h2>
 
                     <p className="
@@ -629,7 +676,9 @@ ${assign.activities?.title}`,
                       whitespace-pre-line
                       mt-2
                     ">
+
                       {notif.message}
+
                     </p>
 
                   </div>
@@ -652,6 +701,7 @@ ${assign.activities?.title}`,
                     {
                       notif.days_before
                     }
+
                     {' '}
                     day(s)
 

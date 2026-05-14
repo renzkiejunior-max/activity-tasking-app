@@ -8,6 +8,10 @@ import {
 import Link
 from 'next/link'
 
+import {
+  useRouter,
+} from 'next/navigation'
+
 import { useAuth }
 from '@/contexts/AuthContext'
 
@@ -15,6 +19,9 @@ import { supabase }
 from '@/lib/supabase'
 
 export default function Topbar() {
+
+  const router =
+    useRouter()
 
   const { userData } =
     useAuth()
@@ -60,35 +67,106 @@ export default function Topbar() {
       }
   }
 
-  // FETCH NOTIFICATIONS
-  const fetchNotifications =
+
+// FETCH NOTIFICATIONS
+const fetchNotifications =
+  async () => {
+
+    // CURRENT USER
+    const {
+      data: {
+        user,
+      },
+    } = await supabase.auth.getUser()
+
+    if (!user) return
+
+    // GET ONLY USER NOTIFICATIONS
+    const {
+      data: notifications,
+      error,
+    } = await supabase
+
+      .from('notifications')
+
+      .select('*')
+
+      .eq(
+        'user_id',
+        user.id
+      )
+
+      .eq(
+        'is_read',
+        false
+      )
+
+      .order(
+        'created_at',
+        {
+          ascending: false,
+        }
+      )
+
+    if (error) {
+
+      console.error(error)
+
+      return
+    }
+
+    // COUNT
+    setNotificationCount(
+      notifications?.length || 0
+    )
+}
+
+
+// CLEAR NOTIFICATIONS
+const clearNotifications =
+  async () => {
+
+    // CURRENT USER
+    const {
+      data: {
+        user,
+      },
+    } = await supabase.auth.getUser()
+
+    if (!user) return
+
+    // MARK ALL AS READ
+    await supabase
+
+      .from('notifications')
+
+      .update({
+        is_read: true,
+      })
+
+      .eq(
+        'user_id',
+        user.id
+      )
+
+      .eq(
+        'is_read',
+        false
+      )
+
+    // RESET COUNTER
+    setNotificationCount(0)
+}
+
+
+  // LOGOUT
+  const handleLogout =
     async () => {
 
-      const {
-        data: assignments,
-      } = await supabase
+      await supabase.auth.signOut()
 
-        .from('assignments')
-
-        .select('*')
-
-      const {
-        data: activities,
-      } = await supabase
-
-        .from('activities')
-
-        .select('*')
-
-      const total =
-        (assignments?.length || 0)
-        +
-        (activities?.length || 0)
-
-      setNotificationCount(
-        total
-      )
-  }
+      router.push('/login')
+    }
 
   // INITIAL LOAD
   useEffect(() => {
@@ -166,7 +244,6 @@ export default function Topbar() {
       }, 3000)
     }
 
-    // TOUCH EVENTS
     window.addEventListener(
       'touchstart',
       showBar
@@ -177,7 +254,6 @@ export default function Topbar() {
       showBar
     )
 
-    // INITIAL HIDE TIMER
     timeout = setTimeout(() => {
 
       setShowMobileBar(false)
@@ -269,59 +345,70 @@ export default function Topbar() {
             href="/notifications"
           >
 
-            <button className="
-              relative
+            <button
 
-              w-11 h-11
+              onClick={
+                clearNotifications
+              }
 
-              rounded-2xl
+              className="
+                relative
 
-              bg-orange-100
-              hover:bg-orange-200
+                w-11 h-11
 
-              transition
+                rounded-2xl
 
-              flex
-              items-center
-              justify-center
+                bg-orange-100
+                hover:bg-orange-200
 
-              text-xl
-
-              shadow-sm
-            ">
-
-              🔔
-
-              {/* BADGE */}
-              <span className="
-                absolute
-
-                -top-1
-                -right-1
-
-                bg-orange-500
-                text-white
-
-                text-[10px]
-                font-bold
-
-                min-w-5
-                h-5
-
-                px-1
-
-                rounded-full
+                transition
 
                 flex
                 items-center
                 justify-center
 
-                shadow
-              ">
+                text-xl
 
-                {notificationCount}
+                shadow-sm
+              "
+            >
 
-              </span>
+              🔔
+
+              {/* BADGE */}
+              {notificationCount > 0 && (
+
+                <span className="
+                  absolute
+
+                  -top-1
+                  -right-1
+
+                  bg-orange-500
+                  text-white
+
+                  text-[10px]
+                  font-bold
+
+                  min-w-5
+                  h-5
+
+                  px-1
+
+                  rounded-full
+
+                  flex
+                  items-center
+                  justify-center
+
+                  shadow
+                ">
+
+                  {notificationCount}
+
+                </span>
+
+              )}
 
             </button>
 
@@ -402,7 +489,6 @@ export default function Topbar() {
               max-w-52
             ">
 
-              {/* NAME */}
               <p className="
                 font-bold
                 text-blue-900
@@ -417,7 +503,6 @@ export default function Topbar() {
 
               </p>
 
-              {/* EMAIL */}
               <p className="
                 text-xs
                 text-gray-500
@@ -431,7 +516,6 @@ export default function Topbar() {
 
               </p>
 
-              {/* ROLE */}
               <p className="
                 text-xs
                 text-orange-600
@@ -441,12 +525,49 @@ export default function Topbar() {
               ">
 
                 {
-                  userData?.role
+               
+
+userData?.role ||
+userData?.roles
+
+
+
                 }
 
               </p>
 
             </div>
+
+            {/* LOGOUT */}
+            <button
+
+              onClick={
+                handleLogout
+              }
+
+              className="
+                ml-2
+
+                bg-red-500
+                hover:bg-red-600
+
+                text-white
+
+                px-4
+                py-2
+
+                rounded-xl
+
+                text-sm
+                font-medium
+
+                transition
+              "
+            >
+
+              Logout
+
+            </button>
 
           </div>
 
@@ -522,20 +643,27 @@ export default function Topbar() {
 
         </Link>
 
-        {/* NOTIFICATIONS */}
+        {/* ALERTS */}
         <Link
           href="/notifications"
         >
 
-          <button className="
-            relative
+          <button
 
-            flex
-            flex-col
-            items-center
+            onClick={
+              clearNotifications
+            }
 
-            text-orange-600
-          ">
+            className="
+              relative
+
+              flex
+              flex-col
+              items-center
+
+              text-orange-600
+            "
+          >
 
             <span className="
               text-2xl
@@ -550,100 +678,71 @@ export default function Topbar() {
               Alerts
             </span>
 
-            {/* BADGE */}
-            <span className="
-              absolute
+            {notificationCount > 0 && (
 
-              top-0
-              right-0
+              <span className="
+                absolute
 
-              bg-red-500
-              text-white
+                top-0
+                right-0
 
-              text-[10px]
+                bg-red-500
+                text-white
 
-              min-w-5
-              h-5
+                text-[10px]
 
-              px-1
+                min-w-5
+                h-5
 
-              rounded-full
+                px-1
 
-              flex
-              items-center
-              justify-center
-            ">
+                rounded-full
 
-              {notificationCount}
+                flex
+                items-center
+                justify-center
+              ">
 
-            </span>
+                {notificationCount}
+
+              </span>
+
+            )}
 
           </button>
 
         </Link>
 
-        {/* PROFILE */}
-        <div className="
-          flex
-          flex-col
-          items-center
-        ">
+        {/* LOGOUT */}
+        <button
 
-          {employee?.photo_url ? (
+          onClick={
+            handleLogout
+          }
 
-            <img
-              src={
-                employee.photo_url
-              }
-              alt="Profile"
-              className="
-                w-10 h-10
+          className="
+            flex
+            flex-col
+            items-center
 
-                rounded-full
+            text-red-600
+          "
+        >
 
-                object-cover
-
-                border-2
-                border-blue-200
-              "
-            />
-
-          ) : (
-
-            <div className="
-              w-10 h-10
-
-              rounded-full
-
-              bg-blue-900
-              text-white
-
-              flex
-              items-center
-              justify-center
-
-              font-bold
-            ">
-
-              {
-                userData?.email
-                  ?.charAt(0)
-                  ?.toUpperCase()
-              }
-
-            </div>
-
-          )}
+          <span className="
+            text-2xl
+          ">
+            🚪
+          </span>
 
           <span className="
             text-xs
-            mt-1
-            text-gray-700
+            font-medium
           ">
-            Profile
+            Logout
           </span>
 
-        </div>
+        </button>
 
       </div>
 

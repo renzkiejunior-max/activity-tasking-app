@@ -1,9 +1,16 @@
 'use client'
 
-import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import {
+  useEffect,
+} from 'react'
 
-import { useAuth } from '../contexts/AuthContext'
+import {
+  useRouter,
+} from 'next/navigation'
+
+import {
+  useAuth,
+} from '../contexts/AuthContext'
 
 export default function ProtectedRoute({
 
@@ -17,12 +24,20 @@ export default function ProtectedRoute({
 
 }) {
 
-  const router = useRouter()
+  const router =
+    useRouter()
 
   const {
     userData,
     loading,
   } = useAuth()
+
+  // ACCESS CHECK
+  const hasAccess =
+
+    allowedRoles.includes(
+      userData?.role
+    )
 
   useEffect(() => {
 
@@ -31,37 +46,48 @@ export default function ProtectedRoute({
 
     // NOT LOGGED IN
     if (!userData) {
+
       router.push('/login')
+
       return
     }
 
     // ROLE NOT ALLOWED
-    if (
-      !allowedRoles.includes(
-        userData.role
+    if (!hasAccess) {
+
+      router.push(
+        '/unauthorized'
       )
-    ) {
-      router.push('/unauthorized')
+
     }
 
   }, [
+
     userData,
     loading,
     router,
-    allowedRoles,
+    hasAccess,
+
   ])
 
-  // LOADING SCREEN
+  // LOADING
   if (loading) {
+
     return (
+
       <div className="
-        flex items-center
+        flex
+        items-center
         justify-center
+
         min-h-screen
+
         text-xl
         font-semibold
       ">
+
         Loading...
+
       </div>
     )
   }
@@ -69,8 +95,9 @@ export default function ProtectedRoute({
   // BLOCK
   if (
     !userData ||
-    !allowedRoles.includes(userData.role)
+    !hasAccess
   ) {
+
     return null
   }
 

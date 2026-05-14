@@ -16,6 +16,23 @@ export default function Page() {
   const [checklists, setChecklists] =
     useState<any[]>([])
 
+  const [attendees, setAttendees] =
+    useState<any[]>([])
+
+    const [employees, setEmployees] =
+  useState<any[]>([])
+
+const [selectedEmployees,
+  setSelectedEmployees] =
+  useState<any>({})
+
+  const [showSelector,
+  setShowSelector] =
+  useState<any>({})
+
+  const [newAttendee, setNewAttendee] =
+    useState<any>({})
+
   // FORM
   const [title, setTitle] =
     useState('')
@@ -95,7 +112,58 @@ export default function Page() {
       setChecklists(
         data || []
       )
+    }
+
+  // FETCH ATTENDEES
+  const fetchAttendees =
+    async () => {
+
+      const { data } =
+        await supabase
+
+          .from(
+            'activity_attendees'
+          )
+
+          .select('*')
+
+          .order(
+            'created_at',
+            {
+              ascending: true,
+            }
+          )
+
+      setAttendees(
+        data || []
+      )
+    }
+
+// FETCH EMPLOYEES
+const fetchEmployees =
+  async () => {
+
+    const { data } =
+      await supabase
+
+        .from('employees')
+
+        .select(`
+          id,
+          name,
+          designation,
+          division
+        `)
+
+        .order('name', {
+          ascending: true,
+        })
+
+    setEmployees(
+      data || []
+    )
   }
+
 
   // SEARCH LOCATION
   const searchLocation =
@@ -368,8 +436,268 @@ export default function Page() {
       })
 
       fetchChecklists()
+    }
+
+  // ADD ATTENDEES
+const addAttendee =
+  async (
+    activityId: string
+  ) => {
+
+    const selected =
+
+      selectedEmployees[
+        activityId
+      ] || []
+
+    if (
+      selected.length === 0
+    ) {
+
+      return alert(
+        'Select employee/s'
+      )
+    }
+
+    // GET ACTIVITY
+    const {
+      data: activity,
+    } = await supabase
+
+      .from('activities')
+
+      .select('*')
+
+      .eq(
+        'id',
+        activityId
+      )
+
+      .single()
+
+    if (!activity) {
+
+      return alert(
+        'Activity not found'
+      )
+    }
+
+    // REMOVE OLD ATTENDEES
+    await supabase
+
+      .from(
+        'activity_attendees'
+      )
+
+      .delete()
+
+      .eq(
+        'activity_id',
+        activityId
+      )
+
+    // REMOVE OLD ASSIGNMENTS
+    await supabase
+
+      .from('assignments')
+
+      .delete()
+
+      .eq(
+        'activity_id',
+        activityId
+      )
+
+    // INSERT ATTENDEES
+    const attendeePayload =
+
+      selected.map(
+        (
+          emp: any
+        ) => ({
+
+          activity_id:
+            activityId,
+
+          employee_id:
+            emp.id,
+
+          attendee_name:
+            emp.name,
+
+          designation:
+            emp.designation,
+
+          division:
+            emp.division,
+
+          attendance_status:
+            'Pending',
+
+        })
+      )
+
+    const {
+      error:
+        attendeeError,
+    } = await supabase
+
+      .from(
+        'activity_attendees'
+      )
+
+      .insert(
+        attendeePayload
+      )
+
+    if (attendeeError) {
+
+      return alert(
+        attendeeError.message
+      )
+    }
+
+    // CREATE ASSIGNMENTS
+    const assignmentPayload =
+
+      selected.map(
+        (
+          emp: any
+        ) => ({
+
+          activity_id:
+            activityId,
+
+          employee_id:
+            emp.id,
+
+          task:
+`Attend activity:
+${activity.title}`,
+
+          status:
+            'Pending',
+
+          progress: 0,
+
+        })
+      )
+
+    const {
+      error:
+        assignmentError,
+    } = await supabase
+
+      .from(
+        'assignments'
+      )
+
+      .insert(
+        assignmentPayload
+      )
+
+    if (assignmentError) {
+
+      console.log(
+        assignmentError
+      )
+    }
+
+    // CREATE NOTIFICATIONS
+    for (
+      const emp of selected
+    ) {
+
+      // GET USER
+      const {
+        data: employeeData,
+      } = await supabase
+
+        .from('employees')
+
+        .select('user_id')
+
+        .eq(
+          'id',
+          emp.id
+        )
+
+        .single()
+
+      if (
+        employeeData?.user_id
+      ) {
+
+        await supabase
+
+          .from(
+            'notifications'
+          )
+
+          .insert({
+
+            user_id:
+              employeeData.user_id,
+
+            employee_id:
+              emp.id,
+
+            activity_id:
+              activityId,
+
+            title:
+              'Activity Assignment',
+
+            message:
+`You were selected as attendee for:
+
+${activity.title}
+
+Date:
+${activity.activity_date}
+
+Time:
+${activity.activity_time}`,
+
+            type:
+              'assignment',
+
+            is_read:
+              false,
+
+          })
+      }
+    }
+
+    // HIDE SELECTOR
+    setShowSelector({
+
+      ...showSelector,
+
+      [activityId]:
+        false,
+
+    })
+
+    // CLEAR
+    setSelectedEmployees({
+
+      ...selectedEmployees,
+
+      [activityId]: [],
+
+    })
+
+    // REFRESH
+    fetchAttendees()
+
+    alert(
+      'Attendees assigned successfully'
+    )
   }
 
+
+    
   // TOGGLE CHECKLIST
   const toggleChecklist =
     async (
@@ -398,7 +726,7 @@ export default function Page() {
       }
 
       fetchChecklists()
-  }
+    }
 
   // STATUS COLORS
   const getStatusColor = (
@@ -439,39 +767,8 @@ export default function Page() {
 
     fetchActivities()
     fetchChecklists()
-
-    const channel = supabase
-
-      .channel(
-        'activity-checklists-live'
-      )
-
-      .on(
-        'postgres_changes',
-
-        {
-          event: '*',
-          schema: 'public',
-          table:
-            'activity_checklists',
-        },
-
-        () => {
-
-          fetchChecklists()
-
-        }
-      )
-
-      .subscribe()
-
-    return () => {
-
-      supabase.removeChannel(
-        channel
-      )
-
-    }
+    fetchAttendees()
+    fetchEmployees()
 
   }, [])
 
@@ -483,333 +780,481 @@ export default function Page() {
       space-y-6
     ">
 
-      {/* HEADER */}
-      <div>
+      {/* HEADER CARD */}
+<div className="
+  bg-linear-to-r
+  from-orange-500
+  via-orange-400
+  to-amber-400
 
-        <h1 className="
-          text-4xl
-          font-bold
-          text-blue-900
-        ">
-          Activities
-        </h1>
+  rounded-3xl
 
-        <p className="
-          text-gray-600
-          mt-2
-        ">
-          Operational planning and activity management
-        </p>
+  shadow-2xl
 
-      </div>
+  p-8
 
-      {/* FORM */}
-      <div className="
+  flex
+  flex-col
+  lg:flex-row
+
+  lg:items-center
+  lg:justify-between
+
+  gap-6
+">
+
+  {/* LEFT */}
+  <div>
+
+    <div className="
+      inline-flex
+      items-center
+      gap-2
+
+      bg-white/20
+
+      text-white
+
+      px-4 py-2
+
+      rounded-full
+
+      text-sm
+      font-semibold
+
+      backdrop-blur-sm
+    ">
+
+      📅 Operations Management
+
+    </div>
+
+    <h1 className="
+      text-4xl
+      lg:text-5xl
+
+      font-black
+
+      text-white
+
+      mt-4
+    ">
+
+      Activities
+
+    </h1>
+
+    <p className="
+      text-orange-50
+
+      text-lg
+
+      mt-3
+
+      max-w-2xl
+    ">
+
+      Manage operational activities,
+      coordination meetings,
+      tasking schedules,
+      attendee assignments,
+      and preparedness workflows.
+
+    </p>
+
+  </div>
+
+  {/* RIGHT */}
+  <div>
+
+    <button
+
+      onClick={() =>
+
+        setEditingId(
+          editingId
+            ? null
+            : 'new'
+        )
+
+      }
+
+      className="
         bg-white
-        rounded-3xl
+        hover:bg-orange-100
+
+        text-orange-600
+
+        px-6 py-4
+
+        rounded-2xl
+
         shadow-xl
-        border
-        p-6
+
+        font-bold
+
+        text-lg
+
+        transition
+
+        flex
+        items-center
+        gap-3
+      "
+    >
+
+      <span className="
+        text-2xl
+        leading-none
       ">
 
-        <h2 className="
-          text-2xl
-          font-bold
-          text-blue-900
-          mb-6
-        ">
+        {
+          editingId
+            ? '×'
+            : '+'
+        }
 
-          {editingId
-            ? 'Edit Activity'
-            : 'Add Activity'}
+      </span>
 
-        </h2>
+      {
+        editingId
 
-        <div className="
-          grid
-          grid-cols-1
-          md:grid-cols-2
-          gap-4
-        ">
+          ? 'Close Activity Form'
 
-          <input
-            placeholder="Activity Title"
-            value={title}
-            onChange={(e) =>
-              setTitle(
-                e.target.value
-              )
-            }
-            className="
-              border
-              rounded-2xl
-              p-4
-            "
-          />
+          : 'Add Activity'
+      }
 
-          <input
-            placeholder="Description"
-            value={description}
-            onChange={(e) =>
-              setDescription(
-                e.target.value
-              )
-            }
-            className="
-              border
-              rounded-2xl
-              p-4
-            "
-          />
+    </button>
 
-          <input
-            placeholder="Focal Person"
-            value={focalPerson}
-            onChange={(e) =>
-              setFocalPerson(
-                e.target.value
-              )
-            }
-            className="
-              border
-              rounded-2xl
-              p-4
-            "
-          />
+  </div>
 
-          <input
-            placeholder="Program / Task Force"
-            value={programName}
-            onChange={(e) =>
-              setProgramName(
-                e.target.value
-              )
-            }
-            className="
-              border
-              rounded-2xl
-              p-4
-            "
-          />
+</div>
 
-          <input
-            type="date"
-            value={activityDate}
-            onChange={(e) =>
-              setActivityDate(
-                e.target.value
-              )
-            }
-            className="
-              border
-              rounded-2xl
-              p-4
-            "
-          />
+{/* FORM */}
+{editingId && (
 
-          <input
-            type="time"
-            value={activityTime}
-            onChange={(e) =>
-              setActivityTime(
-                e.target.value
-              )
-            }
-            className="
-              border
-              rounded-2xl
-              p-4
-            "
-          />
+  <div className="
+    bg-white
+    rounded-3xl
+    shadow-xl
+    border
+    p-6
+  ">
 
-          {/* LOCATION */}
+    <h2 className="
+      text-2xl
+      font-bold
+      text-blue-900
+      mb-6
+    ">
+
+      {
+        editingId !== 'new'
+          ? 'Edit Activity'
+          : 'Add Activity'
+      }
+
+    </h2>
+
+    <div className="
+      grid
+      grid-cols-1
+      md:grid-cols-2
+      gap-4
+    ">
+
+      <input
+        placeholder="Activity Title"
+        value={title}
+        onChange={(e) =>
+          setTitle(
+            e.target.value
+          )
+        }
+        className="
+          border
+          rounded-2xl
+          p-4
+        "
+      />
+
+      <input
+        placeholder="Description"
+        value={description}
+        onChange={(e) =>
+          setDescription(
+            e.target.value
+          )
+        }
+        className="
+          border
+          rounded-2xl
+          p-4
+        "
+      />
+
+      <input
+        placeholder="Focal Person"
+        value={focalPerson}
+        onChange={(e) =>
+          setFocalPerson(
+            e.target.value
+          )
+        }
+        className="
+          border
+          rounded-2xl
+          p-4
+        "
+      />
+
+      <input
+        placeholder="Program / Task Force"
+        value={programName}
+        onChange={(e) =>
+          setProgramName(
+            e.target.value
+          )
+        }
+        className="
+          border
+          rounded-2xl
+          p-4
+        "
+      />
+
+      <input
+        type="date"
+        value={activityDate}
+        onChange={(e) =>
+          setActivityDate(
+            e.target.value
+          )
+        }
+        className="
+          border
+          rounded-2xl
+          p-4
+        "
+      />
+
+      <input
+        type="time"
+        value={activityTime}
+        onChange={(e) =>
+          setActivityTime(
+            e.target.value
+          )
+        }
+        className="
+          border
+          rounded-2xl
+          p-4
+        "
+      />
+
+      {/* LOCATION */}
+      <div className="
+        relative
+        md:col-span-2
+      ">
+
+        <input
+
+          placeholder="Search Location"
+
+          value={locationName}
+
+          onChange={async (e) => {
+
+            const value =
+              e.target.value
+
+            setLocationName(
+              value
+            )
+
+            await searchLocation(
+              value
+            )
+
+          }}
+
+          className="
+            border
+            rounded-2xl
+            p-4
+            w-full
+          "
+        />
+
+        {/* SUGGESTIONS */}
+        {showSuggestions &&
+          locationSuggestions.length > 0 && (
+
           <div className="
-            relative
-            md:col-span-2
+            absolute
+            z-30
+            mt-2
+            w-full
+            bg-white
+            border
+            rounded-2xl
+            shadow-2xl
+            max-h-72
+            overflow-y-auto
           ">
 
-            <input
+            {locationSuggestions.map(
+              (
+                place: any,
+                index: number
+              ) => (
 
-              placeholder="Search Location"
+              <button
 
-              value={locationName}
+                key={index}
 
-              onChange={async (e) => {
+                type="button"
 
-                const value =
-                  e.target.value
+                onClick={() => {
 
-                setLocationName(
-                  value
-                )
+                  setLocationName(
+                    place.display_name
+                  )
 
-                await searchLocation(
-                  value
-                )
+                  setLatitude(
+                    place.lat
+                  )
 
-              }}
+                  setLongitude(
+                    place.lon
+                  )
 
-              className="
-                border
-                rounded-2xl
-                p-4
-                w-full
-              "
-            />
+                  setShowSuggestions(
+                    false
+                  )
+                }}
 
-            {/* SUGGESTIONS */}
-            {showSuggestions &&
-              locationSuggestions.length > 0 && (
+                className="
+                  w-full
+                  text-left
+                  p-4
+                  hover:bg-blue-50
+                  border-b
+                  text-sm
+                "
+              >
 
-              <div className="
-                absolute
-                z-30
-                mt-2
-                w-full
-                bg-white
-                border
-                rounded-2xl
-                shadow-2xl
-                max-h-72
-                overflow-y-auto
-              ">
+                {place.display_name}
 
-                {locationSuggestions.map(
-                  (
-                    place: any,
-                    index: number
-                  ) => (
+              </button>
 
-                  <button
-
-                    key={index}
-
-                    type="button"
-
-                    onClick={() => {
-
-                      setLocationName(
-                        place.display_name
-                      )
-
-                      setLatitude(
-                        place.lat
-                      )
-
-                      setLongitude(
-                        place.lon
-                      )
-
-                      setShowSuggestions(
-                        false
-                      )
-                    }}
-
-                    className="
-                      w-full
-                      text-left
-                      p-4
-                      hover:bg-blue-50
-                      border-b
-                      text-sm
-                    "
-                  >
-
-                    {place.display_name}
-
-                  </button>
-
-                ))}
-
-              </div>
-
-            )}
+            ))}
 
           </div>
 
-          <select
-            value={status}
-            onChange={(e) =>
-              setStatus(
-                e.target.value
-              )
-            }
-            className="
-              border
-              rounded-2xl
-              p-4
-            "
-          >
-
-            <option value="upcoming">
-              Upcoming
-            </option>
-
-            <option value="ongoing">
-              Ongoing
-            </option>
-
-            <option value="completed">
-              Completed
-            </option>
-
-            <option value="cancelled">
-              Cancelled
-            </option>
-
-          </select>
-
-        </div>
-
-        <div className="
-          flex
-          gap-4
-          mt-6
-        ">
-
-          <button
-
-            onClick={saveActivity}
-
-            className="
-              bg-orange-500
-              hover:bg-orange-600
-              text-white
-              px-6 py-4
-              rounded-2xl
-              font-semibold
-            "
-          >
-
-            {editingId
-              ? 'Update Activity'
-              : 'Add Activity'}
-
-          </button>
-
-          {editingId && (
-
-            <button
-
-              onClick={resetForm}
-
-              className="
-                bg-gray-300
-                hover:bg-gray-400
-                px-6 py-4
-                rounded-2xl
-              "
-            >
-
-              Cancel
-
-            </button>
-
-          )}
-
-        </div>
+        )}
 
       </div>
+
+      <select
+        value={status}
+        onChange={(e) =>
+          setStatus(
+            e.target.value
+          )
+        }
+        className="
+          border
+          rounded-2xl
+          p-4
+        "
+      >
+
+        <option value="upcoming">
+          Upcoming
+        </option>
+
+        <option value="ongoing">
+          Ongoing
+        </option>
+
+        <option value="completed">
+          Completed
+        </option>
+
+        <option value="cancelled">
+          Cancelled
+        </option>
+
+      </select>
+
+    </div>
+
+    <div className="
+      flex
+      gap-4
+      mt-6
+    ">
+
+      <button
+
+        onClick={saveActivity}
+
+        className="
+          bg-orange-500
+          hover:bg-orange-600
+
+          text-white
+
+          px-6 py-4
+
+          rounded-2xl
+
+          font-semibold
+        "
+      >
+
+        {
+          editingId !== 'new'
+
+            ? 'Update Activity'
+
+            : 'Add Activity'
+        }
+
+      </button>
+
+      <button
+
+        onClick={() => {
+
+          resetForm()
+
+          setEditingId(null)
+
+        }}
+
+        className="
+          bg-gray-300
+          hover:bg-gray-400
+
+          px-6 py-4
+
+          rounded-2xl
+        "
+      >
+
+        Cancel
+
+      </button>
+
+    </div>
+
+  </div>
+
+)}
 
       {/* LIST */}
       <div className="
@@ -861,14 +1306,27 @@ export default function Page() {
               </div>
 
               <span className={`
-                px-4 py-2
-                rounded-full
-                text-sm
-                font-semibold
-                ${getStatusColor(
-                  activity.status
-                )}
-              `}>
+  inline-flex
+  items-center
+  justify-center
+
+  min-w-30
+  h-12
+
+  px-6
+
+  rounded-full
+
+  text-sm
+  font-bold
+  uppercase
+
+  whitespace-nowrap
+
+  ${getStatusColor(
+    activity.status
+  )}
+`}>
 
                 {activity.status}
 
@@ -909,6 +1367,347 @@ export default function Page() {
                   {activity.program_name || 'N/A'}
                 </span>
               </div>
+
+            </div>
+
+            {/* ATTENDEES */}
+            <div className="
+              mt-6
+            ">
+
+              <h3 className="
+                text-lg
+                font-bold
+                text-blue-900
+                mb-4
+              ">
+
+                Attendees
+
+              </h3>
+
+              <div className="
+                space-y-3
+              ">
+
+                {attendees
+
+                  .filter(
+                    (a: any) =>
+
+                      a.activity_id ===
+                      activity.id
+                  )
+
+                  .map(
+                    (
+                      attendee: any
+                    ) => (
+
+                    <div
+                      key={attendee.id}
+                      className="
+                        bg-purple-50
+                        border
+                        border-purple-200
+                        rounded-2xl
+                        p-4
+                      "
+                    >
+
+                      <p className="
+                        font-bold
+                        text-blue-900
+                      ">
+
+                        {
+                          attendee.attendee_name
+                        }
+
+                      </p>
+
+                      <p className="
+                        text-sm
+                        text-gray-600
+                      ">
+
+                        {attendee.designation}
+
+                      </p>
+
+                      <p className="
+                        text-sm
+                        text-gray-500
+                      ">
+
+                        {attendee.division}
+
+                      </p>
+
+                    </div>
+
+                  ))}
+
+              </div>
+
+ {/* ATTENDEE ACTIONS */}
+<div className="
+  mt-5
+">
+
+  {/* SHOW BUTTON */}
+  {!showSelector[
+    activity.id
+  ] && (
+
+    <button
+
+      type="button"
+
+      onClick={() =>
+
+        setShowSelector({
+
+          ...showSelector,
+
+          [activity.id]:
+            true,
+
+        })
+      }
+
+      className="
+        bg-purple-600
+        hover:bg-purple-700
+
+        text-white
+
+        px-5 py-3
+
+        rounded-2xl
+
+        font-semibold
+      "
+    >
+
+      Manage Attendees
+
+    </button>
+
+  )}
+
+  {/* SELECTOR */}
+  {showSelector[
+    activity.id
+  ] && (
+
+    <div className="
+      mt-5
+      space-y-4
+    ">
+
+      {/* CHECKLIST */}
+      <div className="
+        grid
+        grid-cols-1
+        md:grid-cols-2
+        gap-3
+
+        max-h-72
+        overflow-y-auto
+
+        border
+        rounded-2xl
+
+        p-4
+      ">
+
+        {employees.map(
+          (
+            emp: any
+          ) => {
+
+            const selected =
+
+              selectedEmployees[
+                activity.id
+              ] || []
+
+            const exists =
+
+              selected.some(
+                (
+                  s: any
+                ) =>
+
+                  s.id === emp.id
+              )
+
+            return (
+
+              <div
+                key={emp.id}
+
+                onClick={() => {
+
+                  let updated = []
+
+                  if (exists) {
+
+                    updated =
+
+                      selected.filter(
+                        (
+                          s: any
+                        ) =>
+
+                          s.id !== emp.id
+                      )
+
+                  } else {
+
+                    updated = [
+                      ...selected,
+                      emp,
+                    ]
+                  }
+
+                  setSelectedEmployees({
+
+                    ...selectedEmployees,
+
+                    [activity.id]:
+                      updated,
+
+                  })
+                }}
+
+                className={`
+                  flex
+                  items-center
+                  gap-3
+
+                  border
+                  rounded-xl
+
+                  px-4 py-3
+
+                  cursor-pointer
+                  transition
+
+                  ${
+                    exists
+
+                      ? `
+                        bg-blue-600
+                        text-white
+                        border-blue-600
+                      `
+
+                      : `
+                        bg-white
+                        hover:bg-gray-50
+                      `
+                  }
+                `}
+              >
+
+                <input
+                  type="checkbox"
+
+                  checked={exists}
+
+                  readOnly
+                />
+
+                <span className="
+                  font-medium
+                ">
+
+                  {emp.name}
+
+                </span>
+
+              </div>
+
+            )
+          }
+        )}
+
+      </div>
+
+      {/* BUTTONS */}
+      <div className="
+        flex
+        flex-wrap
+        gap-3
+      ">
+
+        <button
+
+          type="button"
+
+          onClick={() =>
+            addAttendee(
+              activity.id
+            )
+          }
+
+          className="
+            bg-green-600
+            hover:bg-green-700
+
+            text-white
+
+            px-5 py-3
+
+            rounded-2xl
+
+            font-semibold
+          "
+        >
+
+          Add Selected Employees
+
+        </button>
+
+        <button
+
+          type="button"
+
+          onClick={() =>
+
+            setShowSelector({
+
+              ...showSelector,
+
+              [activity.id]:
+                false,
+
+            })
+          }
+
+          className="
+            bg-gray-200
+            hover:bg-gray-300
+
+            px-5 py-3
+
+            rounded-2xl
+          "
+        >
+
+          Cancel
+
+        </button>
+
+      </div>
+
+    </div>
+
+  )}
+
+</div>
 
             </div>
 

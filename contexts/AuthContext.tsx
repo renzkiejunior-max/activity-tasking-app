@@ -42,6 +42,7 @@ export function AuthProvider({
       if (!user) {
 
         setUserData(null)
+
         setLoading(false)
 
         return
@@ -50,6 +51,7 @@ export function AuthProvider({
       // GET USER TABLE
       const {
         data,
+        error,
       } = await supabase
 
         .from('users')
@@ -63,7 +65,42 @@ export function AuthProvider({
 
         .single()
 
-      setUserData(data)
+      if (error || !data) {
+
+        console.error(error)
+
+        setLoading(false)
+
+        return
+      }
+
+
+// SAFE ROLE HANDLING
+const roles =
+
+  data.roles?.length
+
+    ? data.roles
+
+    : data.role
+
+      ? [data.role]
+
+      : ['staff']
+
+
+      // FINAL USER DATA
+
+setUserData({
+
+  ...data,
+
+  role:
+    data.roles,
+
+})
+
+
 
       setLoading(false)
     }
@@ -72,7 +109,7 @@ export function AuthProvider({
 
     loadUser()
 
-    // LISTENER
+    // AUTH LISTENER
     const {
       data: listener,
     } =
@@ -86,7 +123,9 @@ export function AuthProvider({
 
     return () => {
 
-      listener.subscription.unsubscribe()
+      listener
+        .subscription
+        .unsubscribe()
 
     }
 
@@ -99,7 +138,15 @@ export function AuthProvider({
       value={{
 
         userData,
+
         loading,
+
+        hasRole: (
+          role: string
+        ) =>
+
+          userData?.roles
+            ?.includes(role),
 
       }}
     >

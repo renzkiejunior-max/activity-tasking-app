@@ -13,41 +13,133 @@ export default function Page() {
     useState(false)
 
   // LOGIN
-  const handleLogin = async () => {
+const handleLogin = async () => {
 
-    if (!email || !password) {
-      return alert(
-        'Enter email and password'
-      )
-    }
+  if (!email || !password) {
 
-    setLoading(true)
+    return alert(
+      'Enter email and password'
+    )
+  }
 
-    const { error } =
-      await supabase.auth.signInWithPassword({
+  setLoading(true)
 
-        email,
-        password,
+  // LOGIN
+  const {
+    error,
+    data,
+  } = await supabase.auth
 
-      })
+    .signInWithPassword({
+
+      email,
+      password,
+
+    })
+
+  if (error) {
 
     setLoading(false)
 
-    if (error) {
-      alert(error.message)
-      return
-    }
+    alert(error.message)
 
-    // WAIT SESSION SAVE
-    setTimeout(() => {
-
-  window.location.href =
-    '/dashboard'
-
-}, 1000)
+    return
   }
 
-  return (
+  // GET USER
+  const userId =
+    data.user.id
+
+  // GET USER ROLE
+  const {
+    data: userData,
+    error: roleError,
+  } = await supabase
+
+    .from('users')
+
+    .select('*')
+
+    .eq(
+      'id',
+      userId
+    )
+
+    .single()
+
+  setLoading(false)
+
+  if (
+    roleError ||
+    !userData
+  ) {
+
+    return alert(
+      'User role not found'
+    )
+  }
+
+  // SAFE ROLES
+  const roles =
+
+    Array.isArray(
+      userData.roles
+    )
+
+      ? userData.roles
+
+      : userData.roles
+
+        ? [userData.roles]
+
+        : userData.role
+
+          ? [userData.role]
+
+          : []
+
+  /// REDIRECT
+if (
+  roles.includes('admin')
+) {
+
+  window.location.href =
+    '/admin-dashboard'
+
+  return
+}
+
+if (
+  roles.includes(
+    'division_chief'
+  )
+) {
+
+  window.location.href =
+    '/division-chief-dashboard'
+
+  return
+}
+
+if (
+  roles.includes('staff')
+) {
+
+  window.location.href =
+    '/staff-dashboard'
+
+  return
+}
+
+// DEFAULT
+window.location.href =
+  '/dashboard'
+
+}
+
+return (
+
+
     <div className="
       min-h-screen
       flex items-center justify-center

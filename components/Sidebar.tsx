@@ -1,3 +1,4 @@
+
 'use client'
 
 import { useState }
@@ -12,14 +13,25 @@ import {
 
 import { useAuth }
 from '@/contexts/AuthContext'
+import { icon } from 'leaflet'
 
 const roleLinks: any = {
+
+  // ======================
+  // ADMIN
+  // ======================
 
   admin: [
 
     {
       name: 'Dashboard',
-      href: '/dashboard',
+      href: '/admin-dashboard',
+    },
+
+    {
+      name: 'My Task',
+      href: '/my-task',
+      icon: 'briefcase',
     },
 
     {
@@ -74,11 +86,21 @@ const roleLinks: any = {
 
   ],
 
+  // ======================
+  // OFFICE CHIEF
+  // ======================
+
   office_chief: [
 
     {
       name: 'Dashboard',
-      href: '/dashboard',
+      href: '/admin-dashboard',
+    },
+
+        {
+      name: 'My Task',
+      href: '/my-task',
+      icon: 'briefcase',
     },
 
     {
@@ -118,11 +140,21 @@ const roleLinks: any = {
 
   ],
 
-  chief: [
+  // ======================
+  // DIVISION CHIEF
+  // ======================
+
+  division_chief: [
 
     {
       name: 'Division Dashboard',
-      href: '/division-chief',
+      href: '/division-chief-dashboard',
+    },
+
+    {
+      name: 'My Task',
+      href: '/my-task',
+      icon: 'briefcase',
     },
 
     {
@@ -157,11 +189,15 @@ const roleLinks: any = {
 
   ],
 
+  // ======================
+  // STAFF
+  // ======================
+
   staff: [
 
     {
-      name: 'My Tasks',
-      href: '/staff',
+      name: 'My Dashboard',
+      href: '/staff-dashboard',
     },
 
     {
@@ -186,10 +222,59 @@ export default function Sidebar() {
   const { userData } =
     useAuth()
 
-  const links =
-    roleLinks[
-      userData?.role
-    ] || []
+ 
+
+// SAFE ROLES
+const userRoles =
+
+  Array.isArray(
+    userData?.roles
+  )
+
+    ? userData.roles
+
+    : userData?.roles
+
+      ? [userData.roles]
+
+      : userData?.role
+
+        ? [userData.role]
+
+        : []
+
+// MERGE LINKS
+const links =
+
+  userRoles.flatMap(
+    (
+      role: string
+    ) =>
+
+      roleLinks[role] || []
+  )
+
+// REMOVE DUPLICATES
+const uniqueLinks =
+
+  Array.from(
+
+    new Map(
+
+      links.map(
+        (
+          item: any
+        ) => [
+
+          item.href,
+          item,
+        ]
+      )
+
+    ).values()
+
+  )
+
 
   const [open, setOpen] =
     useState(false)
@@ -211,7 +296,8 @@ export default function Sidebar() {
 
         bg-blue-900
 
-        px-4 py-3
+        px-4
+        py-3
 
         flex
         items-center
@@ -232,9 +318,8 @@ export default function Sidebar() {
             src="/PDRRMO.png"
             alt="PDRRMO"
             className="
-              w-16 h-16
-
-
+              w-16
+              h-16
             "
           />
 
@@ -272,7 +357,8 @@ export default function Sidebar() {
             bg-blue-800
             hover:bg-blue-700
 
-            px-3 py-2
+            px-3
+            py-2
 
             rounded-xl
 
@@ -345,7 +431,8 @@ export default function Sidebar() {
 
         {/* DESKTOP HEADER */}
         <div className="
-          hidden md:flex
+          hidden
+          md:flex
 
           items-center
           gap-4
@@ -361,9 +448,8 @@ export default function Sidebar() {
             src="/PDRRMO.png"
             alt="PDRRMO"
             className="
-              w-24 h-24
-
-
+              w-24
+              h-24
             "
           />
 
@@ -397,8 +483,6 @@ export default function Sidebar() {
           md:hidden
         " />
 
-        
-
         {/* NAVIGATION */}
         <nav className="
           flex-1
@@ -410,61 +494,79 @@ export default function Sidebar() {
           space-y-3
         ">
 
-          {links.map(
+          {uniqueLinks.map(
             (link: any) => {
 
-            const active =
-              pathname ===
-              link.href
+              const active =
+                pathname ===
+                link.href
 
-            return (
+              return (
 
-              <Link
+                <Link
 
-                key={link.href}
+                  key={link.href}
 
-                href={link.href}
+                  href={link.href}
 
-                onClick={() =>
-                  setOpen(false)
-                }
-
-                className={`
-
-                  block
-
-                  px-5 py-4
-
-                  rounded-2xl
-
-                  transition-all
-                  duration-200
-
-                  font-medium
-
-                  ${
-                    active
-
-                      ? `
-                        bg-orange-500
-                        text-white
-                        shadow-lg
-                      `
-
-                      : `
-                        bg-blue-800
-                        hover:bg-blue-700
-                      `
+                  onClick={() =>
+                    setOpen(false)
                   }
-                `}
-              >
 
-                {link.name}
+                  className={`
 
-              </Link>
+                    block
 
-            )
-          })}
+                    px-5
+                    py-4
+
+                    rounded-2xl
+
+                    transition-all
+                    duration-200
+
+                    font-medium
+
+                    ${
+  link.name === 'My Task'
+
+    ? active
+
+      ? `
+        bg-purple-600
+        text-white
+        shadow-lg
+      `
+
+      : `
+        bg-purple-500
+        hover:bg-purple-600
+        text-white
+      `
+
+    : active
+
+      ? `
+        bg-orange-500
+        text-white
+        shadow-lg
+      `
+
+      : `
+        bg-blue-800
+        hover:bg-blue-700
+      `
+}
+                  `}
+                >
+
+                  {link.name}
+
+                </Link>
+
+              )
+            }
+          )}
 
         </nav>
 

@@ -50,6 +50,11 @@ export default function Page() {
   const [remarks, setRemarks] =
     useState('')
 
+    // SHOW FORM
+const [showForm,
+  setShowForm] =
+  useState(false)
+
   // FETCH EMPLOYEES
   const fetchEmployees = async () => {
 
@@ -135,86 +140,148 @@ export default function Page() {
     setComments(data || [])
   }
 
-  // CREATE ASSIGNMENT
-  const assignEmployee = async () => {
 
-    if (
-      !employeeId ||
-      !activityId ||
-      !task
-    ) {
 
-      return alert(
-        'Complete all required fields'
-      )
-    }
+// CREATE ASSIGNMENT
+const assignEmployee = async () => {
 
-    // INSERT
-    const { error } =
-      await supabase
-        .from('assignments')
-        .insert([
-          {
-            employee_id:
-              employeeId,
+  if (
+    !employeeId ||
+    !activityId ||
+    !task
+  ) {
 
-            activity_id:
-              activityId,
+    return alert(
+      'Complete all required fields'
+    )
+  }
 
-            task,
+  // INSERT ASSIGNMENT
+  const {
+    data: assignmentData,
+    error,
+  } = await supabase
 
-            deadline,
+    .from('assignments')
 
-            progress,
+    .insert([
+      {
+        employee_id:
+          employeeId,
 
-            priority,
+        activity_id:
+          activityId,
 
-            remarks,
+        task,
 
-            status:
-              progress === 100
-                ? 'completed'
-                : 'pending',
+        deadline,
 
-            completed_at:
-              progress === 100
-                ? new Date()
-                    .toISOString()
-                : null,
-          },
-        ])
+        progress,
 
-// ERROR       
-    if (error) {
-      return alert(error.message)
-    }
+        priority,
 
-    // RESET
-    setEmployeeId('')
-    setActivityId('')
-    setTask('')
-    setDeadline('')
-    setProgress(0)
-    setPriority('medium')
-    setRemarks('')
+        remarks,
 
-    fetchAssignments()
+        status:
+          progress === 100
+            ? 'completed'
+            : 'pending',
 
-// EMPLOYEE INFO
-const employee =
-  employees.find(
-    (emp: any) =>
-      emp.id === employeeId
-  )
+        completed_at:
+          progress === 100
+            ? new Date()
+                .toISOString()
+            : null,
+      },
+    ])
 
-// ACTIVITY INFO
-const activity =
-  activities.find(
-    (act: any) =>
-      act.id === activityId
-  )
+    .select()
 
-// SEND EMAIL
+    .single()
+
+  // ERROR
+  if (error) {
+
+    return alert(
+      error.message
+    )
+  }
+
+  // GET EMPLOYEE INFO
+  const employee =
+    employees.find(
+      (emp: any) =>
+        emp.id === employeeId
+    )
+
+  // GET ACTIVITY INFO
+  const activity =
+    activities.find(
+      (act: any) =>
+        act.id === activityId
+    )
+
+  // GET USER ID
+  const {
+    data: employeeUser,
+  } = await supabase
+
+    .from('employees')
+
+    .select('user_id')
+
+    .eq(
+      'id',
+      employeeId
+    )
+
+    .single()
+
+  // CREATE NOTIFICATION
+  if (
+    employeeUser?.user_id
+  ) {
+
+    await supabase
+
+      .from('notifications')
+
+      .insert({
+
+        user_id:
+          employeeUser.user_id,
+
+        employee_id:
+          employeeId,
+
+        title:
+          'New Assignment',
+
+        message:
+          `${task} assigned for ${activity?.title || 'Activity'}`,
+
+        type:
+          'assignment',
+
+        is_read:
+          false,
+
+      })
+  }
+
+  // RESET FORM
+  setEmployeeId('')
+  setActivityId('')
+  setTask('')
+  setDeadline('')
+  setProgress(0)
+  setPriority('medium')
+  setRemarks('')
+
+  // REFRESH
+  fetchAssignments()
+
+  // SEND EMAIL
   if (employee?.email) {
 
     try {
@@ -338,83 +405,10 @@ const activity =
 
     }
   }
-  }
-  // UPDATE STATUS
-  const updateStatus = async (
-    id: string,
-    status: string
-  ) => {
+}
 
-    const payload: any = {
-      status,
-    }
 
-    if (
-      status === 'completed'
-    ) {
-
-      payload.progress = 100
-
-      payload.completed_at =
-        new Date()
-          .toISOString()
-    }
-
-    const { error } =
-      await supabase
-        .from('assignments')
-        .update(payload)
-        .eq('id', id)
-
-    if (error) {
-      return alert(error.message)
-    }
-
-    fetchAssignments()
-  }
-
-    // UPDATE PROGRESS
-  const updateProgress =
-    async (
-      id: string,
-      progress: number
-    ) => {
-
-      const payload: any = {
-        progress,
-      }
-
-      if (progress === 100) {
-
-        payload.status =
-          'completed'
-
-        payload.completed_at =
-          new Date()
-            .toISOString()
-
-      } else if (
-        progress > 0
-      ) {
-
-        payload.status =
-          'ongoing'
-      }
-
-      const { error } =
-        await supabase
-          .from('assignments')
-          .update(payload)
-          .eq('id', id)
-
-      if (error) {
-        return alert(error.message)
-      }
-
-      fetchAssignments()
-  }
-
-  // ADD COMMENT
+    // ADD COMMENT
   const addComment =
     async (
       assignmentId: string,
@@ -642,284 +636,599 @@ const activity =
       space-y-6
     ">
 
-      {/* HEADER */}
-      <div>
+      {/* HEADER CARD */}
+<div className="
+  bg-linear-to-r
+  from-green-800
+  via-green-600
+  to-green-500
 
-        <h1 className="
-          text-4xl
-          font-bold
-          text-blue-900
-        ">
-          Assignments
-        </h1>
+  rounded-3xl
+  shadow-2xl
 
-        <p className="
-          text-gray-600
-        ">
-          Personnel task workflow
-          management
-        </p>
+  p-8
 
-      </div>
+  flex
+  flex-col
+  lg:flex-row
 
-      {/* FORM */}
-      <div className="
+  lg:items-center
+  lg:justify-between
+
+  gap-6
+">
+
+  {/* LEFT */}
+  <div>
+
+    <div className="
+      inline-flex
+      items-center
+      gap-2
+
+      bg-white/20
+
+      text-white
+
+      px-4 py-2
+
+      rounded-full
+
+      text-sm
+      font-semibold
+    ">
+
+      📌 Operational Tasking
+
+    </div>
+
+    <h1 className="
+      text-4xl
+      lg:text-5xl
+
+      font-black
+
+      text-white
+
+      mt-4
+    ">
+
+      Assignments
+
+    </h1>
+
+    <p className="
+      text-orange-50
+      text-lg
+      mt-3
+      max-w-2xl
+    ">
+
+      Manage personnel assignments,
+      operational tasking,
+      workflow monitoring,
+      task progress,
+      and coordination activities.
+
+    </p>
+
+  </div>
+
+  {/* RIGHT */}
+  <div>
+
+    <button
+
+      onClick={() =>
+        setShowForm(
+          !showForm
+        )
+      }
+
+      className="
         bg-white
-        rounded-3xl
+        hover:bg-orange-100
+
+        text-orange-600
+
+        px-6 py-4
+
+        rounded-2xl
+
         shadow-xl
-        p-6
-        border
+
+        font-bold
+        text-lg
+
+        flex
+        items-center
+        gap-3
+      "
+    >
+
+      <span className="
+        text-2xl
       ">
 
-        <h2 className="
-          text-2xl
-          font-bold
-          text-blue-900
-          mb-6
-        ">
-          Assign Personnel Task
-        </h2>
+        {showForm ? '×' : '+'}
 
-        <div className="
-          grid
-          grid-cols-1
-          md:grid-cols-2
-          gap-4
-        ">
+      </span>
 
-          {/* EMPLOYEE */}
-          <select
-            value={employeeId}
-            onChange={(e) =>
-              setEmployeeId(
-                e.target.value
-              )
-            }
-            className="
-              border
-              rounded-2xl
-              p-4
-            "
-          >
+      {
+        showForm
 
-            <option value="">
-              Select Employee
-            </option>
+          ? 'Close Assignment Form'
 
-            {employees.map(
-              (emp: any) => (
+          : 'Assign Task'
+      }
 
-              <option
-                key={emp.id}
-                value={emp.id}
-              >
-                {emp.name}
-              </option>
+    </button>
 
-            ))}
+  </div>
 
-          </select>
+</div>
 
-          {/* ACTIVITY */}
-          <select
-            value={activityId}
-            onChange={(e) =>
-              setActivityId(
-                e.target.value
-              )
-            }
-            className="
-              border
-              rounded-2xl
-              p-4
-            "
-          >
+{/* KPI CARDS */}
+<div className="
+  grid
+  grid-cols-1
+  md:grid-cols-2
+  xl:grid-cols-5
+  gap-4
+">
 
-            <option value="">
-              Select Activity
-            </option>
+  {/* TOTAL */}
+  <div className="
+    bg-white
+    rounded-3xl
+    shadow-lg
+    border
+    p-5
+  ">
 
-            {activities.map(
-              (act: any) => (
+    <p className="
+      text-gray-500
+      text-sm
+    ">
+      Total Tasks
+    </p>
 
-              <option
-                key={act.id}
-                value={act.id}
-              >
-                {act.title}
-              </option>
+    <h2 className="
+      text-4xl
+      font-black
+      text-blue-900
+      mt-2
+    ">
+      {assignments.length}
+    </h2>
 
-            ))}
+  </div>
 
-          </select>
+  {/* PENDING */}
+  <div className="
+    bg-white
+    rounded-3xl
+    shadow-lg
+    border
+    p-5
+  ">
 
-          {/* TASK */}
-          <input
-            type="text"
-            placeholder="Assigned Task"
-            value={task}
-            onChange={(e) =>
-              setTask(
-                e.target.value
-              )
-            }
-            className="
-              border
-              rounded-2xl
-              p-4
-            "
-          />
+    <p className="
+      text-gray-500
+      text-sm
+    ">
+      Pending
+    </p>
 
-          {/* DEADLINE */}
-          <input
-            type="date"
-            value={deadline}
-            onChange={(e) =>
-              setDeadline(
-                e.target.value
-              )
-            }
-            className="
-              border
-              rounded-2xl
-              p-4
-            "
-          />
+    <h2 className="
+      text-4xl
+      font-black
+      text-orange-500
+      mt-2
+    ">
 
-          {/* PROGRESS */}
-          <div>
+      {
+        assignments.filter(
+          (a: any) =>
+            a.status ===
+            'pending'
+        ).length
+      }
 
-            <label className="
-              block
-              mb-2
-              font-semibold
-            ">
-              Progress (%)
-            </label>
+    </h2>
 
-            <input
-              type="number"
-              min={0}
-              max={100}
-              value={progress}
-              onChange={(e) =>
-                setProgress(
-                  Number(
-                    e.target.value
-                  )
-                )
-              }
-              className="
-                border
-                rounded-2xl
-                p-4
-                w-full
-              "
-            />
+  </div>
 
-          </div>
+  {/* ONGOING */}
+  <div className="
+    bg-white
+    rounded-3xl
+    shadow-lg
+    border
+    p-5
+  ">
 
-          {/* PRIORITY */}
-          <div>
+    <p className="
+      text-gray-500
+      text-sm
+    ">
+      Ongoing
+    </p>
 
-            <label className="
-              block
-              mb-2
-              font-semibold
-            ">
-              Priority
-            </label>
+    <h2 className="
+      text-4xl
+      font-black
+      text-blue-600
+      mt-2
+    ">
 
-            <select
-              value={priority}
-              onChange={(e) =>
-                setPriority(
-                  e.target.value
-                )
-              }
-              className="
-                border
-                rounded-2xl
-                p-4
-                w-full
-              "
-            >
+      {
+        assignments.filter(
+          (a: any) =>
+            a.status ===
+            'ongoing'
+        ).length
+      }
 
-              <option value="low">
-                Low
-              </option>
+    </h2>
 
-              <option value="medium">
-                Medium
-              </option>
+  </div>
 
-              <option value="high">
-                High
-              </option>
+  {/* COMPLETED */}
+  <div className="
+    bg-white
+    rounded-3xl
+    shadow-lg
+    border
+    p-5
+  ">
 
-              <option value="urgent">
-                Urgent
-              </option>
+    <p className="
+      text-gray-500
+      text-sm
+    ">
+      Completed
+    </p>
 
-            </select>
+    <h2 className="
+      text-4xl
+      font-black
+      text-green-600
+      mt-2
+    ">
 
-          </div>
+      {
+        assignments.filter(
+          (a: any) =>
+            a.status ===
+            'completed'
+        ).length
+      }
 
-          {/* REMARKS */}
-          <div className="
-            md:col-span-2
-          ">
+    </h2>
 
-            <label className="
-              block
-              mb-2
-              font-semibold
-            ">
-              Remarks
-            </label>
+  </div>
 
-            <textarea
-              value={remarks}
-              onChange={(e) =>
-                setRemarks(
-                  e.target.value
-                )
-              }
-              rows={4}
-              className="
-                border
-                rounded-2xl
-                p-4
-                w-full
-              "
-            />
+  {/* URGENT */}
+  <div className="
+    bg-white
+    rounded-3xl
+    shadow-lg
+    border
+    p-5
+  ">
 
-          </div>
+    <p className="
+      text-gray-500
+      text-sm
+    ">
+      Urgent
+    </p>
 
-        </div>
+    <h2 className="
+      text-4xl
+      font-black
+      text-red-600
+      mt-2
+    ">
 
-        <button
+      {
+        assignments.filter(
+          (a: any) =>
+            a.priority ===
+            'urgent'
+        ).length
+      }
 
-          onClick={assignEmployee}
+    </h2>
 
-          className="
-            mt-6
-            bg-orange-500
-            hover:bg-orange-600
-            text-white
-            px-6 py-4
-            rounded-2xl
-            shadow-lg
-            font-semibold
-          "
-        >
+  </div>
 
-          Assign Task
+</div>
 
-        </button>
+{/* FORM */}
+{showForm && (
 
-      </div>
+<div className="
+  bg-white
+  rounded-3xl
+  shadow-xl
+  p-6
+  border
+">
 
+  <h2 className="
+    text-2xl
+    font-bold
+    text-blue-900
+    mb-6
+  ">
+
+    Assign Personnel Task
+
+  </h2>
+
+  <div className="
+    grid
+    grid-cols-1
+    md:grid-cols-2
+    gap-4
+  ">
+            
+  {/* EMPLOYEE */}
+  <select
+    value={employeeId}
+    onChange={(e) =>
+      setEmployeeId(
+        e.target.value
+      )
+    }
+    className="
+      border
+      rounded-2xl
+      p-4
+    "
+  >
+
+    <option value="">
+      Select Employee
+    </option>
+
+    {employees.map(
+      (emp: any) => (
+
+      <option
+        key={emp.id}
+        value={emp.id}
+      >
+
+        {emp.name}
+
+      </option>
+
+    ))}
+
+  </select>
+
+  {/* ACTIVITY */}
+  <select
+    value={activityId}
+    onChange={(e) =>
+      setActivityId(
+        e.target.value
+      )
+    }
+    className="
+      border
+      rounded-2xl
+      p-4
+    "
+  >
+
+    <option value="">
+      Select Activity
+    </option>
+
+    {activities.map(
+      (activity: any) => (
+
+      <option
+        key={activity.id}
+        value={activity.id}
+      >
+
+        {activity.title}
+
+      </option>
+
+    ))}
+
+  </select>
+
+  {/* TASK */}
+  <input
+    placeholder="Task"
+    value={task}
+    onChange={(e) =>
+      setTask(
+        e.target.value
+      )
+    }
+    className="
+      border
+      rounded-2xl
+      p-4
+    "
+  />
+
+  {/* DEADLINE */}
+  <input
+    type="date"
+    value={deadline}
+    onChange={(e) =>
+      setDeadline(
+        e.target.value
+      )
+    }
+    className="
+      border
+      rounded-2xl
+      p-4
+    "
+  />
+
+  {/* PRIORITY */}
+  <select
+    value={priority}
+    onChange={(e) =>
+      setPriority(
+        e.target.value
+      )
+    }
+    className="
+      border
+      rounded-2xl
+      p-4
+    "
+  >
+
+    <option value="low">
+      Low
+    </option>
+
+    <option value="medium">
+      Medium
+    </option>
+
+    <option value="high">
+      High
+    </option>
+
+    <option value="urgent">
+      Urgent
+    </option>
+
+  </select>
+
+  {/* PROGRESS */}
+  <div>
+
+    <label className="
+      text-sm
+      text-gray-500
+      block
+      mb-2
+    ">
+
+      Initial Progress
+
+    </label>
+
+    <input
+      type="range"
+      min={0}
+      max={100}
+      step={5}
+      value={progress}
+      onChange={(e) =>
+        setProgress(
+          Number(
+            e.target.value
+          )
+        )
+      }
+      className="
+        w-full
+      "
+    />
+
+    <p className="
+      text-sm
+      mt-2
+      font-semibold
+      text-blue-700
+    ">
+
+      {progress}%
+
+    </p>
+
+  </div>
+
+  {/* REMARKS */}
+  <textarea
+    placeholder="Remarks"
+    value={remarks}
+    onChange={(e) =>
+      setRemarks(
+        e.target.value
+      )
+    }
+    className="
+      border
+      rounded-2xl
+      p-4
+      md:col-span-2
+    "
+  />
+
+</div>
+
+            <div className="
+      flex
+      gap-4
+      mt-6
+    ">
+
+      <button
+
+        onClick={assignEmployee}
+
+        className="
+          bg-orange-500
+          hover:bg-orange-600
+
+          text-white
+
+          px-6 py-4
+
+          rounded-2xl
+
+          font-semibold
+        "
+      >
+
+        Assign Task
+
+      </button>
+
+      <button
+
+        onClick={() => {
+
+          setShowForm(false)
+
+        }}
+
+        className="
+          bg-gray-300
+          hover:bg-gray-400
+
+          px-6 py-4
+
+          rounded-2xl
+        "
+      >
+
+        Cancel
+
+      </button>
+
+    </div>
+
+  </div>
+
+)}
       {/* ASSIGNMENTS */}
       <div className="
         space-y-6
@@ -1104,6 +1413,8 @@ const activity =
 
                 </div>
 
+            
+
 {/* RIGHT */}
 <div className="
   flex
@@ -1140,58 +1451,37 @@ const activity =
   </span>
 
   {/* STATUS */}
-  <select
-    value={
-      assign.status ||
-      'pending'
-    }
+<div className={`
+  h-10
 
-    onChange={(e) =>
-      updateStatus(
-        assign.id,
-        e.target.value
-      )
-    }
+  px-4
 
-    className="
-      h-10
+  rounded-xl
 
-      border
-      border-gray-300
+  flex
+  items-center
 
-      rounded-xl
+  text-sm
+  font-semibold
 
-      px-4
+  ${
+    assign.status ===
+    'completed'
 
-      bg-white
+      ? 'bg-green-100 text-green-700'
 
-      text-sm
-      font-medium
+      : assign.status ===
+        'ongoing'
 
-      outline-none
+      ? 'bg-blue-100 text-blue-700'
 
-      focus:ring-2
-      focus:ring-blue-300
-    "
-  >
+      : 'bg-orange-100 text-orange-700'
+  }
+`}>
 
-    <option value="pending">
-      Pending
-    </option>
+  {assign.status}
 
-    <option value="ongoing">
-      Ongoing
-    </option>
-
-    <option value="completed">
-      Completed
-    </option>
-
-    <option value="cancelled">
-      Cancelled
-    </option>
-
-  </select>
+</div>
 
 </div>
 
@@ -1228,55 +1518,7 @@ const activity =
 
               </div>
 
-              {/* READINESS */}
-              <div className="
-                mt-6
-              ">
-
-                <div className="
-                  flex
-                  justify-between
-                  mb-2
-                ">
-
-                  <span className="
-                    font-semibold
-                  ">
-                    Activity Readiness
-                  </span>
-
-                  <span className="
-                    text-blue-700
-                    font-bold
-                  ">
-                    {checklistProgress}%
-                  </span>
-
-                </div>
-
-                <div className="
-                  w-full
-                  h-4
-                  bg-gray-200
-                  rounded-full
-                  overflow-hidden
-                ">
-
-                  <div
-                    className="
-                      h-full
-                      bg-green-600
-                      transition-all
-                    "
-                    style={{
-                      width:
-                        `${checklistProgress}%`,
-                    }}
-                  />
-
-                </div>
-
-              </div>
+              
 
               {/* REMARKS */}
               {assign.remarks && (
@@ -1353,25 +1595,19 @@ const activity =
 
                 </div>
 
-                <input
-                  type="range"
-                  min={0}
-                  max={100}
-                  step={5}
-                  value={currentProgress}
-                  onChange={(e) =>
-                    updateProgress(
-                      assign.id,
-                      Number(
-                        e.target.value
-                      )
-                    )
-                  }
-                  className="
-                    w-full
-                    mt-4
-                  "
-                />
+                <div className="
+  mt-4
+  bg-gray-100
+  rounded-2xl
+  p-4
+  text-sm
+  text-gray-600
+">
+
+  Progress can only be updated
+  by the assigned personnel.
+
+</div>
 
               </div>
 
@@ -1561,5 +1797,6 @@ const activity =
       </div>
 
     </div>
+
   )
 }
