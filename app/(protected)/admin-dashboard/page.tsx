@@ -35,6 +35,11 @@ export default function Page() {
     setMounted] =
     useState(false)
 
+    const [
+  showAnalytics,
+  setShowAnalytics,
+] = useState(false)
+
   // COUNTS
   const [employeeCount,
     setEmployeeCount] =
@@ -571,6 +576,58 @@ ${a.title}`,
 
       </div>
 
+      {/* MOBILE ANALYTICS TOGGLE */}
+<div className="
+  flex
+  justify-end
+  mb-4
+  lg:hidden
+">
+
+  <button
+
+    onClick={() =>
+      setShowAnalytics(
+        !showAnalytics
+      )
+    }
+
+    className="
+      bg-blue-600
+      hover:bg-blue-700
+      text-white
+      px-5
+      py-3
+      rounded-2xl
+      font-semibold
+      shadow-lg
+      transition
+    "
+  >
+
+    {showAnalytics
+
+      ? 'Hide Analytics'
+
+      : 'View Analytics'}
+
+  </button>
+
+</div>
+
+<div className={`
+
+  space-y-8
+
+  ${showAnalytics
+
+    ? 'block'
+
+    : 'hidden'}
+
+  lg:block
+`}>
+      
       {/* SUMMARY */}
       <div className="
         grid
@@ -854,6 +911,8 @@ ${a.title}`,
         </div>
 
       )}
+
+      </div>
 
       {/* FEEDS */}
       <div className="

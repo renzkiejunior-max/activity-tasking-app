@@ -102,9 +102,6 @@ const [selectedEmployees,
   // FETCH ACTIVITIES
   const fetchActivities = async () => {
 
-    const fetchActivities =
-  async () => {
-
     // OFFLINE MODE
     if (!navigator.onLine) {
 
@@ -2756,5 +2753,4 @@ ${activity.activity_time}`,
 
     </div>
   )
-}
 }

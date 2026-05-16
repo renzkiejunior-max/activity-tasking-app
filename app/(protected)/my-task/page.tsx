@@ -8,6 +8,14 @@ import {
 import { supabase }
 from '../../../lib/supabase'
 
+    import {
+  syncOfflineData,
+} from '../../../lib/sync-offline'
+
+import {
+  offlineDB,
+} from '../../../lib/offline-db'
+
 export default function Page() {
 
   const [employee,
@@ -66,6 +74,8 @@ const [tempAssignments,
         `Attendance ${status}`
       )
     }
+
+
 
   // LOAD
   const fetchData =
@@ -215,6 +225,32 @@ const saveTaskUpdate =
         temp.remarks,
     }
 
+// OFFLINE MODE
+if (!navigator.onLine) {
+
+  await offlineDB
+    .queue
+    .add({
+
+      table:
+        'assignments',
+
+      recordId:
+        assignmentId,
+
+      payload,
+
+      action:
+        'update',
+    })
+
+  alert(
+    'Saved offline. Will sync automatically when internet returns.'
+  )
+
+  return
+}
+
     // AUTO STATUS
 if (
   temp.progress === 100
@@ -272,11 +308,36 @@ if (
     fetchData()
 }
   
-    useEffect(() => {
 
-    fetchData()
 
-  }, [])
+useEffect(() => {
+
+  fetchData()
+
+  // INTERNET RESTORED
+  const handleOnline =
+    async () => {
+
+      await syncOfflineData()
+
+      alert(
+        'Offline data synced successfully.'
+      )
+    }
+
+  window.addEventListener(
+    'online',
+    handleOnline
+  )
+
+  return () =>
+
+    window.removeEventListener(
+      'online',
+      handleOnline
+    )
+
+}, [])
 
   return (
 
@@ -680,8 +741,10 @@ if (
 
     onChange={(e) => {
 
-  const value =
-    e.target.value
+  const progress =
+    Number(
+      e.target.value
+    )
 
   setTempAssignments({
 
@@ -693,17 +756,19 @@ if (
         item.id
       ],
 
-      status: value,
+      progress,
 
-      progress:
-        value ===
-        'completed'
+      status:
 
-          ? 100
+        progress === 100
 
-          : tempAssignments[
-              item.id
-            ]?.progress || 0,
+          ? 'completed'
+
+          : progress > 0
+
+            ? 'ongoing'
+
+            : 'pending',
     },
   })
 
@@ -729,83 +794,7 @@ if (
 
   </p>
 
-  {/* STATUS */}
-<div className="
-  mt-5
-">
-
-  <p className="
-    text-sm
-    text-gray-500
-    mb-2
-  ">
-
-    Status
-
-  </p>
-
-  <select
-
-    value={
-      tempAssignments[
-        item.id
-      ]?.status || ''
-    }
-
-    onChange={(e) => {
-
-      const value =
-        e.target.value
-
-      setTempAssignments({
-
-        ...tempAssignments,
-
-        [item.id]: {
-
-          ...tempAssignments[
-            item.id
-          ],
-
-          status: value,
-
-          progress:
-            value ===
-            'completed'
-
-              ? 100
-
-              : tempAssignments[
-                  item.id
-                ]?.progress || 0,
-        },
-      })
-
-    }}
-
-    className="
-      w-full
-      border
-      rounded-2xl
-      px-4 py-3
-    "
-  >
-
-    <option value="pending">
-      Pending
-    </option>
-
-    <option value="ongoing">
-      Ongoing
-    </option>
-
-    <option value="completed">
-      Completed
-    </option>
-
-  </select>
-
-</div>
+  
 
   {/* REMARKS */}
   <div className="
