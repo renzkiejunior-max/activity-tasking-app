@@ -114,7 +114,8 @@ const [showForm,
             activity_time,
             focal_person,
             program_name,
-            location_name
+            location_name,
+            venue_details
           )
         `)
         .order('created_at', {
@@ -628,6 +629,45 @@ const assignEmployee = async () => {
 
   }, [])
 
+const groupedAssignments =
+  Object.values(
+
+    assignments.reduce(
+      (
+        acc: any,
+        assign: any
+      ) => {
+
+        const key = `
+          ${assign.activity_id}
+          -
+          ${assign.task}
+        `
+
+        if (!acc[key]) {
+
+          acc[key] = {
+
+            ...assign,
+
+            employeesList: [],
+          }
+        }
+
+        acc[key]
+          .employeesList
+          .push(assign)
+
+        return acc
+
+      },
+
+      {}
+
+    )
+
+  )
+
   return (
 
     <div className="
@@ -946,283 +986,596 @@ const assignEmployee = async () => {
 
 </div>
 
-{/* FORM */}
+{/* ASSIGNMENT MODAL */}
 {showForm && (
 
-<div className="
-  bg-white
-  rounded-3xl
-  shadow-xl
-  p-6
-  border
-">
-
-  <h2 className="
-    text-2xl
-    font-bold
-    text-blue-900
-    mb-6
-  ">
-
-    Assign Personnel Task
-
-  </h2>
-
   <div className="
-    grid
-    grid-cols-1
-    md:grid-cols-2
-    gap-4
+    fixed
+    inset-0
+    z-50
+
+    bg-black/50
+    backdrop-blur-sm
+
+    flex
+    items-center
+    justify-center
+
+    p-4
   ">
-            
-  {/* EMPLOYEE */}
-  <select
-    value={employeeId}
-    onChange={(e) =>
-      setEmployeeId(
-        e.target.value
-      )
-    }
-    className="
-      border
-      rounded-2xl
-      p-4
-    "
-  >
 
-    <option value="">
-      Select Employee
-    </option>
+    <div className="
+      relative
 
-    {employees.map(
-      (emp: any) => (
+      bg-white
 
-      <option
-        key={emp.id}
-        value={emp.id}
-      >
+      w-full
+      max-w-5xl
 
-        {emp.name}
+      rounded-3xl
 
-      </option>
+      shadow-2xl
 
-    ))}
-
-  </select>
-
-  {/* ACTIVITY */}
-  <select
-    value={activityId}
-    onChange={(e) =>
-      setActivityId(
-        e.target.value
-      )
-    }
-    className="
-      border
-      rounded-2xl
-      p-4
-    "
-  >
-
-    <option value="">
-      Select Activity
-    </option>
-
-    {activities.map(
-      (activity: any) => (
-
-      <option
-        key={activity.id}
-        value={activity.id}
-      >
-
-        {activity.title}
-
-      </option>
-
-    ))}
-
-  </select>
-
-  {/* TASK */}
-  <input
-    placeholder="Task"
-    value={task}
-    onChange={(e) =>
-      setTask(
-        e.target.value
-      )
-    }
-    className="
-      border
-      rounded-2xl
-      p-4
-    "
-  />
-
-  {/* DEADLINE */}
-  <input
-    type="date"
-    value={deadline}
-    onChange={(e) =>
-      setDeadline(
-        e.target.value
-      )
-    }
-    className="
-      border
-      rounded-2xl
-      p-4
-    "
-  />
-
-  {/* PRIORITY */}
-  <select
-    value={priority}
-    onChange={(e) =>
-      setPriority(
-        e.target.value
-      )
-    }
-    className="
-      border
-      rounded-2xl
-      p-4
-    "
-  >
-
-    <option value="low">
-      Low
-    </option>
-
-    <option value="medium">
-      Medium
-    </option>
-
-    <option value="high">
-      High
-    </option>
-
-    <option value="urgent">
-      Urgent
-    </option>
-
-  </select>
-
-  {/* PROGRESS */}
-  <div>
-
-    <label className="
-      text-sm
-      text-gray-500
-      block
-      mb-2
+      overflow-hidden
     ">
 
-      Initial Progress
+      {/* HEADER */}
+      <div className="
+        bg-linear-to-r
+        from-green-800
+        via-green-600
+        to-green-500
 
-    </label>
+        p-8
 
-    <input
-      type="range"
-      min={0}
-      max={100}
-      step={5}
-      value={progress}
-      onChange={(e) =>
-        setProgress(
-          Number(
-            e.target.value
-          )
-        )
-      }
-      className="
-        w-full
-      "
-    />
+        text-white
+      ">
 
-    <p className="
-      text-sm
-      mt-2
-      font-semibold
-      text-blue-700
-    ">
+        <div className="
+          flex
+          justify-between
+          items-start
+          gap-4
+        ">
 
-      {progress}%
-
-    </p>
-
-  </div>
-
-  {/* REMARKS */}
-  <textarea
-    placeholder="Remarks"
-    value={remarks}
-    onChange={(e) =>
-      setRemarks(
-        e.target.value
-      )
-    }
-    className="
-      border
-      rounded-2xl
-      p-4
-      md:col-span-2
-    "
-  />
-
-</div>
+          <div>
 
             <div className="
-      flex
-      gap-4
-      mt-6
-    ">
+              inline-flex
+              items-center
+              gap-2
 
-      <button
+              bg-white/20
 
-        onClick={assignEmployee}
+              px-4
+              py-2
 
-        className="
-          bg-orange-500
-          hover:bg-orange-600
+              rounded-full
 
-          text-white
+              text-sm
+              font-semibold
+            ">
 
-          px-6 py-4
+              📌 Operational Tasking
 
-          rounded-2xl
+            </div>
 
-          font-semibold
-        "
-      >
+            <h2 className="
+              text-4xl
+              font-black
 
-        Assign Task
+              mt-4
+            ">
 
-      </button>
+              Assign Personnel Task
 
-      <button
+            </h2>
 
-        onClick={() => {
+            <p className="
+              text-green-50
+              mt-3
+            ">
 
-          setShowForm(false)
+              Create operational assignments,
+              taskings,
+              deployment instructions,
+              and workflow monitoring.
 
-        }}
+            </p>
 
-        className="
-          bg-gray-300
-          hover:bg-gray-400
+          </div>
 
-          px-6 py-4
+          {/* CLOSE */}
+          <button
 
-          rounded-2xl
-        "
-      >
+            onClick={() =>
+              setShowForm(false)
+            }
 
-        Cancel
+            className="
+              w-12
+              h-12
 
-      </button>
+              rounded-2xl
+
+              bg-white/20
+              hover:bg-red-500
+
+              text-white
+
+              text-2xl
+              font-bold
+
+              transition
+            "
+          >
+
+            ×
+
+          </button>
+
+        </div>
+
+      </div>
+
+      {/* BODY */}
+      <div className="
+        p-8
+
+        max-h-[80vh]
+        overflow-y-auto
+      ">
+
+        {/* SECTION */}
+        <div className="
+          mb-8
+        ">
+
+          <h3 className="
+            text-2xl
+            font-bold
+            text-blue-900
+          ">
+
+            Assignment Information
+
+          </h3>
+
+          <p className="
+            text-gray-500
+            mt-2
+          ">
+
+            Fill out personnel tasking details below.
+
+          </p>
+
+        </div>
+
+        {/* GRID */}
+        <div className="
+          grid
+          grid-cols-1
+          md:grid-cols-2
+          gap-5
+        ">
+
+          {/* EMPLOYEE */}
+          <div>
+
+            <label className="
+              block
+              mb-2
+
+              text-sm
+              font-semibold
+              text-gray-700
+            ">
+
+              Employee
+
+            </label>
+
+            <select
+              value={employeeId}
+              onChange={(e) =>
+                setEmployeeId(
+                  e.target.value
+                )
+              }
+              className="
+                w-full
+
+                border
+                border-gray-200
+
+                rounded-2xl
+
+                px-4
+                py-4
+              "
+            >
+
+              <option value="">
+                Select Employee
+              </option>
+
+              {employees.map(
+                (emp: any) => (
+
+                <option
+                  key={emp.id}
+                  value={emp.id}
+                >
+
+                  {emp.name}
+
+                </option>
+
+              ))}
+
+            </select>
+
+          </div>
+
+          {/* ACTIVITY */}
+          <div>
+
+            <label className="
+              block
+              mb-2
+
+              text-sm
+              font-semibold
+              text-gray-700
+            ">
+
+              Activity
+
+            </label>
+
+            <select
+              value={activityId}
+              onChange={(e) =>
+                setActivityId(
+                  e.target.value
+                )
+              }
+              className="
+                w-full
+
+                border
+                border-gray-200
+
+                rounded-2xl
+
+                px-4
+                py-4
+              "
+            >
+
+              <option value="">
+                Select Activity
+              </option>
+
+              {activities.map(
+                (activity: any) => (
+
+                <option
+                  key={activity.id}
+                  value={activity.id}
+                >
+
+                  {activity.title}
+
+                </option>
+
+              ))}
+
+            </select>
+
+          </div>
+
+          {/* TASK */}
+          <div>
+
+            <label className="
+              block
+              mb-2
+
+              text-sm
+              font-semibold
+              text-gray-700
+            ">
+
+              Task Description
+
+            </label>
+
+            <input
+              placeholder="Enter assigned task"
+              value={task}
+              onChange={(e) =>
+                setTask(
+                  e.target.value
+                )
+              }
+              className="
+                w-full
+
+                border
+                border-gray-200
+
+                rounded-2xl
+
+                px-4
+                py-4
+              "
+            />
+
+          </div>
+
+          {/* DEADLINE */}
+          <div>
+
+            <label className="
+              block
+              mb-2
+
+              text-sm
+              font-semibold
+              text-gray-700
+            ">
+
+              Deadline
+
+            </label>
+
+            <input
+              type="date"
+              value={deadline}
+              onChange={(e) =>
+                setDeadline(
+                  e.target.value
+                )
+              }
+              className="
+                w-full
+
+                border
+                border-gray-200
+
+                rounded-2xl
+
+                px-4
+                py-4
+              "
+            />
+
+          </div>
+
+          {/* PRIORITY */}
+          <div>
+
+            <label className="
+              block
+              mb-2
+
+              text-sm
+              font-semibold
+              text-gray-700
+            ">
+
+              Priority Level
+
+            </label>
+
+            <select
+              value={priority}
+              onChange={(e) =>
+                setPriority(
+                  e.target.value
+                )
+              }
+              className="
+                w-full
+
+                border
+                border-gray-200
+
+                rounded-2xl
+
+                px-4
+                py-4
+              "
+            >
+
+              <option value="low">
+                Low
+              </option>
+
+              <option value="medium">
+                Medium
+              </option>
+
+              <option value="high">
+                High
+              </option>
+
+              <option value="urgent">
+                Urgent
+              </option>
+
+            </select>
+
+          </div>
+
+          {/* PROGRESS */}
+          <div>
+
+            <label className="
+              block
+              mb-2
+
+              text-sm
+              font-semibold
+              text-gray-700
+            ">
+
+              Initial Progress
+
+            </label>
+
+            <div className="
+              border
+              border-gray-200
+
+              rounded-2xl
+
+              px-5
+              py-4
+            ">
+
+              <input
+                type="range"
+                min={0}
+                max={100}
+                step={5}
+                value={progress}
+                onChange={(e) =>
+                  setProgress(
+                    Number(
+                      e.target.value
+                    )
+                  )
+                }
+                className="
+                  w-full
+                "
+              />
+
+              <div className="
+                mt-3
+
+                text-center
+
+                font-bold
+                text-green-700
+              ">
+
+                {progress}%
+
+              </div>
+
+            </div>
+
+          </div>
+
+          {/* REMARKS */}
+          <div className="
+            md:col-span-2
+          ">
+
+            <label className="
+              block
+              mb-2
+
+              text-sm
+              font-semibold
+              text-gray-700
+            ">
+
+              Remarks
+
+            </label>
+
+            <textarea
+              placeholder="Additional instructions or remarks"
+              value={remarks}
+              onChange={(e) =>
+                setRemarks(
+                  e.target.value
+                )
+              }
+              className="
+                w-full
+
+                border
+                border-gray-200
+
+                rounded-2xl
+
+                px-4
+                py-4
+
+                min-h-30
+              "
+            />
+
+          </div>
+
+        </div>
+
+        {/* FOOTER */}
+        <div className="
+          flex
+          justify-end
+          gap-4
+
+          mt-10
+        ">
+
+          <button
+
+            onClick={() =>
+              setShowForm(false)
+            }
+
+            className="
+              px-6
+              py-4
+
+              rounded-2xl
+
+              bg-gray-200
+              hover:bg-gray-300
+
+              font-semibold
+            "
+          >
+
+            Cancel
+
+          </button>
+
+          <button
+
+            onClick={assignEmployee}
+
+            className="
+              px-8
+              py-4
+
+              rounded-2xl
+
+              bg-green-600
+              hover:bg-green-700
+
+              text-white
+
+              font-bold
+
+              shadow-lg
+            "
+          >
+
+            Assign Task
+
+          </button>
+
+        </div>
+
+      </div>
 
     </div>
 
@@ -1234,8 +1587,8 @@ const assignEmployee = async () => {
         space-y-6
       ">
 
-        {assignments.map(
-          (assign: any) => {
+        {groupedAssignments.map(
+  (assign: any) => {
 
           const currentProgress =
             assign.progress || 0
@@ -1260,6 +1613,8 @@ const assignEmployee = async () => {
               assign.activity_id
             )
 
+
+
           return (
 
             <div
@@ -1283,135 +1638,283 @@ const assignEmployee = async () => {
               ">
 
                 {/* LEFT */}
-                <div className="
-                  flex
-                  items-center
-                  gap-4
-                ">
+<div className="
+  flex-1
+">
 
-                  {assign.employees
-                    ?.photo_url ? (
+  {/* ACTIVITY */}
+  <h2 className="
+    text-3xl
+    font-black
+    text-blue-900
+  ">
 
-                    <img
-                      src={
-                        assign.employees
-                          .photo_url
-                      }
-                      alt="Employee"
-                      className="
-                        w-16 h-16
-                        rounded-full
-                        object-cover
-                        border-2
-                        border-blue-200
-                      "
-                    />
+    {
+      assign.activities
+        ?.title
+    }
 
-                  ) : (
+  </h2>
 
-                    <div className="
-                      w-16 h-16
-                      rounded-full
-                      bg-blue-100
-                      text-blue-700
-                      flex
-                      items-center
-                      justify-center
-                      text-xl
-                      font-bold
-                    ">
+  {/* TASK */}
+  <div className="
+    mt-5
 
-                      {
-                        assign.employees
-                          ?.name
-                          ?.charAt(0)
-                      }
+    bg-gray-50
 
-                    </div>
+    border
 
-                  )}
+    rounded-2xl
 
-                  <div>
+    p-5
+  ">
 
-                    <h2 className="
-                      text-2xl
-                      font-bold
-                      text-blue-900
-                    ">
-                      {
-                        assign.employees
-                          ?.name
-                      }
-                    </h2>
+    <p className="
+      text-sm
+      text-gray-500
+      mb-2
+    ">
 
-                    {/* ACTIVITY INFO */}
-                    <div className="
-                      mt-2
-                      space-y-1
-                    ">
+      Assigned Task
 
-                      <p className="
-                        text-gray-700
-                        font-medium
-                      ">
-                        {
-                          assign.activities
-                            ?.title
-                        }
-                      </p>
+    </p>
 
-                      <p className="
-                        text-sm
-                        text-blue-700
-                      ">
+    <p className="
+      text-lg
+      font-semibold
+      text-black
+    ">
 
-                        👤 Focal:
-                        {' '}
+      {assign.task}
 
-                        {
-                          assign.activities
-                            ?.focal_person ||
-                            'N/A'
-                        }
+    </p>
 
-                      </p>
+  </div>
 
-                      <p className="
-                        text-sm
-                        text-orange-700
-                      ">
+  {/* DETAILS */}
+  <div className="
+    mt-5
+    grid
+    md:grid-cols-2
+    gap-3
+    text-sm
+  ">
 
-                        🏢 Program:
-                        {' '}
+    <div className="
+      bg-blue-50
+      border
+      border-blue-100
+      rounded-2xl
+      p-4
+    ">
 
-                        {
-                          assign.activities
-                            ?.program_name ||
-                            'N/A'
-                        }
+      👤
+      {' '}
 
-                      </p>
+      <span className="
+        font-semibold
+      ">
 
-                      <p className="
-                        text-sm
-                        text-gray-500
-                      ">
+        {
+          assign.activities
+            ?.focal_person ||
+            'N/A'
+        }
 
-                        📍
+      </span>
 
-                        {
-                          assign.activities
-                            ?.location_name ||
-                            'No location'
-                        }
+    </div>
 
-                      </p>
+    <div className="
+      bg-orange-50
+      border
+      border-orange-100
+      rounded-2xl
+      p-4
+    ">
 
-                    </div>
+      🏢
+      {' '}
 
-                  </div>
+      <span className="
+        font-semibold
+      ">
 
-                </div>
+        {
+          assign.activities
+            ?.program_name ||
+            'N/A'
+        }
+
+      </span>
+
+    </div>
+
+    <div className="
+      bg-gray-50
+      border
+      rounded-2xl
+      p-4
+    ">
+
+      📍
+      {' '}
+
+      {
+        assign.activities
+          ?.location_name ||
+          'No location'
+      }
+
+    </div>
+
+    {/* VENUE */}
+    <div className="
+      bg-purple-50
+      border
+      border-purple-100
+      rounded-2xl
+      p-4
+    ">
+
+      🏛️
+      {' '}
+
+      <span className="
+        font-semibold
+      ">
+
+        {
+          assign.activities
+            ?.venue_details ||
+            'No venue specified'
+        }
+
+      </span>
+
+    </div>
+
+  </div>
+
+  {/* ASSIGNED EMPLOYEES */}
+  <div className="
+    mt-6
+  ">
+
+    <p className="
+      text-sm
+      font-semibold
+      text-gray-500
+      mb-4
+    ">
+
+      Assigned Personnel
+
+    </p>
+
+    <div className="
+      flex
+      flex-wrap
+      gap-3
+    ">
+
+      {assign.employeesList.map(
+        (empAssign: any) => (
+
+        <div
+          key={empAssign.id}
+          className="
+            flex
+            items-center
+            gap-3
+
+            bg-white
+
+            border
+
+            rounded-2xl
+
+            px-4
+            py-3
+
+            shadow-sm
+          "
+        >
+
+          {empAssign.employees
+            ?.photo_url ? (
+
+            <img
+              src={
+                empAssign
+                  .employees
+                  ?.photo_url
+              }
+              alt="Employee"
+              className="
+                w-12
+                h-12
+
+                rounded-full
+                object-cover
+              "
+            />
+
+          ) : (
+
+            <div className="
+              w-12
+              h-12
+
+              rounded-full
+
+              bg-blue-100
+              text-blue-700
+
+              flex
+              items-center
+              justify-center
+
+              font-bold
+            ">
+
+              {
+                empAssign
+                  .employees
+                  ?.name
+                  ?.charAt(0)
+              }
+
+            </div>
+
+          )}
+
+          <div>
+
+            <p className="
+              font-semibold
+              text-blue-900
+            ">
+
+              {
+                empAssign
+                  .employees
+                  ?.name
+              }
+
+            </p>
+
+          </div>
+
+        </div>
+
+      ))}
+
+    </div>
+
+  </div>
+
+</div>
 
             
 
@@ -1487,279 +1990,7 @@ const assignEmployee = async () => {
 
               </div>
 
-              {/* TASK */}
-              <div className="
-                mt-6
-              ">
 
-                <p className="
-                  text-sm
-                  text-gray-500
-                ">
-                  Assigned Task
-                </p>
-
-                <div className="
-                  mt-2
-                  bg-gray-50
-                  border
-                  rounded-2xl
-                  p-4
-                ">
-
-                  <p className="
-                    text-black
-                    font-medium
-                  ">
-                    {assign.task}
-                  </p>
-
-                </div>
-
-              </div>
-
-              
-
-              {/* REMARKS */}
-              {assign.remarks && (
-
-                <div className="
-                  mt-5
-                ">
-
-                  <p className="
-                    text-sm
-                    text-gray-500
-                  ">
-                    Remarks
-                  </p>
-
-                  <div className="
-                    mt-2
-                    bg-blue-50
-                    border
-                    border-blue-200
-                    rounded-2xl
-                    p-4
-                  ">
-
-                    <p>
-                      {assign.remarks}
-                    </p>
-
-                  </div>
-
-                </div>
-
-              )}
-
-              {/* PROGRESS */}
-              <div className="
-                mt-6
-              ">
-
-                <div className="
-                  flex
-                  justify-between
-                  mb-2
-                ">
-
-                  <span>
-                    Task Progress
-                  </span>
-
-                  <span>
-                    {currentProgress}%
-                  </span>
-
-                </div>
-
-                <div className="
-                  w-full
-                  h-4
-                  bg-gray-200
-                  rounded-full
-                  overflow-hidden
-                ">
-
-                  <div
-                    className="
-                      h-full
-                      bg-blue-600
-                    "
-                    style={{
-                      width:
-                        `${currentProgress}%`,
-                    }}
-                  />
-
-                </div>
-
-                <div className="
-  mt-4
-  bg-gray-100
-  rounded-2xl
-  p-4
-  text-sm
-  text-gray-600
-">
-
-  Progress can only be updated
-  by the assigned personnel.
-
-</div>
-
-              </div>
-
-              {/* OVERDUE */}
-              {overdue && (
-
-                <div className="
-                  mt-5
-                  bg-red-100
-                  text-red-700
-                  px-4 py-3
-                  rounded-2xl
-                  font-semibold
-                ">
-
-                  ⚠️ Overdue Task
-
-                </div>
-
-              )}
-
-              {/* COMMENTS */}
-              <div className="
-                mt-6
-              ">
-
-                <h3 className="
-                  text-lg
-                  font-bold
-                  text-blue-900
-                  mb-4
-                ">
-                  Comments
-                </h3>
-
-                <div className="
-                  space-y-3
-                ">
-
-                  {comments
-                    .filter(
-                      (comment: any) =>
-                        comment.assignment_id ===
-                        assign.id
-                    )
-                    .map((comment: any) => (
-
-                    <div
-                      key={comment.id}
-                      className="
-                        bg-gray-50
-                        border
-                        rounded-2xl
-                        p-4
-                      "
-                    >
-
-                      <div className="
-                        flex
-                        justify-between
-                        mb-2
-                      ">
-
-                        <p className="
-                          font-semibold
-                          text-blue-900
-                        ">
-                          {
-                            comment.employee_name
-                          }
-                        </p>
-
-                        <p className="
-                          text-xs
-                          text-gray-500
-                        ">
-                          {new Date(
-                            comment.created_at
-                          ).toLocaleString()}
-                        </p>
-
-                      </div>
-
-                      <p>
-                        {comment.comment}
-                      </p>
-
-                    </div>
-
-                  ))}
-
-                </div>
-
-                {/* ADD COMMENT */}
-                <div className="
-                  mt-4
-                  flex
-                  flex-col
-                  md:flex-row
-                  gap-3
-                ">
-
-                  <input
-                    type="text"
-                    placeholder="Add comment..."
-                    value={
-                      newComments[
-                        assign.id
-                      ] || ''
-                    }
-                    onChange={(e) =>
-                      setNewComments({
-
-                        ...newComments,
-
-                        [assign.id]:
-                          e.target.value,
-
-                      })
-                    }
-                    className="
-                      flex-1
-                      border
-                      rounded-2xl
-                      px-4 py-3
-                    "
-                  />
-
-                  <button
-                    onClick={() =>
-                      addComment(
-                        assign.id,
-                        assign.employees
-                          ?.name || 'User'
-                      )
-                    }
-                    className="
-                      bg-blue-600
-                      hover:bg-blue-700
-                      text-white
-                      px-5 py-3
-                      rounded-2xl
-                    "
-                  >
-
-                    Send
-
-                  </button>
-
-                </div>
-
-              </div>
 
               {/* ACTIONS */}
               <div className="

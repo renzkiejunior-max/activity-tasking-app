@@ -82,6 +82,11 @@ export default function Page() {
     setEditPhoto] =
     useState<any>(null)
 
+    const [searchTimeout,
+  setSearchTimeout] =
+  useState<any>(null)
+
+  
   // FETCH EMPLOYEES
   const fetchEmployees =
     async () => {
@@ -546,213 +551,582 @@ export default function Page() {
 
 </div>
 
-        {/* FORM */}
-        {showAddForm && (
+{/* ADD EMPLOYEE MODAL */}
+{showAddForm && (
 
-          <div className="
-            bg-white
-            rounded-3xl
-            shadow-xl
-            p-6
-            border
-          ">
+  <div className="
+    fixed
+    inset-0
+    z-50
+
+    bg-black/50
+    backdrop-blur-sm
+
+    flex
+    items-center
+    justify-center
+
+    p-4
+  ">
+
+    <div className="
+      relative
+
+      bg-white
+
+      w-full
+      max-w-4xl
+
+      rounded-3xl
+
+      shadow-2xl
+
+      overflow-hidden
+    ">
+
+      {/* HEADER */}
+      <div className="
+        bg-linear-to-r
+        from-blue-800
+        via-blue-700
+        to-blue-500
+
+        p-8
+
+        text-white
+      ">
+
+        <div className="
+          flex
+          justify-between
+          items-start
+          gap-4
+        ">
+
+          <div>
+
+            <div className="
+              inline-flex
+              items-center
+              gap-2
+
+              bg-white/20
+
+              px-4
+              py-2
+
+              rounded-full
+
+              text-sm
+              font-semibold
+            ">
+
+              👤 Personnel Registration
+
+            </div>
 
             <h2 className="
-              text-xl
-              font-bold
-              text-blue-900
-              mb-5
+              text-4xl
+              font-black
+
+              mt-4
             ">
 
               Add Employee
 
             </h2>
 
-            <div className="
-              grid
-              md:grid-cols-2
-              gap-4
+            <p className="
+              text-blue-100
+              mt-3
             ">
 
-              <input
-                placeholder="Name"
-                value={name}
-                onChange={(e) =>
-                  setName(
-                    e.target.value
-                  )
-                }
-                className="
-                  border
-                  rounded-xl
-                  p-3
-                "
-              />
+              Create personnel profiles and assign focal responsibilities.
 
-              <input
-                placeholder="Designation"
-                value={designation}
-                onChange={(e) =>
-                  setDesignation(
-                    e.target.value
-                  )
-                }
-                className="
-                  border
-                  rounded-xl
-                  p-3
-                "
-              />
-
-              <select
-                value={division}
-                onChange={(e) =>
-                  setDivision(
-                    e.target.value
-                  )
-                }
-                className="
-                  border
-                  rounded-xl
-                  p-3
-                "
-              >
-
-                <option value="">
-                  Select Division
-                </option>
-
-                <option value="Admin and Training Division">
-                  Admin and Training Division
-                </option>
-
-                <option value="Operations and Warning Division">
-                  Operations and Warning Division
-                </option>
-
-                <option value="Planning and Research Division">
-                  Planning and Research Division
-                </option>
-
-              </select>
-
-              <input
-                placeholder="Email"
-                value={email}
-                onChange={(e) =>
-                  setEmail(
-                    e.target.value
-                  )
-                }
-                className="
-                  border
-                  rounded-xl
-                  p-3
-                "
-              />
-
-              <select
-                value={status}
-                onChange={(e) =>
-                  setStatus(
-                    e.target.value
-                  )
-                }
-                className="
-                  border
-                  rounded-xl
-                  p-3
-                "
-              >
-
-                <option value="active">
-                  Active
-                </option>
-
-                <option value="inactive">
-                  Inactive
-                </option>
-
-                <option value="suspended">
-                  Suspended
-                </option>
-
-              </select>
-
-              <input
-                placeholder="Focal Person Title"
-                value={focalTitle}
-                onChange={(e) =>
-                  setFocalTitle(
-                    e.target.value
-                  )
-                }
-                className="
-                  border
-                  rounded-xl
-                  p-3
-                "
-              />
-
-              <textarea
-                placeholder="Focal Description"
-                value={
-                  focalDescription
-                }
-                onChange={(e) =>
-                  setFocalDescription(
-                    e.target.value
-                  )
-                }
-                className="
-                  border
-                  rounded-xl
-                  p-3
-                  md:col-span-2
-                "
-              />
-
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) =>
-                  setPhoto(
-                    e.target.files?.[0]
-                  )
-                }
-                className="
-                  border
-                  rounded-xl
-                  p-3
-                  md:col-span-2
-                "
-              />
-
-            </div>
-
-            <button
-              onClick={addEmployee}
-              className="
-                mt-5
-
-                bg-orange-500
-                hover:bg-orange-600
-
-                text-white
-
-                px-5 py-3
-
-                rounded-xl
-              "
-            >
-
-              Add Employee
-
-            </button>
+            </p>
 
           </div>
 
-        )}
+          {/* CLOSE */}
+          <button
+
+            onClick={() =>
+              setShowAddForm(false)
+            }
+
+            className="
+              w-12
+              h-12
+
+              rounded-2xl
+
+              bg-white/20
+              hover:bg-red-500
+
+              text-white
+
+              text-2xl
+              font-bold
+
+              transition
+            "
+          >
+
+            ×
+
+          </button>
+
+        </div>
+
+      </div>
+
+      {/* BODY */}
+      <div className="
+        p-8
+
+        max-h-[80vh]
+        overflow-y-auto
+      ">
+
+        {/* SECTION */}
+        <div className="
+          mb-8
+        ">
+
+          <h3 className="
+            text-2xl
+            font-bold
+            text-blue-900
+          ">
+
+            Employee Information
+
+          </h3>
+
+          <p className="
+            text-gray-500
+            mt-2
+          ">
+
+            Fill out the employee details below.
+
+          </p>
+
+        </div>
+
+        {/* GRID */}
+        <div className="
+          grid
+          md:grid-cols-2
+          gap-5
+        ">
+
+          {/* NAME */}
+          <div>
+
+            <label className="
+              block
+              mb-2
+
+              text-sm
+              font-semibold
+              text-gray-700
+            ">
+
+              Full Name
+
+            </label>
+
+            <input
+              placeholder="Enter employee name"
+              value={name}
+              onChange={(e) =>
+                setName(
+                  e.target.value
+                )
+              }
+              className="
+                w-full
+
+                border
+                border-gray-200
+
+                rounded-2xl
+
+                px-4
+                py-4
+
+                focus:outline-none
+                focus:ring-4
+                focus:ring-blue-100
+                focus:border-blue-500
+              "
+            />
+
+          </div>
+
+          {/* DESIGNATION */}
+          <div>
+
+            <label className="
+              block
+              mb-2
+
+              text-sm
+              font-semibold
+              text-gray-700
+            ">
+
+              Designation
+
+            </label>
+
+            <input
+              placeholder="Enter designation"
+              value={designation}
+              onChange={(e) =>
+                setDesignation(
+                  e.target.value
+                )
+              }
+              className="
+                w-full
+
+                border
+                border-gray-200
+
+                rounded-2xl
+
+                px-4
+                py-4
+              "
+            />
+
+          </div>
+
+          {/* DIVISION */}
+          <div>
+
+            <label className="
+              block
+              mb-2
+
+              text-sm
+              font-semibold
+              text-gray-700
+            ">
+
+              Division
+
+            </label>
+
+            <select
+              value={division}
+              onChange={(e) =>
+                setDivision(
+                  e.target.value
+                )
+              }
+              className="
+                w-full
+
+                border
+                border-gray-200
+
+                rounded-2xl
+
+                px-4
+                py-4
+              "
+            >
+
+              <option value="">
+                Select Division
+              </option>
+
+              <option value="Admin and Training Division">
+                Admin and Training Division
+              </option>
+
+              <option value="Operations and Warning Division">
+                Operations and Warning Division
+              </option>
+
+              <option value="Planning and Research Division">
+                Planning and Research Division
+              </option>
+
+            </select>
+
+          </div>
+
+          {/* EMAIL */}
+          <div>
+
+            <label className="
+              block
+              mb-2
+
+              text-sm
+              font-semibold
+              text-gray-700
+            ">
+
+              Email Address
+
+            </label>
+
+            <input
+              placeholder="Enter email"
+              value={email}
+              onChange={(e) =>
+                setEmail(
+                  e.target.value
+                )
+              }
+              className="
+                w-full
+
+                border
+                border-gray-200
+
+                rounded-2xl
+
+                px-4
+                py-4
+              "
+            />
+
+          </div>
+
+          {/* STATUS */}
+          <div>
+
+            <label className="
+              block
+              mb-2
+
+              text-sm
+              font-semibold
+              text-gray-700
+            ">
+
+              Status
+
+            </label>
+
+            <select
+              value={status}
+              onChange={(e) =>
+                setStatus(
+                  e.target.value
+                )
+              }
+              className="
+                w-full
+
+                border
+                border-gray-200
+
+                rounded-2xl
+
+                px-4
+                py-4
+              "
+            >
+
+              <option value="active">
+                Active
+              </option>
+
+              <option value="inactive">
+                Inactive
+              </option>
+
+              <option value="suspended">
+                Suspended
+              </option>
+
+            </select>
+
+          </div>
+
+          {/* PHOTO */}
+          <div>
+
+            <label className="
+              block
+              mb-2
+
+              text-sm
+              font-semibold
+              text-gray-700
+            ">
+
+              Upload Photo
+
+            </label>
+
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) =>
+                setPhoto(
+                  e.target.files?.[0]
+                )
+              }
+              className="
+                w-full
+
+                border
+                border-dashed
+                border-gray-300
+
+                rounded-2xl
+
+                px-4
+                py-4
+              "
+            />
+
+          </div>
+
+        </div>
+
+        {/* FOCAL SECTION */}
+        <div className="
+          mt-10
+        ">
+
+          <h3 className="
+            text-2xl
+            font-bold
+            text-orange-600
+            mb-5
+          ">
+
+            Focal Assignment
+
+          </h3>
+
+          <div className="
+            grid
+            md:grid-cols-2
+            gap-5
+          ">
+
+            <input
+              placeholder="Focal Person Title"
+              value={focalTitle}
+              onChange={(e) =>
+                setFocalTitle(
+                  e.target.value
+                )
+              }
+              className="
+                border
+                border-gray-200
+
+                rounded-2xl
+
+                px-4
+                py-4
+              "
+            />
+
+            <textarea
+              placeholder="Focal Description"
+              value={focalDescription}
+              onChange={(e) =>
+                setFocalDescription(
+                  e.target.value
+                )
+              }
+              className="
+                border
+                border-gray-200
+
+                rounded-2xl
+
+                px-4
+                py-4
+
+                md:col-span-2
+
+                min-h-30
+              "
+            />
+
+          </div>
+
+        </div>
+
+        {/* FOOTER */}
+        <div className="
+          flex
+          justify-end
+          gap-4
+
+          mt-10
+        ">
+
+          <button
+
+            onClick={() =>
+              setShowAddForm(false)
+            }
+
+            className="
+              px-6
+              py-4
+
+              rounded-2xl
+
+              bg-gray-200
+              hover:bg-gray-300
+
+              font-semibold
+            "
+          >
+
+            Cancel
+
+          </button>
+
+          <button
+
+            onClick={addEmployee}
+
+            className="
+              px-8
+              py-4
+
+              rounded-2xl
+
+              bg-orange-500
+              hover:bg-orange-600
+
+              text-white
+
+              font-bold
+
+              shadow-lg
+            "
+          >
+
+            Add Employee
+
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+)}
 
         {/* EDIT MODAL */}
         {editingEmployee && (

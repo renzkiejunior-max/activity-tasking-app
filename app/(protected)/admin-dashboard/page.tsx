@@ -16,7 +16,6 @@ import {
   Pie,
   Cell,
   Tooltip,
-  ResponsiveContainer,
   BarChart,
   Bar,
   XAxis,
@@ -32,56 +31,75 @@ export default function Page() {
     loading,
   } = useAuth()
 
+  const [mounted,
+    setMounted] =
+    useState(false)
+
   // COUNTS
-  const [employeeCount, setEmployeeCount] =
+  const [employeeCount,
+    setEmployeeCount] =
     useState(0)
 
-  const [activeEmployees, setActiveEmployees] =
+  const [activeEmployees,
+    setActiveEmployees] =
     useState(0)
 
-  const [activityCount, setActivityCount] =
+  const [activityCount,
+    setActivityCount] =
     useState(0)
 
-  const [upcomingActivities, setUpcomingActivities] =
+  const [upcomingActivities,
+    setUpcomingActivities] =
     useState(0)
 
-  const [assignmentCount, setAssignmentCount] =
+  const [assignmentCount,
+    setAssignmentCount] =
     useState(0)
 
   // TASK COUNTS
-  const [pendingTasks, setPendingTasks] =
+  const [pendingTasks,
+    setPendingTasks] =
     useState(0)
 
-  const [ongoingTasks, setOngoingTasks] =
+  const [ongoingTasks,
+    setOngoingTasks] =
     useState(0)
 
-  const [completedTasks, setCompletedTasks] =
+  const [completedTasks,
+    setCompletedTasks] =
     useState(0)
 
-  const [overdueTasks, setOverdueTasks] =
+  const [overdueTasks,
+    setOverdueTasks] =
     useState(0)
 
   // FEEDS
-  const [recentActivities, setRecentActivities] =
+  const [recentActivities,
+    setRecentActivities] =
     useState<any[]>([])
 
-  const [recentAssignments, setRecentAssignments] =
+  const [recentAssignments,
+    setRecentAssignments] =
     useState<any[]>([])
 
-  const [liveFeed, setLiveFeed] =
+  const [liveFeed,
+    setLiveFeed] =
     useState<any[]>([])
 
   // ANALYTICS
-  const [statusData, setStatusData] =
+  const [statusData,
+    setStatusData] =
     useState<any[]>([])
 
-  const [divisionData, setDivisionData] =
+  const [divisionData,
+    setDivisionData] =
     useState<any[]>([])
 
-  const [workloadData, setWorkloadData] =
+  const [workloadData,
+    setWorkloadData] =
     useState<any[]>([])
 
-  // CHART COLORS
+  // COLORS
   const STATUS_COLORS = [
 
     '#f59e0b',
@@ -194,7 +212,7 @@ export default function Page() {
         assignments?.slice(0, 5) || []
       )
 
-      // TASK STATUS
+      // STATUS
       const pending =
         assignments?.filter(
           (a: any) =>
@@ -226,7 +244,8 @@ export default function Page() {
 
             if (
               !a.deadline ||
-              a.status === 'completed'
+              a.status ===
+              'completed'
             ) {
 
               return false
@@ -270,7 +289,7 @@ export default function Page() {
 
       ])
 
-      // DIVISION ANALYTICS
+      // DIVISIONS
       const divisions = [
 
         'Admin and Training Division',
@@ -320,9 +339,11 @@ export default function Page() {
 
             return {
 
-              name: employee.name,
+              name:
+                employee.name,
 
-              tasks: taskCount,
+              tasks:
+                taskCount,
 
             }
           }
@@ -338,7 +359,8 @@ export default function Page() {
         ...(assignments || []).map(
           (a: any) => ({
 
-            type: 'assignment',
+            type:
+              'assignment',
 
             text:
               `${a.employees?.name}
@@ -353,7 +375,8 @@ updated task status.`,
         ...(activities || []).map(
           (a: any) => ({
 
-            type: 'activity',
+            type:
+              'activity',
 
             text:
               `New activity:
@@ -372,7 +395,9 @@ ${a.title}`,
 
           new Date(
             b.created_at
-          ).getTime() -
+          ).getTime()
+
+          -
 
           new Date(
             a.created_at
@@ -382,7 +407,14 @@ ${a.title}`,
       setLiveFeed(
         feed.slice(0, 8)
       )
-  }
+    }
+
+  // MOUNT
+  useEffect(() => {
+
+    setMounted(true)
+
+  }, [])
 
   // REALTIME
   useEffect(() => {
@@ -460,7 +492,7 @@ ${a.title}`,
     )
   }
 
-  // CARD COMPONENT
+  // CARD
   const Card = ({
     title,
     value,
@@ -488,7 +520,9 @@ ${a.title}`,
         uppercase
         tracking-wide
       ">
+
         {title}
+
       </h3>
 
       <p className="
@@ -496,7 +530,9 @@ ${a.title}`,
         font-bold
         mt-4
       ">
+
         {value}
+
       </p>
 
     </div>
@@ -518,14 +554,19 @@ ${a.title}`,
           font-bold
           text-blue-900
         ">
+
           Executive Dashboard
+
         </h1>
 
         <p className="
           text-gray-700
           mt-2
         ">
-          Activity Tasking Management System
+
+          Activity Tasking
+          Management System
+
         </p>
 
       </div>
@@ -612,41 +653,49 @@ ${a.title}`,
       </div>
 
       {/* CHARTS */}
-      <div className="
-        grid
-        grid-cols-1
-        lg:grid-cols-2
-        gap-6
-      ">
+      {mounted && (
 
-        {/* PIE */}
         <div className="
-          bg-white
-          rounded-3xl
-          shadow-xl
-          p-6
-          border
+          grid
+          grid-cols-1
+          lg:grid-cols-2
+          gap-6
+          w-full
+          min-w-0
         ">
 
-          <h2 className="
-            text-2xl
-            font-bold
-            text-blue-900
-            mb-5
+          {/* PIE */}
+          <div className="
+            bg-white
+            rounded-3xl
+            shadow-xl
+            p-6
+            border
+            min-w-0
           ">
-            Task Status Analytics
-          </h2>
 
-          <div
-            style={{
-              width: '100%',
-              height: 320,
-            }}
-          >
+            <h2 className="
+              text-2xl
+              font-bold
+              text-blue-900
+              mb-5
+            ">
 
-            <ResponsiveContainer>
+              Task Status Analytics
 
-              <PieChart>
+            </h2>
+
+            <div className="
+              w-full
+              overflow-x-auto
+              flex
+              justify-center
+            ">
+
+              <PieChart
+                width={400}
+                height={320}
+              >
 
                 <Pie
                   data={statusData}
@@ -681,40 +730,39 @@ ${a.title}`,
 
               </PieChart>
 
-            </ResponsiveContainer>
+            </div>
 
           </div>
 
-        </div>
-
-        {/* DIVISION */}
-        <div className="
-          bg-white
-          rounded-3xl
-          shadow-xl
-          p-6
-          border
-        ">
-
-          <h2 className="
-            text-2xl
-            font-bold
-            text-blue-900
-            mb-5
+          {/* DIVISION */}
+          <div className="
+            bg-white
+            rounded-3xl
+            shadow-xl
+            p-6
+            border
+            min-w-0
           ">
-            Division Analytics
-          </h2>
 
-          <div
-            style={{
-              width: '100%',
-              height: 320,
-            }}
-          >
+            <h2 className="
+              text-2xl
+              font-bold
+              text-blue-900
+              mb-5
+            ">
 
-            <ResponsiveContainer>
+              Division Analytics
+
+            </h2>
+
+            <div className="
+              w-full
+              overflow-x-auto
+            ">
 
               <BarChart
+                width={700}
+                height={320}
                 data={divisionData}
               >
 
@@ -740,41 +788,40 @@ ${a.title}`,
 
               </BarChart>
 
-            </ResponsiveContainer>
+            </div>
 
           </div>
 
-        </div>
-
-        {/* WORKLOAD */}
-        <div className="
-          bg-white
-          rounded-3xl
-          shadow-xl
-          p-6
-          border
-          lg:col-span-2
-        ">
-
-          <h2 className="
-            text-2xl
-            font-bold
-            text-blue-900
-            mb-5
+          {/* WORKLOAD */}
+          <div className="
+            bg-white
+            rounded-3xl
+            shadow-xl
+            p-6
+            border
+            lg:col-span-2
+            min-w-0
           ">
-            Personnel Workload
-          </h2>
 
-          <div
-            style={{
-              width: '100%',
-              height: 350,
-            }}
-          >
+            <h2 className="
+              text-2xl
+              font-bold
+              text-blue-900
+              mb-5
+            ">
 
-            <ResponsiveContainer>
+              Personnel Workload
+
+            </h2>
+
+            <div className="
+              w-full
+              overflow-x-auto
+            ">
 
               <BarChart
+                width={1000}
+                height={350}
                 data={workloadData}
               >
 
@@ -800,13 +847,13 @@ ${a.title}`,
 
               </BarChart>
 
-            </ResponsiveContainer>
+            </div>
 
           </div>
 
         </div>
 
-      </div>
+      )}
 
       {/* FEEDS */}
       <div className="
@@ -831,7 +878,9 @@ ${a.title}`,
             text-blue-900
             mb-5
           ">
+
             Recent Activities
+
           </h2>
 
           <div className="
@@ -841,32 +890,37 @@ ${a.title}`,
             {recentActivities.map(
               (activity: any) => (
 
-              <div
-                key={activity.id}
-                className="
-                  border
-                  rounded-2xl
-                  p-4
-                "
-              >
+                <div
+                  key={activity.id}
+                  className="
+                    border
+                    rounded-2xl
+                    p-4
+                  "
+                >
 
-                <h3 className="
-                  font-bold
-                  text-blue-900
-                ">
-                  {activity.title}
-                </h3>
+                  <h3 className="
+                    font-bold
+                    text-blue-900
+                  ">
 
-                <p className="
-                  text-gray-600
-                  mt-1
-                ">
-                  {activity.activity_date}
-                </p>
+                    {activity.title}
 
-              </div>
+                  </h3>
 
-            ))}
+                  <p className="
+                    text-gray-600
+                    mt-1
+                  ">
+
+                    {activity.activity_date}
+
+                  </p>
+
+                </div>
+
+              )
+            )}
 
           </div>
 
@@ -887,7 +941,9 @@ ${a.title}`,
             text-blue-900
             mb-5
           ">
+
             Recent Assignments
+
           </h2>
 
           <div className="
@@ -897,84 +953,98 @@ ${a.title}`,
             {recentAssignments.map(
               (assign: any) => (
 
-              <div
-                key={assign.id}
-                className="
-                  border
-                  rounded-2xl
-                  p-4
-                  flex
-                  items-center
-                  gap-4
-                "
-              >
-
-                {assign.employees?.photo_url ? (
-
-                  <img
-                    src={
-                      assign.employees.photo_url
-                    }
-                    alt="Employee"
-                    className="
-                      w-14 h-14
-                      rounded-full
-                      object-cover
-                    "
-                  />
-
-                ) : (
-
-                  <div className="
-                    w-14 h-14
-                    rounded-full
-                    bg-blue-100
-                    text-blue-700
+                <div
+                  key={assign.id}
+                  className="
+                    border
+                    rounded-2xl
+                    p-4
                     flex
                     items-center
-                    justify-center
-                    font-bold
-                  ">
+                    gap-4
+                  "
+                >
 
-                    {
-                      assign.employees?.name
-                        ?.charAt(0)
-                    }
+                  {assign.employees?.photo_url ? (
+
+                    <img
+                      src={
+                        assign.employees
+                          .photo_url
+                      }
+                      alt="Employee"
+                      className="
+                        w-14
+                        h-14
+                        rounded-full
+                        object-cover
+                      "
+                    />
+
+                  ) : (
+
+                    <div className="
+                      w-14
+                      h-14
+                      rounded-full
+                      bg-blue-100
+                      text-blue-700
+                      flex
+                      items-center
+                      justify-center
+                      font-bold
+                    ">
+
+                      {
+                        assign.employees?.name
+                          ?.charAt(0)
+                      }
+
+                    </div>
+
+                  )}
+
+                  <div>
+
+                    <h3 className="
+                      font-bold
+                      text-blue-900
+                    ">
+
+                      {
+                        assign.employees
+                          ?.name
+                      }
+
+                    </h3>
+
+                    <p className="
+                      text-gray-600
+                    ">
+
+                      {assign.task}
+
+                    </p>
+
+                    <p className="
+                      text-sm
+                      text-orange-600
+                      mt-1
+                    ">
+
+                      {
+                        assign.activities
+                          ?.title
+                      }
+
+                    </p>
 
                   </div>
 
-                )}
-
-                <div>
-
-                  <h3 className="
-                    font-bold
-                    text-blue-900
-                  ">
-                    {assign.employees?.name}
-                  </h3>
-
-                  <p className="
-                    text-gray-600
-                  ">
-                    {assign.task}
-                  </p>
-
-                  <p className="
-                    text-sm
-                    text-orange-600
-                    mt-1
-                  ">
-                    {
-                      assign.activities?.title
-                    }
-                  </p>
-
                 </div>
 
-              </div>
-
-            ))}
+              )
+            )}
 
           </div>
 
@@ -995,7 +1065,9 @@ ${a.title}`,
             text-blue-900
             mb-5
           ">
+
             Live Operations Feed
+
           </h2>
 
           <div className="
@@ -1008,41 +1080,44 @@ ${a.title}`,
                 index: number
               ) => (
 
-              <div
-                key={index}
-                className="
-                  border-l-4
-                  border-blue-500
-                  bg-blue-50
-                  rounded-2xl
-                  p-4
-                "
-              >
+                <div
+                  key={index}
+                  className="
+                    border-l-4
+                    border-blue-500
+                    bg-blue-50
+                    rounded-2xl
+                    p-4
+                  "
+                >
 
-                <p className="
-                  font-medium
-                  text-gray-800
-                ">
-                  {item.text}
-                </p>
+                  <p className="
+                    font-medium
+                    text-gray-800
+                  ">
 
-                <p className="
-                  text-sm
-                  text-gray-500
-                  mt-1
-                ">
-                  {
-                    new Date(
-                      item.created_at
-                    ).toLocaleString()
-                  }
-                </p>
+                    {item.text}
 
-              </div>
+                  </p>
 
-            ))}
+                  <p className="
+                    text-sm
+                    text-gray-500
+                    mt-1
+                  ">
 
-            
+                    {
+                      new Date(
+                        item.created_at
+                      ).toLocaleString()
+                    }
+
+                  </p>
+
+                </div>
+
+              )
+            )}
 
           </div>
 
@@ -1052,5 +1127,4 @@ ${a.title}`,
 
     </div>
   )
-  
 }

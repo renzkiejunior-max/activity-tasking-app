@@ -231,76 +231,125 @@ for (
           employee?.id
         )
 
-      // BLUE EVENTS
-      const activityEvents =
+// COLORS
+const colors = [
 
-        (activities || []).map(
-          (
-            item: any
-          ) => ({
+  '#2563eb',
+  '#16a34a',
+  '#ea580c',
+  '#9333ea',
+  '#dc2626',
+  '#0891b2',
+  '#ca8a04',
+  '#be123c',
+  '#0f766e',
+  '#7c3aed',
 
-            id: item.id,
+]
 
-            title:
-              item.title,
+// ACTIVITY EVENTS
+const activityEvents =
 
-            start:
-              item.activity_date,
+  (activities || []).map(
+    (
+      item: any
+    ) => {
 
-            backgroundColor:
-              '#2563eb',
+      // UNIQUE COLOR
+      const colorIndex =
 
-            borderColor:
-              '#2563eb',
+        item.id
+          .split('')
+          .reduce(
+            (
+              acc: number,
+              char: string
+            ) =>
 
-            extendedProps: {
+              acc +
+              char.charCodeAt(0),
 
-              type:
-                'Activity',
+            0
+          )
 
-              location:
-                item.location_name,
+        %
 
-              description:
-                item.description,
+        colors.length
 
-              status:
+      return {
 
-  new Date(
-    item.activity_date
-  ) < new Date()
+        id: item.id,
 
-    ? 'Completed'
+        title:
+          item.title,
 
-    : new Date(
-        item.activity_date
-      ).toDateString()
+        start:
+`${item.activity_date}T${item.activity_time || '00:00'}`,
 
-      ===
+        end:
+`${item.activity_date}T23:59:00`,
 
-      new Date()
-        .toDateString()
+        allDay: false,
 
-        ? 'Ongoing'
+        backgroundColor:
+          colors[colorIndex],
 
-        : 'Upcoming',
+        borderColor:
+          colors[colorIndex],
 
-              time:
-                item.activity_time,
+        extendedProps: {
 
-              attendees:
+          type:
+            'Activity',
 
-                attendees?.filter(
-                  (
-                    attendee: any
-                  ) =>
+          location:
+            item.location_name,
 
-                    attendee.activity_id ===
-                    item.id
-                ) || [],
-            },
-          })
-        )
+          venue:
+            item.venue_details,
+
+          description:
+            item.description,
+
+          status:
+
+            new Date(
+              item.activity_date
+            ) < new Date()
+
+              ? 'Completed'
+
+              : new Date(
+                  item.activity_date
+                ).toDateString()
+
+                ===
+
+                new Date()
+                  .toDateString()
+
+                  ? 'Ongoing'
+
+                  : 'Upcoming',
+
+          time:
+            item.activity_time,
+
+          attendees:
+
+            attendees?.filter(
+              (
+                attendee: any
+              ) =>
+
+                attendee.activity_id ===
+                item.id
+            ) || [],
+        },
+      }
+
+    }
+  )
 
       // ORANGE EVENTS
       const assignmentEvents =
@@ -318,8 +367,12 @@ for (
 'You are selected to attend',
 
                 start:
-                  item.activities
-                    ?.activity_date,
+`${item.activities?.activity_date}T${item.activities?.activity_time || '00:00'}`,
+
+end:
+`${item.activities?.activity_date}T23:59:00`,
+
+allDay: false,
 
                 backgroundColor:
                   '#f97316',
@@ -396,17 +449,14 @@ for (
 
       </div>
 
-      {/* MAIN GRID */}
-      <div className="
-        grid
-        grid-cols-1
-        xl:grid-cols-4
-        gap-6
-      ">
+      {/* MAIN WRAPPER */}
+<div className="
+  w-full
+">
 
         {/* CALENDAR */}
 <div className="
-  xl:col-span-3
+  w-full
 
   bg-linear-to-br
   from-blue-50
@@ -423,6 +473,8 @@ for (
 ">
 
           <FullCalendar
+
+          timeZone="local"
 
             plugins={[
 
@@ -448,6 +500,16 @@ for (
             }}
 
             events={events}
+
+            eventDidMount={(info) => {
+
+  info.el.style.backgroundColor =
+    info.event.backgroundColor
+
+  info.el.style.borderColor =
+    info.event.borderColor
+
+}}
 
             height="auto"
             contentHeight="auto"
@@ -503,11 +565,17 @@ dayCellClassNames={(arg) => {
 eventClassNames={() => [
 
   'rounded-xl',
-  'border-0',
-  'shadow-md',
+
+  'shadow-lg',
+
   'px-2',
   'py-1',
-  'font-semibold',
+
+  'font-bold',
+
+  'cursor-pointer',
+
+  'border-0',
 ]}
 
 buttonText={{
@@ -523,342 +591,507 @@ buttonText={{
 
         </div>
 
-        {/* SIDE PANEL */}
+        {/* EVENT MODAL */}
+{selectedEvent && (
+
+  <div className="
+    fixed
+    inset-0
+    z-50
+
+    bg-black/50
+    backdrop-blur-sm
+
+    flex
+    items-center
+    justify-center
+
+    p-4
+  ">
+
+    <div className="
+  bg-white
+
+  w-full
+  max-w-3xl
+
+  rounded-3xl
+
+  shadow-2xl
+
+  overflow-hidden
+
+  max-h-[90vh]
+
+  flex
+  flex-col
+">
+
+      {/* HEADER */}
+      <div className="
+        bg-linear-to-r
+        from-blue-800
+        via-blue-600
+        to-orange-500
+
+        p-8
+
+        text-white
+      ">
+
         <div className="
-          bg-white
-          rounded-3xl
-          shadow-xl
-          border
-
-          p-6
-
-          h-fit
+          flex
+          justify-between
+          items-start
+          gap-4
         ">
 
-          <h2 className="
-            text-2xl
-            font-bold
-            text-blue-900
-            mb-5
-          ">
-
-            Event Details
-
-          </h2>
-
-          {!selectedEvent && (
+          <div>
 
             <div className="
-              text-gray-400
-              italic
+              inline-flex
+              items-center
+              gap-2
+
+              bg-white/20
+
+              px-4
+              py-2
+
+              rounded-full
+
+              text-sm
+              font-semibold
             ">
 
-              Select an event
-              from the calendar
+              📅 Operations Calendar
 
             </div>
 
-          )}
+            <h2 className="
+              text-4xl
+              font-black
 
-          {selectedEvent && (
-
-            <div className="
-              space-y-4
+              mt-4
             ">
 
-              <div>
+              {
+                selectedEvent.title
+              }
 
-                <p className="
-                  text-sm
-                  text-gray-500
-                ">
+            </h2>
 
-                  Event
+          </div>
 
-                </p>
+          {/* CLOSE */}
+          <button
 
-                <h3 className="
-                  text-2xl
-                  font-bold
-                  text-blue-900
-                ">
+            onClick={() =>
+              setSelectedEvent(null)
+            }
 
-                  {
-                    selectedEvent.title
-                  }
+            className="
+              w-12
+              h-12
 
-                </h3>
+              rounded-2xl
 
-              </div>
+              bg-white/20
+              hover:bg-red-500
 
-              <div>
+              text-white
 
-                <p className="
-                  text-sm
-                  text-gray-500
-                ">
+              text-2xl
+              font-bold
+            "
+          >
 
-                  Type
+            ×
 
-                </p>
+          </button>
 
-                <div className="
-                  inline-flex
+        </div>
 
-                  px-4 py-2
+      </div>
 
-                  rounded-full
+      {/* BODY */}
+      <div className="
+  p-8
+  space-y-6
 
-                  bg-blue-100
-                  text-blue-700
+  overflow-y-auto
+">
 
-                  font-semibold
-                ">
+        {/* INFO GRID */}
+        <div className="
+          grid
+          md:grid-cols-2
+          gap-5
+        ">
 
-                  {
-                    selectedEvent
-                      .extendedProps
-                      .type
-                  }
+          {/* TYPE */}
+          <div className="
+            bg-blue-50
+            border
+            border-blue-100
 
-                </div>
+            rounded-2xl
 
-              </div>
+            p-5
+          ">
 
-              <div>
+            <p className="
+              text-sm
+              text-gray-500
+            ">
 
-                <p className="
-                  text-sm
-                  text-gray-500
-                ">
+              Event Type
 
-                  Date
+            </p>
 
-                </p>
+            <p className="
+              text-xl
+              font-bold
+              text-blue-900
+              mt-2
+            ">
 
-                <p className="
-                  font-semibold
-                ">
+              {
+                selectedEvent
+                  .extendedProps
+                  .type
+              }
 
-                  {
-  selectedEvent
-    ?.start
+            </p>
 
-    ? new Date(
-        selectedEvent.start
-      ).toLocaleDateString(
-        'en-US',
-        {
+          </div>
 
-          year: 'numeric',
+          {/* STATUS */}
+          <div className="
+            bg-orange-50
+            border
+            border-orange-100
 
-          month: 'long',
+            rounded-2xl
 
-          day: 'numeric',
+            p-5
+          ">
 
-        }
-      )
+            <p className="
+              text-sm
+              text-gray-500
+            ">
 
-    : 'N/A'
-}
+              Status
 
-                </p>
+            </p>
 
-              </div>
+            <p className="
+              text-xl
+              font-bold
+              text-orange-700
+              mt-2
+            ">
 
-              <div>
+              {
+                selectedEvent
+                  .extendedProps
+                  .status
+              }
 
-                <p className="
-                  text-sm
-                  text-gray-500
-                ">
+            </p>
 
-                  Time
+          </div>
 
-                </p>
+          {/* DATE */}
+          <div className="
+            bg-gray-50
+            border
 
-                <p className="
-                  font-semibold
-                ">
+            rounded-2xl
 
-                  {
-  selectedEvent
-    ?.extendedProps
-    ?.time
+            p-5
+          ">
 
-    ? new Date(
-        `1970-01-01T${selectedEvent.extendedProps.time}`
-      ).toLocaleTimeString(
-        'en-US',
-        {
+            <p className="
+              text-sm
+              text-gray-500
+            ">
 
-          hour: 'numeric',
+              Date
 
-          minute: '2-digit',
+            </p>
 
-          hour12: true,
+            <p className="
+              font-bold
+              mt-2
+            ">
 
-        }
-      )
+              {
+                selectedEvent?.start
 
-    : 'N/A'
-}
+                  ? new Date(
+                      selectedEvent.start
+                    ).toLocaleDateString(
+                      'en-US',
+                      {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      }
+                    )
 
-                </p>
+                  : 'N/A'
+              }
 
-              </div>
+            </p>
 
-              <div>
+          </div>
 
-                <p className="
-                  text-sm
-                  text-gray-500
-                ">
+          {/* TIME */}
+          <div className="
+            bg-gray-50
+            border
 
-                  Status
+            rounded-2xl
 
-                </p>
+            p-5
+          ">
 
-                <p className="
-                  font-semibold
-                ">
+            <p className="
+              text-sm
+              text-gray-500
+            ">
 
-                  {
-                    selectedEvent
-                      .extendedProps
-                      .status || 'N/A'
-                  }
+              Time
 
-                </p>
+            </p>
 
-              </div>
+            <p className="
+              font-bold
+              mt-2
+            ">
+
+              {
+                selectedEvent
+                  ?.extendedProps
+                  ?.time
+
+                ? new Date(
+                    `1970-01-01T${selectedEvent.extendedProps.time}`
+                  ).toLocaleTimeString(
+                    'en-US',
+                    {
+                      hour: 'numeric',
+                      minute: '2-digit',
+                      hour12: true,
+                    }
+                  )
+
+                : 'N/A'
+              }
+
+            </p>
+
+          </div>
+
+        </div>
+
+        {/* LOCATION */}
+        {selectedEvent
+          .extendedProps
+          .location && (
+
+          <div className="
+            bg-blue-50
+            border
+            border-blue-100
+
+            rounded-2xl
+
+            p-5
+          ">
+
+            <p className="
+              text-sm
+              text-gray-500
+            ">
+
+              Location
+
+            </p>
+
+            <p className="
+              font-semibold
+              text-blue-900
+              mt-2
+            ">
+
+              📍
+              {' '}
+
+              {
+                selectedEvent
+                  .extendedProps
+                  .location
+              }
+
+            </p>
+
+          </div>
+
+        )}
+
+   {/* VENUE */}
+<div className="
+  bg-purple-50
+  border
+  border-purple-100
+
+  rounded-2xl
+
+  p-5
+">
+
+  <p className="
+    text-sm
+    text-gray-500
+  ">
+
+    Venue Details
+
+  </p>
+
+  <p className="
+    font-semibold
+    text-purple-900
+    mt-2
+  ">
+
+    🏛️
+    {' '}
+
+    {
+      selectedEvent
+        ?.extendedProps
+        ?.venue ||
+
+        'No venue specified'
+    }
+
+  </p>
+
+</div>
+
+        {/* DESCRIPTION */}
+        {selectedEvent
+          .extendedProps
+          .description && (
+
+          <div className="
+            bg-gray-50
+            border
+
+            rounded-2xl
+
+            p-5
+          ">
+
+            <p className="
+              text-sm
+              text-gray-500
+            ">
+
+              Description
+
+            </p>
+
+            <p className="
+              mt-3
+              text-gray-700
+            ">
+
+              {
+                selectedEvent
+                  .extendedProps
+                  .description
+              }
+
+            </p>
+
+          </div>
+
+        )}
+
+        {/* ATTENDEES */}
+        {selectedEvent
+          .extendedProps
+          .attendees?.length > 0 && (
+
+          <div>
+
+            <h3 className="
+              text-xl
+              font-bold
+              text-blue-900
+              mb-4
+            ">
+
+              Attendees
+
+            </h3>
+
+            <div className="
+              flex
+              flex-wrap
+              gap-3
+            ">
 
               {selectedEvent
                 .extendedProps
-                .location && (
+                .attendees
+                .map(
+                  (
+                    attendee: any
+                  ) => (
 
-                <div>
+                  <div
+                    key={attendee.id}
 
-                  <p className="
-                    text-sm
-                    text-gray-500
-                  ">
+                    className="
+                      bg-orange-100
+                      text-orange-700
 
-                    Location
+                      px-4
+                      py-3
 
-                  </p>
+                      rounded-2xl
 
-                  <p className="
-                    font-semibold
-                  ">
+                      font-semibold
+                    "
+                  >
 
                     {
-                      selectedEvent
-                        .extendedProps
-                        .location
+                      attendee.attendee_name
                     }
-
-                  </p>
-
-                </div>
-
-              )}
-
-              {selectedEvent
-                .extendedProps
-                .description && (
-
-                <div>
-
-                  <p className="
-                    text-sm
-                    text-gray-500
-                  ">
-
-                    Description
-
-                  </p>
-
-                  <p className="
-                    text-gray-700
-                  ">
-
-                    {
-                      selectedEvent
-                        .extendedProps
-                        .description
-                    }
-
-                  </p>
-
-                </div>
-
-              )}
-
-              {/* ATTENDEES */}
-              {selectedEvent
-                .extendedProps
-                .attendees?.length > 0 && (
-
-                <div>
-
-                  <p className="
-                    text-sm
-                    text-gray-500
-                    mb-2
-                  ">
-
-                    Attendees
-
-                  </p>
-
-                  <div className="
-                    space-y-2
-                  ">
-
-                    {selectedEvent
-                      .extendedProps
-                      .attendees
-                      .map(
-                        (
-                          attendee: any
-                        ) => (
-
-                        <div
-                          key={attendee.id}
-
-                          className="
-                            bg-orange-100
-                            text-orange-700
-
-                            px-4 py-2
-
-                            rounded-xl
-
-                            text-sm
-                            font-medium
-                          "
-                        >
-
-                          {
-                            attendee.attendee_name
-                          }
-
-                        </div>
-
-                      ))}
 
                   </div>
 
-                </div>
-
-              )}
+                ))}
 
             </div>
 
-          )}
+          </div>
 
-        </div>
+        )}
+
+      </div>
+
+    </div>
+
+  </div>
+
+)}
 
       </div>
 
@@ -938,9 +1171,51 @@ buttonText={{
 
 /* EVENTS */
 .fc-event {
-  border-radius: 10px !important;
-  padding: 4px 6px !important;
+
+  border-radius: 14px !important;
+
+  padding: 6px 8px !important;
+
   font-size: 12px !important;
+
+  font-weight: 700 !important;
+
+  border: none !important;
+
+  overflow: hidden !important;
+
+  box-shadow:
+    0 4px 12px rgba(0,0,0,0.15) !important;
+
+  opacity: 1 !important;
+}
+
+/* EVENT MAIN */
+.fc-event-main {
+
+  color: white !important;
+
+}
+
+/* EVENT TITLE */
+.fc-event-title,
+.fc-event-time,
+.fc-event-main {
+
+  color: white !important;
+
+  font-weight: 800 !important;
+}
+
+/* EVENT HOVER */
+.fc-event:hover {
+
+  transform: scale(1.03);
+
+  transition: 0.2s ease;
+
+  opacity: 0.92;
+
 }
 
 /* WRAP EVENT TEXT */
@@ -974,6 +1249,40 @@ buttonText={{
 /* DAY CELL HEIGHT */
 .fc-daygrid-day-frame {
   min-height: 130px !important;
+}
+
+/* EVENT HOVER */
+.fc-event:hover {
+  transform: scale(1.02);
+  transition: 0.2s ease;
+  opacity: 0.95;
+}
+
+/* EVENT DOT */
+.fc-daygrid-event-dot {
+  display: none !important;
+}
+
+/* EVENT BORDER */
+.fc-event {
+  border-left: 6px solid rgba(255,255,255,0.7) !important;
+}
+
+@media (max-width: 768px) {
+
+  .fc-toolbar {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .fc-toolbar-title {
+    font-size: 1.2rem !important;
+  }
+
+  .fc-daygrid-day-frame {
+    min-height: 90px !important;
+  }
+
 }
 
 `}</style>

@@ -8,6 +8,10 @@ import {
 import { supabase }
 from '../../../lib/supabase'
 
+import {
+  offlineDB,
+} from '../../../lib/offline-db'
+
 export default function Page() {
 
   const [activities, setActivities] =
@@ -33,6 +37,11 @@ const [selectedEmployees,
   const [newAttendee, setNewAttendee] =
     useState<any>({})
 
+    const [searchTimeout,
+  setSearchTimeout] =
+  useState<any>(null)
+
+  
   // FORM
   const [title, setTitle] =
     useState('')
@@ -43,8 +52,16 @@ const [selectedEmployees,
   const [activityDate, setActivityDate] =
     useState('')
 
+    const [endDate,
+  setEndDate] =
+  useState('')
+
   const [activityTime, setActivityTime] =
     useState('')
+
+    const [endTime,
+  setEndTime] =
+  useState('')
 
   const [locationName, setLocationName] =
     useState('')
@@ -70,6 +87,10 @@ const [selectedEmployees,
   const [status, setStatus] =
     useState('upcoming')
 
+    const [venueDetails,
+  setVenueDetails] =
+  useState('')
+
   // CHECKLIST
   const [newChecklist, setNewChecklist] =
     useState<any>({})
@@ -81,15 +102,63 @@ const [selectedEmployees,
   // FETCH ACTIVITIES
   const fetchActivities = async () => {
 
+    const fetchActivities =
+  async () => {
+
+    // OFFLINE MODE
+    if (!navigator.onLine) {
+
+      const cached =
+        await offlineDB
+          .cache
+          .where('key')
+          .equals('activities')
+          .first()
+
+      if (cached?.data) {
+
+        setActivities(
+          cached.data
+        )
+      }
+
+      return
+    }
+
+    // ONLINE
     const { data } =
       await supabase
-        .from('activities')
-        .select('*')
-        .order('activity_date', {
-          ascending: true,
-        })
 
-    setActivities(data || [])
+        .from('activities')
+
+        .select('*')
+
+        .order(
+          'activity_date',
+          {
+            ascending: true,
+          }
+        )
+
+    setActivities(
+      data || []
+    )
+
+    // SAVE CACHE
+    await offlineDB
+      .cache
+      .put({
+
+        key:
+          'activities',
+
+        data:
+          data || [],
+
+        updated_at:
+          new Date()
+            .toISOString(),
+      })
   }
 
   // FETCH CHECKLISTS
@@ -167,41 +236,90 @@ const fetchEmployees =
 
   // SEARCH LOCATION
   const searchLocation =
-    async (query: string) => {
+  async (query: string) => {
 
-      if (!query.trim()) {
+    const cleanQuery =
+      query.trim()
 
-        setLocationSuggestions([])
+    if (!cleanQuery) {
 
-        setShowSuggestions(false)
+      setLocationSuggestions([])
 
-        return
-      }
+      setShowSuggestions(false)
 
-      try {
+      return
+    }
 
-        const response =
-          await fetch(
+    try {
 
-            `https://nominatim.openstreetmap.org/search?format=json&countrycodes=ph&limit=5&q=${encodeURIComponent(query)}`
+      // FORCE ILOILO SEARCH
+      const finalQuery =
 
-          )
+        cleanQuery.toLowerCase()
+          .includes('iloilo')
 
-        const data =
-          await response.json()
+          ? cleanQuery
+
+          : `${cleanQuery}, Iloilo, Philippines`
+
+      const response =
+        await fetch(
+
+          `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=10&q=${encodeURIComponent(finalQuery)}`,
+
+          {
+            headers: {
+              'Accept-Language': 'en',
+            },
+          }
+
+        )
+
+      const data =
+        await response.json()
+
+      console.log(
+        'LOCATION RESULTS:',
+        data
+      )
+
+      if (
+        Array.isArray(data) &&
+        data.length > 0
+      ) {
 
         setLocationSuggestions(
           data
         )
 
-        setShowSuggestions(true)
+        // FORCE OPEN
+        setTimeout(() => {
 
-      } catch (error) {
+          setShowSuggestions(
+            true
+          )
 
-        console.log(error)
+        }, 100)
+
+      } else {
+
+        setLocationSuggestions([])
+
+        setShowSuggestions(false)
+
 
       }
+
+    } catch (error) {
+
+      console.log(
+        'LOCATION ERROR:',
+        error
+      )
+
+ setShowSuggestions(false)
     }
+  }
 
   // RESET
   const resetForm = () => {
@@ -209,7 +327,9 @@ const fetchEmployees =
     setTitle('')
     setDescription('')
     setActivityDate('')
+    setEndDate('')
     setActivityTime('')
+    setEndTime('')
     setLocationName('')
     setLatitude('')
     setLongitude('')
@@ -243,11 +363,20 @@ const fetchEmployees =
       activity_date:
         activityDate,
 
+        end_date:
+        endDate,
+
       activity_time:
         activityTime,
 
+        end_time:
+        endTime,
+
       location_name:
         locationName,
+
+        venue_details:
+  venueDetails,
 
       latitude:
         latitude
@@ -270,7 +399,10 @@ const fetchEmployees =
     }
 
     // UPDATE
-    if (editingId) {
+    if (
+  editingId &&
+  editingId !== 'new'
+) {
 
       const { error } =
         await supabase
@@ -327,13 +459,22 @@ const fetchEmployees =
       activity.activity_date || ''
     )
 
+setEndDate(
+  activity.end_date || ''
+)
+
     setActivityTime(
       activity.activity_time || ''
     )
 
+    setEndTime(
+  activity.end_time || ''
+)
     setLocationName(
       activity.location_name || ''
     )
+
+setVenueDetails(activity.location_name || '')
 
     setLatitude(
       activity.latitude
@@ -930,325 +1071,994 @@ ${activity.activity_time}`,
 
 </div>
 
-{/* FORM */}
+{/* ACTIVITY MODAL */}
 {editingId && (
 
   <div className="
-    bg-white
-    rounded-3xl
-    shadow-xl
-    border
-    p-6
+    fixed
+    inset-0
+    z-50
+
+    bg-black/50
+    backdrop-blur-sm
+
+    flex
+    items-center
+    justify-center
+
+    p-4
   ">
 
-    <h2 className="
-      text-2xl
-      font-bold
-      text-blue-900
-      mb-6
-    ">
-
-      {
-        editingId !== 'new'
-          ? 'Edit Activity'
-          : 'Add Activity'
-      }
-
-    </h2>
-
     <div className="
-      grid
-      grid-cols-1
-      md:grid-cols-2
-      gap-4
+      relative
+
+      bg-white
+
+      w-full
+      max-w-5xl
+
+      rounded-3xl
+
+      shadow-2xl
+
+      overflow-hidden
     ">
 
-      <input
-        placeholder="Activity Title"
-        value={title}
-        onChange={(e) =>
-          setTitle(
-            e.target.value
-          )
-        }
-        className="
-          border
-          rounded-2xl
-          p-4
-        "
-      />
-
-      <input
-        placeholder="Description"
-        value={description}
-        onChange={(e) =>
-          setDescription(
-            e.target.value
-          )
-        }
-        className="
-          border
-          rounded-2xl
-          p-4
-        "
-      />
-
-      <input
-        placeholder="Focal Person"
-        value={focalPerson}
-        onChange={(e) =>
-          setFocalPerson(
-            e.target.value
-          )
-        }
-        className="
-          border
-          rounded-2xl
-          p-4
-        "
-      />
-
-      <input
-        placeholder="Program / Task Force"
-        value={programName}
-        onChange={(e) =>
-          setProgramName(
-            e.target.value
-          )
-        }
-        className="
-          border
-          rounded-2xl
-          p-4
-        "
-      />
-
-      <input
-        type="date"
-        value={activityDate}
-        onChange={(e) =>
-          setActivityDate(
-            e.target.value
-          )
-        }
-        className="
-          border
-          rounded-2xl
-          p-4
-        "
-      />
-
-      <input
-        type="time"
-        value={activityTime}
-        onChange={(e) =>
-          setActivityTime(
-            e.target.value
-          )
-        }
-        className="
-          border
-          rounded-2xl
-          p-4
-        "
-      />
-
-      {/* LOCATION */}
+      {/* HEADER */}
       <div className="
-        relative
-        md:col-span-2
+        bg-linear-to-r
+        from-orange-500
+        via-orange-400
+        to-amber-400
+
+        p-8
+
+        text-white
       ">
 
-        <input
+        <div className="
+          flex
+          justify-between
+          items-start
+          gap-4
+        ">
 
-          placeholder="Search Location"
+          <div>
 
-          value={locationName}
+            <div className="
+              inline-flex
+              items-center
+              gap-2
 
-          onChange={async (e) => {
+              bg-white/20
 
-            const value =
-              e.target.value
+              px-4
+              py-2
 
-            setLocationName(
-              value
-            )
+              rounded-full
 
-            await searchLocation(
-              value
-            )
+              text-sm
+              font-semibold
+            ">
 
-          }}
+              📅 Operations Activity
 
-          className="
-            border
-            rounded-2xl
-            p-4
-            w-full
-          "
-        />
+            </div>
 
-        {/* SUGGESTIONS */}
-        {showSuggestions &&
-          locationSuggestions.length > 0 && (
+            <h2 className="
+              text-4xl
+              font-black
 
-          <div className="
-            absolute
-            z-30
-            mt-2
-            w-full
-            bg-white
-            border
-            rounded-2xl
-            shadow-2xl
-            max-h-72
-            overflow-y-auto
-          ">
+              mt-4
+            ">
 
-            {locationSuggestions.map(
-              (
-                place: any,
-                index: number
-              ) => (
+              {
+                editingId !== 'new'
 
-              <button
+                  ? 'Edit Activity'
 
-                key={index}
+                  : 'Add Activity'
+              }
 
-                type="button"
+            </h2>
 
-                onClick={() => {
+            <p className="
+              text-orange-50
+              mt-3
+            ">
 
-                  setLocationName(
-                    place.display_name
-                  )
+              Create operational activities,
+              meetings,
+              simulations,
+              deployments,
+              and preparedness schedules.
 
-                  setLatitude(
-                    place.lat
-                  )
-
-                  setLongitude(
-                    place.lon
-                  )
-
-                  setShowSuggestions(
-                    false
-                  )
-                }}
-
-                className="
-                  w-full
-                  text-left
-                  p-4
-                  hover:bg-blue-50
-                  border-b
-                  text-sm
-                "
-              >
-
-                {place.display_name}
-
-              </button>
-
-            ))}
+            </p>
 
           </div>
 
-        )}
+          {/* CLOSE */}
+          <button
+
+            onClick={() => {
+
+              resetForm()
+
+              setEditingId(null)
+
+            }}
+
+            className="
+              w-12
+              h-12
+
+              rounded-2xl
+
+              bg-white/20
+              hover:bg-red-500
+
+              text-white
+
+              text-2xl
+              font-bold
+
+              transition
+            "
+          >
+
+            ×
+
+          </button>
+
+        </div>
 
       </div>
 
-      <select
-        value={status}
-        onChange={(e) =>
-          setStatus(
-            e.target.value
-          )
-        }
-        className="
-          border
-          rounded-2xl
-          p-4
-        "
-      >
+      {/* BODY */}
+      <div className="
+        p-8
 
-        <option value="upcoming">
-          Upcoming
-        </option>
+        max-h-[80vh]
+        overflow-y-auto
+      ">
 
-        <option value="ongoing">
-          Ongoing
-        </option>
+        {/* SECTION */}
+        <div className="
+          mb-8
+        ">
 
-        <option value="completed">
-          Completed
-        </option>
+          <h3 className="
+            text-2xl
+            font-bold
+            text-blue-900
+          ">
 
-        <option value="cancelled">
-          Cancelled
-        </option>
+            Activity Information
 
-      </select>
+          </h3>
+
+          <p className="
+            text-gray-500
+            mt-2
+          ">
+
+            Fill out operational activity details below.
+
+          </p>
+
+        </div>
+
+        {/* FORM GRID */}
+        <div className="
+          grid
+          grid-cols-1
+          md:grid-cols-2
+          gap-5
+        ">
+
+          {/* TITLE */}
+          <div>
+
+            <label className="
+              block
+              mb-2
+
+              text-sm
+              font-semibold
+              text-gray-700
+            ">
+
+              Activity Title
+
+            </label>
+
+            <input
+              placeholder="Enter activity title"
+              value={title}
+              onChange={(e) =>
+                setTitle(
+                  e.target.value
+                )
+              }
+              className="
+                w-full
+
+                border
+                border-gray-200
+
+                rounded-2xl
+
+                px-4
+                py-4
+
+                focus:outline-none
+                focus:ring-4
+                focus:ring-orange-100
+              "
+            />
+
+          </div>
+
+          {/* DESCRIPTION */}
+          <div>
+
+            <label className="
+              block
+              mb-2
+
+              text-sm
+              font-semibold
+              text-gray-700
+            ">
+
+              Description
+
+            </label>
+
+            <input
+              placeholder="Enter description"
+              value={description}
+              onChange={(e) =>
+                setDescription(
+                  e.target.value
+                )
+              }
+              className="
+                w-full
+
+                border
+                border-gray-200
+
+                rounded-2xl
+
+                px-4
+                py-4
+              "
+            />
+
+          </div>
+
+          {/* FOCAL PERSON */}
+          <div>
+
+            <label className="
+              block
+              mb-2
+
+              text-sm
+              font-semibold
+              text-gray-700
+            ">
+
+              Focal Person
+
+            </label>
+
+            <input
+              placeholder="Enter focal person"
+              value={focalPerson}
+              onChange={(e) =>
+                setFocalPerson(
+                  e.target.value
+                )
+              }
+              className="
+                w-full
+
+                border
+                border-gray-200
+
+                rounded-2xl
+
+                px-4
+                py-4
+              "
+            />
+
+          </div>
+
+          {/* PROGRAM */}
+          <div>
+
+            <label className="
+              block
+              mb-2
+
+              text-sm
+              font-semibold
+              text-gray-700
+            ">
+
+              Program / Task Force
+
+            </label>
+
+            <input
+              placeholder="Enter program"
+              value={programName}
+              onChange={(e) =>
+                setProgramName(
+                  e.target.value
+                )
+              }
+              className="
+                w-full
+
+                border
+                border-gray-200
+
+                rounded-2xl
+
+                px-4
+                py-4
+              "
+            />
+
+          </div>
+
+          {/* START DATE */}
+          <div>
+
+            <label className="
+              block
+              mb-2
+
+              text-sm
+              font-semibold
+              text-gray-700
+            ">
+
+              Start Date
+
+            </label>
+
+            <input
+              type="date"
+              value={activityDate}
+              onChange={(e) =>
+                setActivityDate(
+                  e.target.value
+                )
+              }
+              className="
+                w-full
+
+                border
+                border-gray-200
+
+                rounded-2xl
+
+                px-4
+                py-4
+              "
+            />
+
+          </div>
+
+          {/* END DATE */}
+          <div>
+
+            <label className="
+              block
+              mb-2
+
+              text-sm
+              font-semibold
+              text-gray-700
+            ">
+
+              End Date
+
+            </label>
+
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) =>
+                setEndDate(
+                  e.target.value
+                )
+              }
+              className="
+                w-full
+
+                border
+                border-gray-200
+
+                rounded-2xl
+
+                px-4
+                py-4
+              "
+            />
+
+          </div>
+
+          {/* START TIME */}
+          <div>
+
+            <label className="
+              block
+              mb-2
+
+              text-sm
+              font-semibold
+              text-gray-700
+            ">
+
+              Start Time
+
+            </label>
+
+            <input
+              type="time"
+              value={activityTime}
+              onChange={(e) =>
+                setActivityTime(
+                  e.target.value
+                )
+              }
+              className="
+                w-full
+
+                border
+                border-gray-200
+
+                rounded-2xl
+
+                px-4
+                py-4
+              "
+            />
+
+          </div>
+
+          {/* END TIME */}
+          <div>
+
+            <label className="
+              block
+              mb-2
+
+              text-sm
+              font-semibold
+              text-gray-700
+            ">
+
+              End Time
+
+            </label>
+
+            <input
+              type="time"
+              value={endTime}
+              onChange={(e) =>
+                setEndTime(
+                  e.target.value
+                )
+              }
+              className="
+                w-full
+
+                border
+                border-gray-200
+
+                rounded-2xl
+
+                px-4
+                py-4
+              "
+            />
+
+          </div>
+
+          {/* LOCATION */}
+<div className="
+  md:col-span-2
+  relative
+">
+
+  <label className="
+    block
+    mb-2
+
+    text-sm
+    font-semibold
+    text-gray-700
+  ">
+
+    Search Location
+
+  </label>
+
+  <div className="
+    flex
+    gap-3
+  ">
+
+    {/* INPUT */}
+    <input
+
+  placeholder="
+  Example:
+  Iloilo Provincial Capitol
+  "
+
+  value={locationName}
+
+  onChange={(e) => {
+
+  const value =
+    e.target.value
+
+  setLocationName(value)
+
+  // CLEAR OLD TIMER
+  if (searchTimeout) {
+
+    clearTimeout(
+      searchTimeout
+    )
+  }
+
+  // WAIT BEFORE SEARCHING
+  const timeout =
+    setTimeout(() => {
+
+      if (
+        value.length >= 3
+      ) {
+
+        searchLocation(value)
+
+      } else {
+
+        setShowSuggestions(
+          false
+        )
+      }
+
+    }, 700)
+
+  setSearchTimeout(
+    timeout
+  )
+
+}}
+
+  className="
+    flex-1
+
+    border
+    border-gray-200
+
+    rounded-2xl
+
+    px-4
+    py-4
+
+    focus:outline-none
+    focus:ring-4
+    focus:ring-orange-100
+  "
+/>
+
+{/* VENUE DETAILS */}
+<div className="
+  md:col-span-2
+">
+
+  <label className="
+    block
+    mb-2
+
+    text-sm
+    font-semibold
+    text-gray-700
+  ">
+
+    Venue / Room Details
+
+  </label>
+
+  <input
+
+    placeholder="
+    Example:
+    Building A,
+    4th Floor,
+    Conference Room A
+    "
+
+    value={venueDetails}
+
+    onChange={(e) =>
+      setVenueDetails(
+        e.target.value
+      )
+    }
+
+    className="
+      w-full
+
+      border
+      border-gray-200
+
+      rounded-2xl
+
+      px-4
+      py-4
+
+      focus:outline-none
+      focus:ring-4
+      focus:ring-orange-100
+    "
+  />
+
+  <p className="
+    text-xs
+    text-gray-500
+
+    mt-2
+  ">
+
+    Specify the exact venue,
+    room,
+    floor,
+    building,
+    or meeting hall.
+
+  </p>
+
+</div>
+
+    {/* SEARCH BUTTON */}
+    <button
+
+      type="button"
+
+      onClick={() =>
+        searchLocation(
+          `${locationName} Iloilo`
+        )
+      }
+
+      className="
+        bg-orange-500
+        hover:bg-orange-600
+
+        text-white
+
+        px-6
+        py-4
+
+        rounded-2xl
+
+        font-semibold
+
+        whitespace-nowrap
+      "
+    >
+
+      Search
+
+    </button>
+
+    {/* MAP BUTTON */}
+    <button
+
+      type="button"
+
+      onClick={() => {
+
+        if (!locationName)
+          return
+
+        window.open(
+
+          `https://www.google.com/maps/search/${encodeURIComponent(locationName)}`,
+
+          '_blank'
+        )
+
+      }}
+
+      className="
+        bg-blue-600
+        hover:bg-blue-700
+
+        text-white
+
+        px-6
+        py-4
+
+        rounded-2xl
+
+        font-semibold
+
+        whitespace-nowrap
+      "
+    >
+
+      Map
+
+    </button>
+
+  </div>
+
+  {/* HELPER */}
+  <p className="
+    text-xs
+    text-gray-500
+
+    mt-2
+  ">
+
+    Tip:
+    Add barangay,
+    municipality,
+    or “Iloilo”
+    for better search results.
+
+  </p>
+
+  {/* SUGGESTIONS */}
+  {showSuggestions &&
+    locationSuggestions.length > 0 && (
+
+    <div className="
+      absolute
+      z-30
+
+      mt-2
+
+      w-full
+
+      bg-white
+
+      border
+
+      rounded-2xl
+
+      shadow-2xl
+
+      max-h-72
+      overflow-y-auto
+    ">
+
+      {locationSuggestions.map(
+        (
+          place: any,
+          index: number
+        ) => (
+
+        <button
+
+          key={index}
+
+          type="button"
+
+          onClick={() => {
+
+            setLocationName(
+              place.display_name
+            )
+
+            setLatitude(
+              place.lat
+            )
+
+            setLongitude(
+              place.lon
+            )
+
+            setShowSuggestions(
+              false
+            )
+          }}
+
+          className="
+            w-full
+            text-left
+
+            p-4
+
+            hover:bg-orange-50
+
+            border-b
+
+            text-sm
+          "
+        >
+
+          <div className="
+            font-semibold
+            text-blue-900
+          ">
+
+            📍 {place.name || 'Location'}
+
+          </div>
+
+          <div className="
+            text-gray-600
+            mt-1
+          ">
+
+            {place.display_name}
+
+          </div>
+
+        </button>
+
+      ))}
 
     </div>
 
-    <div className="
-      flex
-      gap-4
-      mt-6
-    ">
+  )}
 
-      <button
+</div>
 
-        onClick={saveActivity}
+{/* DEBUG */}
+<p className="
+  text-xs
+  text-gray-400
+  mt-2
+">
 
-        className="
-          bg-orange-500
-          hover:bg-orange-600
+  Suggestions:
+  {locationSuggestions.length}
 
-          text-white
+</p>
 
-          px-6 py-4
+          {/* STATUS */}
+          <div>
 
-          rounded-2xl
+            <label className="
+              block
+              mb-2
 
-          font-semibold
-        "
-      >
+              text-sm
+              font-semibold
+              text-gray-700
+            ">
 
-        {
-          editingId !== 'new'
+              Status
 
-            ? 'Update Activity'
+            </label>
 
-            : 'Add Activity'
-        }
+            <select
+              value={status}
+              onChange={(e) =>
+                setStatus(
+                  e.target.value
+                )
+              }
+              className="
+                w-full
 
-      </button>
+                border
+                border-gray-200
 
-      <button
+                rounded-2xl
 
-        onClick={() => {
+                px-4
+                py-4
+              "
+            >
 
-          resetForm()
+              <option value="upcoming">
+                Upcoming
+              </option>
 
-          setEditingId(null)
+              <option value="ongoing">
+                Ongoing
+              </option>
 
-        }}
+              <option value="completed">
+                Completed
+              </option>
 
-        className="
-          bg-gray-300
-          hover:bg-gray-400
+              <option value="cancelled">
+                Cancelled
+              </option>
 
-          px-6 py-4
+            </select>
 
-          rounded-2xl
-        "
-      >
+          </div>
 
-        Cancel
+        </div>
 
-      </button>
+        {/* FOOTER */}
+        <div className="
+          flex
+          justify-end
+          gap-4
+
+          mt-10
+        ">
+
+          <button
+
+            onClick={() => {
+
+              resetForm()
+
+              setEditingId(null)
+
+            }}
+
+            className="
+              px-6
+              py-4
+
+              rounded-2xl
+
+              bg-gray-200
+              hover:bg-gray-300
+
+              font-semibold
+            "
+          >
+
+            Cancel
+
+          </button>
+
+          <button
+
+            onClick={saveActivity}
+
+            className="
+              px-8
+              py-4
+
+              rounded-2xl
+
+              bg-orange-500
+              hover:bg-orange-600
+
+              text-white
+
+              font-bold
+
+              shadow-lg
+            "
+          >
+
+            {
+              editingId !== 'new'
+
+                ? 'Update Activity'
+
+                : 'Add Activity'
+            }
+
+          </button>
+
+        </div>
+
+      </div>
 
     </div>
 
@@ -1350,6 +2160,26 @@ ${activity.activity_time}`,
 
               <div>
                 📍 {activity.location_name}
+
+                {activity.venue_details && (
+
+  <div>
+
+    🏢 Venue:
+    {' '}
+
+    <span className="
+      font-semibold
+      text-blue-800
+    ">
+
+      {activity.venue_details}
+
+    </span>
+
+  </div>
+
+)}
               </div>
 
               <div>
@@ -1926,4 +2756,5 @@ ${activity.activity_time}`,
 
     </div>
   )
+}
 }
