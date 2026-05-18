@@ -1,18 +1,14 @@
 
 'use client'
 
-import { useState }
-from 'react'
+import { useState } from 'react'
 
-import Link
-from 'next/link'
+import Link from 'next/link'
 
-import {
-  usePathname,
-} from 'next/navigation'
+import {   usePathname, } from 'next/navigation'
 
-import { useAuth }
-from '@/contexts/AuthContext'
+import { useAuth } from '@/contexts/AuthContext'
+
 import { icon } from 'leaflet'
 
 const roleLinks: any = {
@@ -404,7 +400,7 @@ const uniqueLinks =
         left-0
 
         h-screen
-        w-72
+        w-64
 
         bg-blue-900
         text-white

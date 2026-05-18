@@ -430,7 +430,7 @@ allDay: false,
       <div>
 
         <h1 className="
-          text-5xl
+          text-2xl
           font-bold
           text-blue-900
         ">
@@ -639,7 +639,7 @@ buttonText={{
         via-blue-600
         to-orange-500
 
-        p-8
+        p-6
 
         text-white
       ">
@@ -660,8 +660,8 @@ buttonText={{
 
               bg-white/20
 
-              px-4
-              py-2
+              px-3
+              py-1.5
 
               rounded-full
 
@@ -674,7 +674,7 @@ buttonText={{
             </div>
 
             <h2 className="
-              text-4xl
+              text-xl
               font-black
 
               mt-4
@@ -696,18 +696,17 @@ buttonText={{
             }
 
             className="
-              w-12
-              h-12
+              w-8
+              h-6
 
-              rounded-2xl
+              rounded-xl
 
               bg-white/20
               hover:bg-red-500
 
               text-white
 
-              text-2xl
-              font-bold
+              text-xl
             "
           >
 

@@ -94,12 +94,16 @@ export default function ProtectedLayout({
 
       {/* MAIN */}
       <div className="
-        flex-1
-        flex
-        flex-col
+  flex-1
 
-        lg:ml-64
-      ">
+  flex
+  flex-col
+
+  w-full
+  min-w-0
+
+  lg:ml-64
+">
 
         {/* TOPBAR */}
         <Topbar />
@@ -109,7 +113,6 @@ export default function ProtectedLayout({
   flex-1
 
   w-full
-  max-w-full
   min-w-0
 
   overflow-x-hidden
@@ -118,7 +121,9 @@ export default function ProtectedLayout({
   md:p-8
 
   pt-24
-  md:pt-8
+  lg:pt-8
+
+  mx-auto
 ">
 
           {children}
