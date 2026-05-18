@@ -55,6 +55,11 @@ const [showForm,
   setShowForm] =
   useState(false)
 
+  const [
+  showAnalytics,
+  setShowAnalytics
+] = useState(false)
+
   // FETCH EMPLOYEES
   const fetchEmployees = async () => {
 
@@ -671,10 +676,13 @@ const groupedAssignments =
   return (
 
     <div className="
-      w-full
-      min-w-0
-      space-y-6
-    ">
+  w-full
+  min-w-0
+  overflow-x-hidden
+
+  space-y-4
+  lg:space-y-6
+">
 
       {/* HEADER CARD */}
 <div className="
@@ -808,7 +816,54 @@ const groupedAssignments =
 
 </div>
 
+{/* ANALYTICS TOGGLE */}
+<div className="
+  flex
+  justify-end
+">
+
+  <button
+
+    onClick={() =>
+      setShowAnalytics(
+        !showAnalytics
+      )
+    }
+
+    className="
+      bg-blue-600
+      hover:bg-blue-700
+
+      text-white
+
+      px-5
+      py-3
+
+      rounded-2xl
+
+      font-semibold
+
+      shadow-lg
+
+      transition
+    "
+  >
+
+    {
+      showAnalytics
+
+        ? 'Hide Analytics'
+
+        : 'View Analytics'
+    }
+
+  </button>
+
+</div>
+
 {/* KPI CARDS */}
+{showAnalytics && (
+
 <div className="
   grid
   grid-cols-1
@@ -985,6 +1040,8 @@ const groupedAssignments =
   </div>
 
 </div>
+
+    )}
 
 {/* ASSIGNMENT MODAL */}
 {showForm && (

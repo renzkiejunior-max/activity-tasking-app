@@ -37,30 +37,69 @@ export default function Page() {
 
     // GROUP TASKS
     const groupedActivities =
-      activityData?.map((activity) => {
+  activityData?.map(
+    (activity) => {
 
-        const relatedAssignments =
-          assignments?.filter(
-            (assign: any) =>
-              assign.activity_id ===
-              activity.id
-          ) || []
+      const relatedAssignments =
+        assignments?.filter(
+          (assign: any) =>
+            assign.activity_id ===
+            activity.id
+        ) || []
 
-        // SORT DEADLINES
-        relatedAssignments.sort(
-          (a: any, b: any) =>
-            new Date(a.deadline)
-              .getTime() -
-            new Date(b.deadline)
-              .getTime()
+      // GROUP BY TASK
+      const groupedTasks =
+        Object.values(
+
+          relatedAssignments
+            .reduce(
+              (
+                acc: any,
+                item: any
+              ) => {
+
+                const task =
+                  item.task
+
+                if (
+                  !acc[task]
+                ) {
+
+                  acc[task] = {
+
+                    task,
+
+                    deadline:
+                      item.deadline,
+
+                    status:
+                      item.status,
+
+                    employees: [],
+                  }
+                }
+
+                acc[task]
+                  .employees
+                  .push(item.employees)
+
+                return acc
+
+              },
+
+              {}
+            )
         )
 
-        return {
-          ...activity,
-          assignments:
-            relatedAssignments,
-        }
-      })
+      return {
+
+        ...activity,
+
+        assignments:
+          groupedTasks,
+      }
+    }
+  )
 
     setActivities(
       groupedActivities || []
@@ -106,8 +145,13 @@ export default function Page() {
   return (
 
     <div className="
-      space-y-10
-    ">
+  w-full
+  min-w-0
+  overflow-x-hidden
+
+  space-y-4
+  lg:space-y-6
+">
 
       {/* HEADER */}
       <div>
@@ -205,6 +249,7 @@ export default function Page() {
             </div>
 
           </div>
+          
 
           {/* TIMELINE */}
           <div className="
@@ -286,7 +331,7 @@ export default function Page() {
                 (assign: any) => (
 
                 <div
-                  key={assign.id}
+                  key={`${activity.id}-${assign.task}`}
                   className="
                     relative
                     pl-24
@@ -370,90 +415,141 @@ export default function Page() {
 
                     </div>
 
-                    {/* PERSONNEL */}
-                    <div className="
-                      mt-5
-                      flex items-center
-                      gap-4
-                    ">
+{/* PERSONNEL */}
+<div className="
+  mt-5
+">
 
-                      {/* PHOTO */}
-                      {assign.employees
-                        ?.photo_url ? (
+  <p className="
+    text-sm
+    text-gray-500
+    mb-4
+  ">
 
-                        <img
-                          src={
-                            assign.employees
-                              .photo_url
-                          }
-                          alt={
-                            assign.employees
-                              .name
-                          }
-                          className="
-                            w-14 h-14
-                            rounded-full
-                            object-cover
-                            border
-                            shadow
-                          "
-                        />
+    Assigned Personnel
 
-                      ) : (
+  </p>
 
-                        <div className="
-                          w-14 h-14
-                          rounded-full
-                          bg-blue-100
-                          text-blue-700
+  <div className="
+    flex
+    flex-wrap
+    gap-4
+  ">
 
-                          flex
-                          items-center
-                          justify-center
+    {Array.isArray(
+  assign.employees
+)
 
-                          font-bold
-                        ">
+  ? assign.employees.map(
+      (
+        employee: any,
+        index: number
+      ) => (
 
-                          {
-                            assign.employees
-                              ?.name
-                              ?.charAt(0)
-                          }
+      <div
+        key={index}
+        className="
+          flex
+          items-center
+          gap-3
 
-                        </div>
+          bg-white
 
-                      )}
+          border
 
-                      {/* INFO */}
-                      <div>
+          rounded-2xl
 
-                        <p className="
-                          font-bold
-                          text-blue-900
-                        ">
-                          {
-                            assign.employees
-                              ?.name
-                          }
-                        </p>
+          px-4 py-3
 
-                        <p className="
-                          text-sm
-                          text-gray-600
-                          mt-1
-                        ">
-                          Assigned Personnel
-                        </p>
+          shadow-sm
+        "
+      >
 
-                      </div>
+        {/* PHOTO */}
+        {employee
+          ?.photo_url ? (
+
+          <img
+            src={
+              employee
+                .photo_url
+            }
+            alt={
+              employee
+                .name
+            }
+            className="
+              w-12 h-12
+              rounded-full
+              object-cover
+              border
+            "
+          />
+
+        ) : (
+
+          <div className="
+            w-12 h-12
+            rounded-full
+
+            bg-blue-100
+            text-blue-700
+
+            flex
+            items-center
+            justify-center
+
+            font-bold
+          ">
+
+            {
+              employee
+                ?.name
+                ?.charAt(0)
+            }
+
+          </div>
+
+        )}
+
+        {/* INFO */}
+        <div>
+
+          <p className="
+            font-bold
+            text-blue-900
+          ">
+
+            {employee?.name}
+
+          </p>
+
+          <p className="
+            text-xs
+            text-gray-500
+          ">
+
+            Assigned Personnel
+
+          </p>
+
+        </div>
+
+      </div>
+
+        ))
+
+  : null}
 
                     </div>
 
-                  </div>
-
                 </div>
 
-              ))}
+              </div>
+
+            </div>
+
+            ))}
 
             </div>
 

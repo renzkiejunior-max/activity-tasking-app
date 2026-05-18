@@ -86,7 +86,7 @@ export default function Page() {
   setSearchTimeout] =
   useState<any>(null)
 
-  
+
   // FETCH EMPLOYEES
   const fetchEmployees =
     async () => {
@@ -406,8 +406,13 @@ export default function Page() {
     >
 
       <div className="
-        space-y-6
-      ">
+  w-full
+  min-w-0
+  overflow-x-hidden
+
+  space-y-4
+  lg:space-y-6
+">
 
 {/* HEADER CARD */}
 <div className="

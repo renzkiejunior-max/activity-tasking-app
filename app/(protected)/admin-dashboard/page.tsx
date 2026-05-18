@@ -213,9 +213,50 @@ export default function Page() {
             ascending: false,
           })
 
-      setRecentAssignments(
-        assignments?.slice(0, 5) || []
+      const groupedAssignments =
+  Object.values(
+
+    (assignments || [])
+      .reduce(
+        (
+          acc: any,
+          item: any
+        ) => {
+
+          const title =
+            item.activities
+              ?.title ||
+            'No Activity'
+
+          if (
+            !acc[title]
+          ) {
+
+            acc[title] = {
+
+              activity:
+                title,
+
+              attendees: [],
+            }
+          }
+
+          acc[title]
+            .attendees
+            .push(item)
+
+          return acc
+
+        },
+
+        {}
       )
+  )
+
+setRecentAssignments(
+  groupedAssignments
+    .slice(0, 5)
+)
 
       // STATUS
       const pending =
@@ -546,10 +587,13 @@ ${a.title}`,
   return (
 
     <div className="
-      space-y-8
-      w-full
-      min-w-0
-    ">
+  w-full
+  min-w-0
+  overflow-x-hidden
+
+  space-y-4
+  lg:space-y-6
+">
 
       {/* HEADER */}
       <div>
@@ -952,10 +996,15 @@ ${a.title}`,
                 <div
                   key={activity.id}
                   className="
-                    border
-                    rounded-2xl
-                    p-4
-                  "
+  rounded-2xl
+  p-4
+  bg-linear-to-br
+  from-blue-50
+  to-white
+  border
+  border-blue-200
+  shadow-sm
+"
                 >
 
                   <h3 className="
@@ -1010,100 +1059,135 @@ ${a.title}`,
           ">
 
             {recentAssignments.map(
-              (assign: any) => (
+  (
+    group: any,
+    index: number
+  ) => (
 
-                <div
-                  key={assign.id}
+    <div
+      key={index}
+      className="
+        rounded-3xl
+        p-5
+        bg-linear-to-br
+        from-orange-50
+        to-white
+        border
+        border-orange-200
+        shadow-md
+      "
+    >
+
+      <h3 className="
+        font-bold
+        text-lg
+        text-orange-700
+        mb-4
+      ">
+
+        {group.activity}
+
+      </h3>
+
+      <div className="
+        space-y-3
+      ">
+
+        {group.attendees.map(
+          (assign: any) => (
+
+            <div
+              key={assign.id}
+              className="
+                flex
+                items-center
+                gap-3
+                bg-white
+                rounded-2xl
+                p-3
+                border
+              "
+            >
+
+              {assign.employees
+                ?.photo_url ? (
+
+                <img
+                  src={
+                    assign.employees
+                      .photo_url
+                  }
+                  alt="Employee"
                   className="
-                    border
-                    rounded-2xl
-                    p-4
-                    flex
-                    items-center
-                    gap-4
+                    w-12
+                    h-12
+                    rounded-full
+                    object-cover
                   "
-                >
+                />
 
-                  {assign.employees?.photo_url ? (
+              ) : (
 
-                    <img
-                      src={
-                        assign.employees
-                          .photo_url
-                      }
-                      alt="Employee"
-                      className="
-                        w-14
-                        h-14
-                        rounded-full
-                        object-cover
-                      "
-                    />
+                <div className="
+                  w-12
+                  h-12
+                  rounded-full
+                  bg-orange-100
+                  text-orange-700
+                  flex
+                  items-center
+                  justify-center
+                  font-bold
+                ">
 
-                  ) : (
-
-                    <div className="
-                      w-14
-                      h-14
-                      rounded-full
-                      bg-blue-100
-                      text-blue-700
-                      flex
-                      items-center
-                      justify-center
-                      font-bold
-                    ">
-
-                      {
-                        assign.employees?.name
-                          ?.charAt(0)
-                      }
-
-                    </div>
-
-                  )}
-
-                  <div>
-
-                    <h3 className="
-                      font-bold
-                      text-blue-900
-                    ">
-
-                      {
-                        assign.employees
-                          ?.name
-                      }
-
-                    </h3>
-
-                    <p className="
-                      text-gray-600
-                    ">
-
-                      {assign.task}
-
-                    </p>
-
-                    <p className="
-                      text-sm
-                      text-orange-600
-                      mt-1
-                    ">
-
-                      {
-                        assign.activities
-                          ?.title
-                      }
-
-                    </p>
-
-                  </div>
+                  {
+                    assign
+                      .employees
+                      ?.name
+                      ?.charAt(0)
+                  }
 
                 </div>
 
-              )
-            )}
+              )}
+
+              <div>
+
+                <p className="
+                  font-semibold
+                  text-gray-800
+                ">
+
+                  {
+                    assign
+                      .employees
+                      ?.name
+                  }
+
+                </p>
+
+                <p className="
+                  text-sm
+                  text-gray-500
+                ">
+
+                  {assign.task}
+
+                </p>
+
+              </div>
+
+            </div>
+
+          )
+        )}
+
+      </div>
+
+    </div>
+
+  )
+)}
 
           </div>
 
@@ -1144,7 +1228,9 @@ ${a.title}`,
                   className="
                     border-l-4
                     border-blue-500
-                    bg-blue-50
+                   bg-linear-to-br
+                  from-blue-50
+                  to-white
                     rounded-2xl
                     p-4
                   "

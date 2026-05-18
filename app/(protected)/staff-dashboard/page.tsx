@@ -384,8 +384,13 @@ setTempTasks(
     >
 
       <div className="
-        space-y-8
-      ">
+  w-full
+  min-w-0
+  overflow-x-hidden
+
+  space-y-4
+  lg:space-y-6
+">
 
         {/* HEADER */}
         <div className="
