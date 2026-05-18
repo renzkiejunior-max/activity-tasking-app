@@ -1,21 +1,14 @@
 'use client'
 
-import Sidebar
-from '@/components/Sidebar'
+import Sidebar from '@/components/Sidebar'
 
-import Topbar
-from '@/components/Topbar'
+import Topbar from '@/components/Topbar'
 
-import { useAuth }
-from '@/contexts/AuthContext'
+import { useAuth } from '@/contexts/AuthContext'
 
-import {
-  useRouter,
-} from 'next/navigation'
+import {  useRouter, } from 'next/navigation'
 
-import {
-  useEffect,
-} from 'react'
+import {   useEffect, } from 'react'
 
 export default function ProtectedLayout({
   children,
@@ -86,9 +79,15 @@ export default function ProtectedLayout({
   return (
 
     <div className="
-      flex
-      min-h-screen
-    ">
+  flex
+
+  w-full
+  max-w-full
+
+  overflow-x-hidden
+
+  min-h-screen
+">
 
       {/* SIDEBAR */}
       <Sidebar />
@@ -99,7 +98,7 @@ export default function ProtectedLayout({
         flex
         flex-col
 
-        lg:ml-72
+        lg:ml-64
       ">
 
         {/* TOPBAR */}
@@ -107,16 +106,20 @@ export default function ProtectedLayout({
 
         {/* CONTENT */}
         <main className="
-          flex-1
+  flex-1
 
-          p-4
-          md:p-8
+  w-full
+  max-w-full
+  min-w-0
 
-          pt-24
-          md:pt-8
+  overflow-x-hidden
 
-          overflow-x-hidden
-        ">
+  p-4
+  md:p-8
+
+  pt-24
+  md:pt-8
+">
 
           {children}
 

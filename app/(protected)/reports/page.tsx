@@ -168,11 +168,19 @@ const downloadPDF = async () => {
 
     <div className="
   w-full
+
+  max-w-7xl
+  mx-auto
+
   min-w-0
+
   overflow-x-hidden
 
   space-y-4
   lg:space-y-6
+
+  p-3
+  lg:p-6
 ">
 
       {/* HEADER */}
@@ -210,11 +218,16 @@ const downloadPDF = async () => {
       ">
 
         <div className="
-          flex
-          flex-col
-          md:flex-row
-          gap-4
-        ">
+  flex
+  flex-col
+
+  lg:flex-row
+
+  gap-4
+
+  w-full
+  min-w-0
+">
 
           {/* SELECT */}
           <select
@@ -226,12 +239,21 @@ const downloadPDF = async () => {
             }
 
             className="
-              flex-1
-              border
-              rounded-xl
-              p-4
-              text-black
-            "
+  w-full
+
+  flex-1
+
+  border
+
+  rounded-xl
+
+  px-4
+  py-3
+
+  text-black
+
+  min-w-0
+"
           >
 
             <option value="">
@@ -256,8 +278,16 @@ const downloadPDF = async () => {
 
           {/* BUTTONS */}
           <div className="
-            flex gap-4
-          ">
+  flex
+  flex-col
+
+  sm:flex-row
+
+  gap-3
+
+  w-full
+  lg:w-auto
+">
 
             {/* PRINT */}
             <button
@@ -305,22 +335,297 @@ const downloadPDF = async () => {
 
       </div>
 
+{/* MOBILE REPORT PREVIEW */}
+<div className="
+  lg:hidden
+
+  bg-white
+
+  rounded-2xl
+
+  shadow-xl
+  border
+
+  overflow-hidden
+">
+
+  {/* PREVIEW HEADER */}
+  <div className="
+    bg-linear-to-r
+    from-blue-700
+    to-blue-900
+
+    text-white
+
+    p-5
+  ">
+
+    <h2 className="
+      text-xl
+      font-bold
+    ">
+
+      Report Preview
+
+    </h2>
+
+    <p className="
+      text-blue-100
+      mt-1
+      text-sm
+    ">
+
+      Printable report preview
+
+    </p>
+
+  </div>
+
+  {/* PREVIEW BODY */}
+  <div className="
+    p-5
+    space-y-5
+  ">
+
+    {/* DOCUMENT MOCKUP */}
+    <div className="
+      bg-gray-100
+
+      border
+
+      rounded-2xl
+
+      p-4
+
+      space-y-4
+    ">
+
+      <div className="
+        text-center
+        border-b
+        pb-4
+      ">
+
+        <h3 className="
+          font-bold
+          text-gray-800
+        ">
+
+          ACTIVITY ASSIGNMENT REPORT
+
+        </h3>
+
+      </div>
+
+      <div className="
+        space-y-2
+        text-sm
+      ">
+
+        <p>
+
+  <span className="
+    font-semibold
+  ">
+    Activity:
+  </span>
+
+  {' '}
+
+  {selectedActivity?.title || 'No activity selected'}
+
+</p>
+
+<p>
+
+  <span className="
+    font-semibold
+  ">
+    Date:
+  </span>
+
+  {' '}
+
+  {
+    selectedActivity?.activity_date
+
+      ? new Date(
+          selectedActivity.activity_date
+        ).toLocaleDateString(
+          'en-US',
+          {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          }
+        )
+
+      : 'No date available'
+  }
+
+</p>
+
+        <p>
+
+          <span className="
+            font-semibold
+          ">
+            Personnel:
+          </span>
+
+          {' '}
+
+          {assignments.length}
+
+        </p>
+
+      </div>
+
+      {/* PREVIEW PERSONNEL */}
+      <div className="
+        mt-4
+        space-y-2
+      ">
+
+        {assignments
+          .slice(0, 3)
+          .map((assign: any) => (
+
+          <div
+            key={assign.id}
+
+            className="
+              flex
+              items-center
+
+              gap-3
+
+              bg-white
+
+              border
+
+              rounded-xl
+
+              px-3
+              py-2
+            "
+          >
+
+            <div className="
+              w-8
+              h-8
+
+              rounded-full
+
+              bg-blue-100
+
+              flex
+              items-center
+              justify-center
+
+              text-xs
+              font-bold
+              text-blue-700
+            ">
+
+              {
+                assign.employees
+                  ?.name
+                  ?.charAt(0)
+              }
+
+            </div>
+
+            <div className="
+              min-w-0
+            ">
+
+              <p className="
+                text-sm
+                font-semibold
+
+                truncate
+              ">
+
+                {
+                  assign.employees
+                    ?.name
+                }
+
+              </p>
+
+              <p className="
+                text-xs
+                text-gray-500
+              ">
+
+                {assign.status}
+
+              </p>
+
+            </div>
+
+          </div>
+
+        ))}
+
+      </div>
+
+    </div>
+
+    {/* NOTE */}
+    <div className="
+      bg-blue-50
+
+      border
+
+      rounded-xl
+
+      p-4
+
+      text-sm
+      text-blue-800
+    ">
+
+      Full printable report is
+      optimized for desktop and PDF.
+
+    </div>
+
+  </div>
+
+</div>
+
       {/* REPORT */}
       {selectedActivity && (
 
-        <div
-          id="print-area"
-          className="
-            bg-white
-            rounded-3xl
-            shadow-xl
-            border
-            p-10
 
-            print:shadow-none
-            print:border-none
-          "
-        >
+
+        <div
+  id="print-area"
+
+  className="
+    hidden
+    lg:block
+
+    bg-white
+
+    rounded-2xl
+    lg:rounded-3xl
+
+    shadow-xl
+    border
+
+    p-4
+    lg:p-10
+
+    print:block
+
+    print:shadow-none
+    print:border-none
+  "
+>
 
           {/* GOVERNMENT HEADER */}
           <div className="
@@ -349,7 +654,8 @@ const downloadPDF = async () => {
             </p>
 
             <h1 className="
-              text-3xl
+              text-xl
+              lg:text-3xl
               font-bold
               mt-6
             ">
@@ -429,14 +735,20 @@ const downloadPDF = async () => {
 
           {/* TABLE */}
           <div className="
-            mt-10
-            overflow-x-auto
-          ">
+  mt-8
+
+  w-full
+
+  overflow-x-auto
+">
 
             <table className="
-              w-full
-              border-collapse
-            ">
+  min-w-225
+
+  w-full
+
+  border-collapse
+">
 
               <thead>
 
@@ -502,9 +814,13 @@ const downloadPDF = async () => {
                     ">
 
                       <div className="
-                        flex items-center
-                        gap-3
-                      ">
+  flex
+  items-center
+
+  gap-3
+
+  min-w-0
+">
 
                         {assign.employees
                           ?.photo_url ? (
@@ -553,8 +869,11 @@ const downloadPDF = async () => {
                         <div>
 
                           <p className="
-                            font-bold
-                          ">
+  font-bold
+
+  wrap-break-word
+  leading-tight
+">
                             {
                               assign.employees
                                 ?.name

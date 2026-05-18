@@ -146,18 +146,24 @@ export default function Page() {
 
     <div className="
   w-full
+  max-w-full
   min-w-0
+
   overflow-x-hidden
 
   space-y-4
   lg:space-y-6
+
+  p-3
+  lg:p-6
 ">
 
       {/* HEADER */}
       <div>
 
         <h1 className="
-          text-4xl
+          text-2xl
+lg:text-4xl
           font-bold
           text-blue-900
         ">
@@ -200,18 +206,32 @@ export default function Page() {
           ">
 
             <div className="
-              flex
-              items-start
-              justify-between
-              gap-4
-            ">
+  flex
+  flex-col
+  sm:flex-row
+
+  sm:items-start
+  sm:justify-between
+
+  gap-4
+
+  min-w-0
+">
 
               <div>
 
                 <h2 className="
-                  text-3xl
-                  font-bold
-                ">
+  text-lg
+  sm:text-xl
+  lg:text-3xl
+
+  font-bold
+
+  wrap-break-word
+  leading-tight
+
+  max-w-full
+">
                   📅 {activity.title}
                 </h2>
 
@@ -225,24 +245,50 @@ export default function Page() {
               </div>
 
               <div className="
-                text-right
-              ">
+  flex
+  flex-col
+
+  items-start
+
+  text-left
+
+  min-w-0
+">
 
                 <p className="
-                  font-bold
-                  text-xl
-                ">
-                  {activity.activity_date}
-                </p>
+  font-bold
+  text-xl
+">
+  {new Date(
+    activity.activity_date
+  ).toLocaleDateString(
+    'en-US',
+    {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      weekday: 'long',
+    }
+  )}
+</p>
 
                 <p className="
-                  text-blue-100
-                  mt-1
-                ">
-                  🕒
-                  {' '}
-                  {activity.activity_time}
-                </p>
+  text-blue-100
+  mt-1
+">
+  🕒{' '}
+
+  {new Date(
+    `1970-01-01T${activity.activity_time}`
+  ).toLocaleTimeString(
+    'en-US',
+    {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    }
+  )}
+</p>
 
               </div>
 
@@ -254,13 +300,15 @@ export default function Page() {
           {/* TIMELINE */}
           <div className="
             relative
-            p-8
+            p-4
+lg:p-8
           ">
 
             {/* LINE */}
             <div className="
               absolute
-              left-14
+              left-3
+lg:left-14
               top-0
               bottom-0
               w-1
@@ -274,7 +322,8 @@ export default function Page() {
               {/* ACTIVITY PROPER */}
               <div className="
                 relative
-                pl-24
+                pl-12
+lg:pl-24
               ">
 
                 {/* ICON */}
@@ -283,7 +332,8 @@ export default function Page() {
                   left-0
                   top-2
 
-                  w-10 h-10
+                  w-8 h-8
+                  lg:w-10 lg:h-10
                   rounded-full
 
                   bg-blue-600
@@ -308,10 +358,17 @@ export default function Page() {
                 ">
 
                   <h3 className="
-                    text-xl
-                    font-bold
-                    text-blue-900
-                  ">
+  text-base
+  lg:text-xl
+
+  font-bold
+  text-blue-900
+
+  wrap-break-word
+  leading-tight
+
+  min-w-0
+">
                     Activity Proper
                   </h3>
 
@@ -334,7 +391,8 @@ export default function Page() {
                   key={`${activity.id}-${assign.task}`}
                   className="
                     relative
-                    pl-24
+                    pl-12
+lg:pl-24
                   "
                 >
 
@@ -344,7 +402,8 @@ export default function Page() {
                     left-0
                     top-2
 
-                    w-10 h-10
+                    w-8 h-8
+                    lg:w-10 lg:h-10
                     rounded-full
 
                     bg-orange-500
@@ -370,11 +429,13 @@ export default function Page() {
 
                     {/* TOP */}
                     <div className="
-                      flex
-                      items-start
-                      justify-between
-                      gap-4
-                    ">
+  flex
+  flex-col
+
+  gap-5
+
+  min-w-0
+">
 
                       <div>
 
@@ -399,15 +460,23 @@ export default function Page() {
 
                       {/* STATUS */}
                       <span className={`
-                        px-4 py-2
-                        rounded-full
-                        text-sm
-                        font-semibold
+  inline-flex
+  items-center
 
-                        ${getStatusColor(
-                          assign.status
-                        )}
-                      `}>
+  self-start
+
+  px-4
+  py-2
+
+  rounded-full
+
+  text-sm
+  font-semibold
+
+  ${getStatusColor(
+    assign.status
+  )}
+`}>
 
                         {assign.status}
 
@@ -447,23 +516,27 @@ export default function Page() {
       ) => (
 
       <div
-        key={index}
-        className="
-          flex
-          items-center
-          gap-3
+  key={index}
+  className="
+    flex
+    items-center
 
-          bg-white
+    gap-3
 
-          border
+    w-full
+    max-w-md
 
-          rounded-2xl
+    bg-white
 
-          px-4 py-3
+    border
 
-          shadow-sm
-        "
-      >
+    rounded-2xl
+
+    px-4 py-3
+
+    shadow-sm
+  "
+>
 
         {/* PHOTO */}
         {employee
@@ -513,11 +586,17 @@ export default function Page() {
         )}
 
         {/* INFO */}
-        <div>
+<div className="
+  flex-1
+  min-w-0
+">
 
           <p className="
             font-bold
-            text-blue-900
+text-blue-900
+
+wrap-break-word
+leading-tight
           ">
 
             {employee?.name}

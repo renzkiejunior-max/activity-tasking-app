@@ -485,14 +485,22 @@ useEffect(() => {
   return (
 
     <div className="
-      space-y-6
-    ">
+  w-full
+  max-w-full
+  min-w-0
+
+  overflow-x-hidden
+
+  space-y-4
+  lg:space-y-6
+">
 
       {/* HEADER */}
       <div>
 
         <h1 className="
-          text-4xl
+          text-2xl
+          lg:text-4xl
           font-bold
           text-blue-900
         ">
@@ -518,17 +526,25 @@ useEffect(() => {
       {employee && (
 
         <div className="
-          bg-orange-300
-          rounded-3xl
-          shadow-xl
-          border
+  bg-orange-300
 
-          p-6
+  rounded-2xl
+  lg:rounded-2xl
 
-          flex
-          items-center
-          gap-6
-        ">
+  shadow-xl
+  border
+
+  p-4
+  lg:p-6
+
+  flex
+  items-center
+
+  gap-4
+  lg:gap-6
+
+  min-w-0
+">
 
           {/* PHOTO */}
           <img
@@ -542,8 +558,11 @@ useEffect(() => {
             alt="Employee"
 
             className="
-              w-28
-              h-28
+              w-20
+              h-20
+
+              lg:w-28
+              lg:h-28
 
               rounded-full
 
@@ -557,12 +576,22 @@ useEffect(() => {
           />
 
           {/* INFO */}
-          <div>
+
+          <div className="
+          flex-1
+           min-w-0
+            ">
 
             <h2 className="
-              text-4xl
-              font-bold
-              text-blue-900
+              text-2xl
+lg:text-4xl
+
+font-bold
+text-blue-900
+
+leading-tight
+
+wrap-break-word
             ">
 
               {employee.name}
@@ -570,7 +599,8 @@ useEffect(() => {
             </h2>
 
             <p className="
-              text-lg
+              text-sm
+              lg:text-lg
               text-gray-700
               mt-2
             ">
@@ -596,10 +626,14 @@ useEffect(() => {
       {/* ASSIGNMENTS */}
 <div className="
   bg-white
-  rounded-3xl
-  shadow-xl
-  border
-  p-6
+  rounded-2xl
+lg:rounded-3xl
+
+shadow-xl
+border
+
+p-4
+lg:p-6
 ">
 
   <h2 className="
@@ -627,7 +661,9 @@ useEffect(() => {
         className="
           border
           rounded-2xl
-          p-5
+
+p-4
+lg:p-5
           bg-blue-50
         "
       >
@@ -984,11 +1020,17 @@ useEffect(() => {
       rows={4}
 
       className="
-        w-full
-        border
-        rounded-2xl
-        px-4 py-3
-      "
+  w-full
+  max-w-full
+
+  border
+
+  rounded-2xl
+
+  px-4 py-3
+
+  resize-none
+"
 
       placeholder="
         Add accomplishment,
@@ -1046,10 +1088,14 @@ useEffect(() => {
 {/* FOCAL ROLES */}
 <div className="
   bg-white
-  rounded-3xl
-  shadow-xl
-  border
-  p-6
+  rounded-2xl
+lg:rounded-3xl
+
+shadow-xl
+border
+
+p-4
+lg:p-6
 ">
 
   <h2 className="
@@ -1066,6 +1112,7 @@ useEffect(() => {
   <div className="
   w-full
   min-w-0
+
   overflow-x-hidden
 
   space-y-4
@@ -1175,11 +1222,18 @@ useEffect(() => {
 ">
 
   <div className="
-    flex
-    justify-between
-    items-center
-    gap-4
-  ">
+  flex
+  flex-col
+  sm:flex-row
+
+  justify-between
+
+  sm:items-center
+
+  gap-4
+
+  min-w-0
+">
 
     <div>
 
@@ -1390,10 +1444,14 @@ useEffect(() => {
       {/* ACTIVITIES */}
       <div className="
         bg-white
-        rounded-3xl
-        shadow-xl
-        border
-        p-6
+        rounded-2xl
+lg:rounded-3xl
+
+shadow-xl
+border
+
+p-4
+lg:p-6
       ">
 
         <h2 className="
@@ -1421,7 +1479,9 @@ useEffect(() => {
               className="
                 border
                 rounded-2xl
-                p-5
+
+p-4
+lg:p-5
                 bg-purple-50
               "
             >
@@ -1633,7 +1693,8 @@ useEffect(() => {
 
                     text-white
 
-                    px-5 py-3
+                    px-4 py-2.5
+                    lg:px-5 lg:py-3
 
                     rounded-2xl
 

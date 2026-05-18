@@ -26,6 +26,10 @@ export default function Page() {
     setShowForm] =
     useState(false)
 
+    const [showAnalytics,
+  setShowAnalytics] =
+  useState(false)
+
   const [editingUser,
     setEditingUser] =
     useState<any>(null)
@@ -257,37 +261,58 @@ export default function Page() {
 
       <div className="
   w-full
+
+  max-w-7xl
+  mx-auto
+
   min-w-0
+
   overflow-x-hidden
 
   space-y-4
   lg:space-y-6
+
+  p-3
+  lg:p-6
 ">
 
         {/* HEADER CARD */}
         <div className="
-          bg-linear-to-r
-          from-blue-900
-          via-blue-700
-          to-orange-500
+  w-full
+  max-w-full
+  min-w-0
 
-          rounded-3xl
-          shadow-2xl
+  overflow-hidden
 
-          p-8
+  bg-linear-to-r
+  from-blue-900
+  via-blue-700
+  to-orange-500
 
-          flex
-          flex-col
-          lg:flex-row
+  rounded-2xl
+  lg:rounded-3xl
 
-          lg:items-center
-          lg:justify-between
+  shadow-2xl
 
-          gap-6
-        ">
+  p-4
+  lg:p-8
+
+  flex
+  flex-col
+
+  lg:flex-row
+
+  lg:items-center
+  lg:justify-between
+
+  gap-6
+">
 
           {/* LEFT */}
-          <div>
+          <div className="
+  min-w-0
+  w-full
+">
 
             <div className="
               inline-flex
@@ -311,7 +336,7 @@ export default function Page() {
             </div>
 
             <h1 className="
-              text-4xl
+              text-2xl
               lg:text-5xl
 
               font-black
@@ -327,9 +352,16 @@ export default function Page() {
 
             <p className="
               text-orange-50
-              text-lg
-              mt-3
-              max-w-2xl
+              text-sm
+lg:text-lg
+
+mt-3
+
+max-w-full
+lg:max-w-2xl
+
+wrap-break-word
+leading-relaxed
             ">
 
               Manage organizational
@@ -343,7 +375,10 @@ export default function Page() {
           </div>
 
           {/* RIGHT */}
-          <div>
+          <div className="
+  w-full
+  lg:w-auto
+">
 
             <button
 
@@ -358,24 +393,25 @@ export default function Page() {
               }}
 
               className="
-                bg-white
-                hover:bg-orange-100
+  bg-white
+  hover:bg-orange-100
 
-                text-orange-600
+  text-orange-600
 
-                px-6 py-4
+  px-6 py-4
 
-                rounded-2xl
+  rounded-2xl
 
-                shadow-xl
+  shadow-xl
 
-                font-bold
-                text-lg
+  font-bold
+  text-sm
+  lg:text-lg
 
-                flex
-                items-center
-                gap-3
-              "
+  flex
+  items-center
+  gap-3
+"
             >
 
               <span className="
@@ -404,8 +440,53 @@ export default function Page() {
 
         </div>
 
+{/* ANALYTICS TOGGLE */}
+<div className="
+  flex
+  justify-end
+">
+
+  <button
+
+    onClick={() =>
+      setShowAnalytics(
+        !showAnalytics
+      )
+    }
+
+    className="
+      bg-blue-600
+      hover:bg-blue-700
+
+      text-white
+
+      px-4
+      py-3
+
+      rounded-2xl
+
+      font-semibold
+
+      shadow-lg
+    "
+  >
+
+    {
+      showAnalytics
+
+        ? 'Hide Analytics'
+
+        : 'Show Analytics'
+    }
+
+  </button>
+
+</div>
+
         {/* KPI */}
-        <div className="
+{showAnalytics && (
+
+<div className="
           grid
           grid-cols-1
           md:grid-cols-3
@@ -441,7 +522,7 @@ export default function Page() {
 
           </div>
 
-          {/* ADMINS */}
+                    {/* ADMINS */}
           <div className="
             bg-white
             rounded-3xl
@@ -479,6 +560,7 @@ export default function Page() {
             </h2>
 
           </div>
+          
 
           {/* STAFF */}
           <div className="
@@ -520,6 +602,8 @@ export default function Page() {
           </div>
 
         </div>
+
+        )}
 
         {/* FORM */}
         {showForm && (
@@ -661,7 +745,8 @@ export default function Page() {
 
                   text-white
 
-                  px-6 py-4
+                  px-4 py-3
+                  lg:px-6 lg:py-4
 
                   rounded-2xl
 
@@ -709,298 +794,567 @@ export default function Page() {
 
         )}
 
-        {/* TABLE */}
-        <div className="
+        
+          {/* TABLE CARD */}
+<div className="
+  bg-white
+
+  rounded-2xl
+  lg:rounded-3xl
+
+  shadow-xl
+
+  border
+
+  overflow-hidden
+">
+
+  {/* TOP */}
+  <div className="
+    p-4
+    lg:p-6
+
+    border-b
+
+    flex
+    flex-col
+
+    md:flex-row
+
+    md:items-center
+    md:justify-between
+
+    gap-4
+  ">
+
+    <div>
+
+      <h2 className="
+        text-xl
+        lg:text-2xl
+
+        font-bold
+        text-blue-900
+      ">
+
+        Users
+
+      </h2>
+
+      <p className="
+        text-gray-500
+        mt-1
+
+        text-sm
+        lg:text-base
+      ">
+
+        Organizational account records
+
+      </p>
+
+    </div>
+
+    {/* SEARCH */}
+    <input
+      placeholder="Search users..."
+      value={search}
+      onChange={(e) =>
+        setSearch(
+          e.target.value
+        )
+      }
+      className="
+        border
+
+        rounded-2xl
+
+        px-4
+        py-3
+
+        w-full
+        md:w-80
+
+        min-w-0
+      "
+    />
+
+  </div>
+
+  {/* MOBILE USER CARDS */}
+  <div className="
+    lg:hidden
+
+    space-y-4
+
+    p-4
+  ">
+
+    {filteredUsers.map(
+      (user: any) => (
+
+      <div
+        key={user.id}
+
+        className="
           bg-white
-          rounded-3xl
-          shadow-xl
+
           border
-          overflow-hidden
+
+          rounded-2xl
+
+          p-4
+
+          shadow-sm
+        "
+      >
+
+        {/* EMAIL */}
+        <div>
+
+          <h3 className="
+            text-lg
+            font-bold
+
+            text-blue-900
+
+            wrap-break-word
+          ">
+
+            {user.email}
+
+          </h3>
+
+        </div>
+
+        {/* ROLE */}
+        <div className="
+          mt-4
         ">
 
-          {/* TOP */}
-          <div className="
-            p-6
-            border-b
+          <span className={`
+            inline-flex
+            items-center
 
-            flex
-            flex-col
-            md:flex-row
+            px-3
+            py-1.5
 
-            md:items-center
-            md:justify-between
+            rounded-full
 
-            gap-4
+            text-xs
+            font-semibold
+
+            ${
+              (
+                user.roles ||
+                user.role
+              ) === 'admin'
+
+                ? `
+                  bg-orange-100
+                  text-orange-700
+                `
+
+                : (
+                  user.roles ||
+                  user.role
+                ) ===
+                  'division_chief'
+
+                ? `
+                  bg-blue-100
+                  text-blue-700
+                `
+
+                : `
+                  bg-green-100
+                  text-green-700
+                `
+            }
+          `}>
+
+            {
+              user.roles ||
+              user.role
+            }
+
+          </span>
+
+        </div>
+
+        {/* DIVISION */}
+        <div className="
+          mt-4
+        ">
+
+          <p className="
+            text-sm
+            text-gray-500
           ">
 
-            <div>
+            Division
 
-              <h2 className="
-                text-2xl
-                font-bold
-                text-blue-900
-              ">
+          </p>
 
-                Users
+          <p className="
+            text-sm
+            font-medium
 
-              </h2>
+            text-gray-800
 
-              <p className="
-                text-gray-500
-                mt-1
-              ">
-
-                Organizational account records
-
-              </p>
-
-            </div>
-
-            {/* SEARCH */}
-            <input
-              placeholder="Search users..."
-              value={search}
-              onChange={(e) =>
-                setSearch(
-                  e.target.value
-                )
-              }
-              className="
-                border
-                rounded-2xl
-                px-4 py-3
-                w-full
-                md:w-80
-              "
-            />
-
-          </div>
-
-          {/* TABLE */}
-          <div className="
-            overflow-x-auto
+            wrap-break-word
           ">
 
-            <table className="
-              w-full
-            ">
+            {
+              user.division ||
+              'N/A'
+            }
 
-              <thead className="
-                bg-blue-50
-                text-blue-900
-              ">
+          </p>
 
-                <tr>
+        </div>
 
-                  <th className="
-                    text-left
-                    p-4
-                  ">
-                    Email
-                  </th>
+        {/* ACTIONS */}
+        <div className="
+          mt-5
 
-                  <th className="
-                    text-left
-                    p-4
-                  ">
-                    Role
-                  </th>
+          flex
+          gap-3
+        ">
 
-                  <th className="
-                    text-left
-                    p-4
-                  ">
-                    Division
-                  </th>
+          <button
 
-                  <th className="
-                    text-left
-                    p-4
-                  ">
-                    Actions
-                  </th>
+            onClick={() =>
+              editUser(user)
+            }
 
-                </tr>
+            className="
+              flex-1
 
-              </thead>
+              bg-blue-600
+              hover:bg-blue-700
 
-              <tbody>
+              text-white
 
-                {filteredUsers.map(
-                  (user: any) => (
+              py-3
 
-                  <tr
-                    key={user.id}
-                    className="
-                      border-t
-                      hover:bg-gray-50
-                    "
-                  >
+              rounded-xl
 
-                    {/* EMAIL */}
-                    <td className="
-                      p-4
-                      font-medium
-                      text-black
-                    ">
+              text-sm
+              font-semibold
+            "
+          >
 
-                      {user.email}
+            Edit
 
-                    </td>
+          </button>
 
-                    {/* ROLE */}
-                    <td className="
-                      p-4
-                    ">
+          <button
 
-                      <span className={`
-                        px-4 py-2
-                        rounded-full
-                        text-sm
-                        font-semibold
+            onClick={() =>
+              deleteUser(
+                user.id
+              )
+            }
 
-                        ${
-                          (
-                            user.roles ||
-                            user.role
-                          ) === 'admin'
+            className="
+              flex-1
 
-                            ? `
-                              bg-orange-100
-                              text-orange-700
-                            `
+              bg-red-500
+              hover:bg-red-600
 
-                            : (
-                              user.roles ||
-                              user.role
-                            ) ===
-                            'division_chief'
+              text-white
 
-                            ? `
-                              bg-blue-100
-                              text-blue-700
-                            `
+              py-3
 
-                            : `
-                              bg-green-100
-                              text-green-700
-                            `
-                        }
+              rounded-xl
 
-                      `}>
+              text-sm
+              font-semibold
+            "
+          >
 
-                        {
-                          user.roles ||
-                          user.role
-                        }
+            Delete
 
-                      </span>
-
-                    </td>
-
-                    {/* DIVISION */}
-                    <td className="
-                      p-4
-                      text-gray-700
-                    ">
-
-                      {
-                        user.division ||
-                        'N/A'
-                      }
-
-                    </td>
-
-                    {/* ACTIONS */}
-                    <td className="
-                      p-4
-                    ">
-
-                      <div className="
-                        flex
-                        flex-wrap
-                        gap-2
-                      ">
-
-                        <button
-
-                          onClick={() =>
-                            editUser(user)
-                          }
-
-                          className="
-                            bg-blue-500
-                            hover:bg-blue-600
-
-                            text-white
-
-                            px-4 py-2
-
-                            rounded-xl
-                          "
-                        >
-
-                          Edit
-
-                        </button>
-
-                        <button
-
-                          onClick={() =>
-                            deleteUser(
-                              user.id
-                            )
-                          }
-
-                          className="
-                            bg-red-500
-                            hover:bg-red-600
-
-                            text-white
-
-                            px-4 py-2
-
-                            rounded-xl
-                          "
-                        >
-
-                          Delete
-
-                        </button>
-
-                      </div>
-
-                    </td>
-
-                  </tr>
-
-                ))}
-
-              </tbody>
-
-            </table>
-
-            {/* EMPTY */}
-            {!loading &&
-              filteredUsers.length === 0 && (
-
-              <div className="
-                p-10
-                text-center
-                text-gray-500
-              ">
-
-                No users found.
-
-              </div>
-
-            )}
-
-          </div>
+          </button>
 
         </div>
 
       </div>
+
+    ))}
+
+    {/* EMPTY */}
+    {!loading &&
+      filteredUsers.length === 0 && (
+
+      <div className="
+        p-10
+
+        text-center
+
+        text-gray-500
+      ">
+
+        No users found.
+
+      </div>
+
+    )}
+
+  </div>
+
+  {/* DESKTOP TABLE */}
+  <div className="
+    hidden
+    lg:block
+
+    overflow-x-auto
+  ">
+
+    <table className="
+      min-w-175
+
+      w-full
+    ">
+
+      <thead className="
+        bg-blue-50
+        text-blue-900
+      ">
+
+        <tr>
+
+          <th className="
+            text-left
+            p-4
+          ">
+            Email
+          </th>
+
+          <th className="
+            text-left
+            p-4
+          ">
+            Role
+          </th>
+
+          <th className="
+            text-left
+            p-4
+          ">
+            Division
+          </th>
+
+          <th className="
+            text-left
+            p-4
+          ">
+            Actions
+          </th>
+
+        </tr>
+
+      </thead>
+
+      <tbody>
+
+        {filteredUsers.map(
+          (user: any) => (
+
+          <tr
+            key={user.id}
+
+            className="
+              border-t
+              hover:bg-gray-50
+            "
+          >
+
+            {/* EMAIL */}
+            <td className="
+              p-4
+
+              font-medium
+
+              text-black
+
+              wrap-break-word
+            ">
+
+              {user.email}
+
+            </td>
+
+            {/* ROLE */}
+            <td className="
+              p-4
+            ">
+
+              <span className={`
+                inline-flex
+                items-center
+
+                px-3
+                py-1.5
+
+                rounded-full
+
+                text-sm
+                font-semibold
+
+                ${
+                  (
+                    user.roles ||
+                    user.role
+                  ) === 'admin'
+
+                    ? `
+                      bg-orange-100
+                      text-orange-700
+                    `
+
+                    : (
+                      user.roles ||
+                      user.role
+                    ) ===
+                      'division_chief'
+
+                    ? `
+                      bg-blue-100
+                      text-blue-700
+                    `
+
+                    : `
+                      bg-green-100
+                      text-green-700
+                    `
+                }
+
+              `}>
+
+                {
+                  user.roles ||
+                  user.role
+                }
+
+              </span>
+
+            </td>
+
+            {/* DIVISION */}
+            <td className="
+              p-4
+
+              text-gray-700
+
+              wrap-break-word
+            ">
+
+              {
+                user.division ||
+                'N/A'
+              }
+
+            </td>
+
+            {/* ACTIONS */}
+            <td className="
+              p-4
+            ">
+
+              <div className="
+                flex
+                flex-col
+
+                xl:flex-row
+
+                gap-2
+              ">
+
+                <button
+
+                  onClick={() =>
+                    editUser(user)
+                  }
+
+                  className="
+                    bg-blue-500
+                    hover:bg-blue-600
+
+                    text-white
+
+                    px-4
+                    py-2
+
+                    rounded-xl
+                  "
+                >
+
+                  Edit
+
+                </button>
+
+                <button
+
+                  onClick={() =>
+                    deleteUser(
+                      user.id
+                    )
+                  }
+
+                  className="
+                    bg-red-500
+                    hover:bg-red-600
+
+                    text-white
+
+                    px-4
+                    py-2
+
+                    rounded-xl
+                  "
+                >
+
+                  Delete
+
+                </button>
+
+              </div>
+
+            </td>
+
+          </tr>
+
+        ))}
+
+      </tbody>
+
+    </table>
+
+    {/* EMPTY */}
+    {!loading &&
+      filteredUsers.length === 0 && (
+
+      <div className="
+        p-10
+
+        text-center
+
+        text-gray-500
+      ">
+
+        No users found.
+
+      </div>
+
+    )}
+
+  </div>
+
+</div>
+
+        </div>
 
     </ProtectedRoute>
   )

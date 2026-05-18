@@ -407,11 +407,16 @@ export default function Page() {
 
       <div className="
   w-full
+  max-w-full
   min-w-0
+
   overflow-x-hidden
 
   space-y-4
   lg:space-y-6
+
+  p-3
+  lg:p-6
 ">
 
 {/* HEADER CARD */}
@@ -421,11 +426,11 @@ export default function Page() {
   via-blue-600
   to-blue-400
 
-  rounded-3xl
+  rounded-2xl
+lg:rounded-3xl
 
-  shadow-2xl
-
-  p-8
+p-4
+lg:p-8
 
   flex
   flex-col
@@ -455,6 +460,7 @@ export default function Page() {
 
       text-sm
       font-semibold
+      wrap-break-word
 
       backdrop-blur-sm
     ">
@@ -624,6 +630,7 @@ export default function Page() {
 
               text-sm
               font-semibold
+              wrap-break-word
             ">
 
               👤 Personnel Registration
@@ -689,7 +696,7 @@ export default function Page() {
       <div className="
         p-8
 
-        max-h-[80vh]
+        max-h-[90vh]
         overflow-y-auto
       ">
 
@@ -735,6 +742,7 @@ export default function Page() {
 
               text-sm
               font-semibold
+              wrap-break-word
               text-gray-700
             ">
 
@@ -759,7 +767,8 @@ export default function Page() {
                 rounded-2xl
 
                 px-4
-                py-4
+                py-3
+lg:py-4
 
                 focus:outline-none
                 focus:ring-4
@@ -779,6 +788,7 @@ export default function Page() {
 
               text-sm
               font-semibold
+              wrap-break-word
               text-gray-700
             ">
 
@@ -803,7 +813,8 @@ export default function Page() {
                 rounded-2xl
 
                 px-4
-                py-4
+                py-3
+lg:py-4
               "
             />
 
@@ -818,6 +829,7 @@ export default function Page() {
 
               text-sm
               font-semibold
+              wrap-break-word
               text-gray-700
             ">
 
@@ -841,7 +853,8 @@ export default function Page() {
                 rounded-2xl
 
                 px-4
-                py-4
+                py-3
+lg:py-4
               "
             >
 
@@ -874,6 +887,7 @@ export default function Page() {
 
               text-sm
               font-semibold
+              wrap-break-word
               text-gray-700
             ">
 
@@ -898,7 +912,8 @@ export default function Page() {
                 rounded-2xl
 
                 px-4
-                py-4
+                py-3
+lg:py-4
               "
             />
 
@@ -913,6 +928,7 @@ export default function Page() {
 
               text-sm
               font-semibold
+              wrap-break-word
               text-gray-700
             ">
 
@@ -936,7 +952,8 @@ export default function Page() {
                 rounded-2xl
 
                 px-4
-                py-4
+                py-3
+lg:py-4
               "
             >
 
@@ -965,6 +982,7 @@ export default function Page() {
 
               text-sm
               font-semibold
+              wrap-break-word
               text-gray-700
             ">
 
@@ -990,7 +1008,8 @@ export default function Page() {
                 rounded-2xl
 
                 px-4
-                py-4
+                py-3
+lg:py-4
               "
             />
 
@@ -1035,7 +1054,8 @@ export default function Page() {
                 rounded-2xl
 
                 px-4
-                py-4
+                py-3
+lg:py-4
               "
             />
 
@@ -1054,7 +1074,8 @@ export default function Page() {
                 rounded-2xl
 
                 px-4
-                py-4
+                py-3
+                lg:py-4
 
                 md:col-span-2
 
@@ -1083,7 +1104,8 @@ export default function Page() {
 
             className="
               px-6
-              py-4
+              py-3
+lg:py-4
 
               rounded-2xl
 
@@ -1091,6 +1113,7 @@ export default function Page() {
               hover:bg-gray-300
 
               font-semibold
+              wrap-break-word
             "
           >
 
@@ -1104,7 +1127,8 @@ export default function Page() {
 
             className="
               px-8
-              py-4
+              py-3
+lg:py-4
 
               rounded-2xl
 
@@ -1395,13 +1419,333 @@ export default function Page() {
 
           </div>
 
+{/* MOBILE EMPLOYEE CARDS */}
+<div className="
+  lg:hidden
+
+  space-y-4
+
+  p-4
+">
+
+  {employees.map(
+    (emp: any) => (
+
+    <div
+      key={emp.id}
+
+      className="
+        bg-white
+
+        border
+
+        rounded-2xl
+
+        p-4
+
+        shadow-sm
+      "
+    >
+
+      {/* TOP */}
+      <div className="
+        flex
+        items-center
+        gap-4
+
+        min-w-0
+      ">
+
+        {/* PHOTO */}
+        {emp.photo_url ? (
+
+          <img
+            src={emp.photo_url}
+            alt={emp.name}
+
+            className="
+              w-16
+              h-16
+
+              rounded-full
+
+              object-cover
+
+              shrink-0
+            "
+          />
+
+        ) : (
+
           <div className="
-            overflow-x-auto
+            w-16
+            h-16
+
+            rounded-full
+
+            bg-blue-100
+            text-blue-700
+
+            flex
+            items-center
+            justify-center
+
+            font-bold
+
+            shrink-0
           ">
 
+            {
+              emp.name?.charAt(0)
+            }
+
+          </div>
+
+        )}
+
+        {/* INFO */}
+        <div className="
+          flex-1
+          min-w-0
+        ">
+
+          <h3 className="
+            text-lg
+            font-bold
+
+            text-blue-900
+
+            wrap-break-word
+            leading-tight
+          ">
+
+            {emp.name}
+
+          </h3>
+
+          <p className="
+            text-sm
+            text-gray-600
+
+            wrap-break-word
+          ">
+
+            {emp.designation}
+
+          </p>
+
+          <p className="
+            text-sm
+            text-gray-500
+
+            mt-1
+          ">
+
+            {emp.division}
+
+          </p>
+
+        </div>
+
+      </div>
+
+      {/* STATUS */}
+      <div className="
+        mt-4
+      ">
+
+        <span className={`
+          px-3
+          py-1
+
+          rounded-full
+
+          text-xs
+          font-semibold
+
+          ${
+            emp.status ===
+            'active'
+
+              ? `
+                bg-green-100
+                text-green-700
+              `
+
+              : emp.status ===
+                'inactive'
+
+              ? `
+                bg-orange-100
+                text-orange-700
+              `
+
+              : `
+                bg-red-100
+                text-red-700
+              `
+          }
+        `}>
+
+          {
+            emp.status ||
+            'active'
+          }
+
+        </span>
+
+      </div>
+
+      {/* FOCAL */}
+      {emp.focal_persons
+        ?.length > 0 && (
+
+        <div className="
+          mt-4
+
+          flex
+          flex-wrap
+          gap-2
+        ">
+
+          {emp.focal_persons.map(
+            (
+              focal: any
+            ) => (
+
+            <div
+              key={focal.id}
+
+              className="
+                bg-orange-100
+                text-orange-700
+
+                px-3
+                py-2
+
+                rounded-xl
+
+                text-xs
+                font-medium
+              "
+            >
+
+              {focal.title}
+
+            </div>
+
+          ))}
+
+        </div>
+
+      )}
+
+      {/* ACTIONS */}
+      <div className="
+        mt-5
+
+        flex
+        gap-3
+      ">
+
+        <button
+
+          onClick={() => {
+
+            setEditingEmployee(
+              emp
+            )
+
+            setEditName(
+              emp.name || ''
+            )
+
+            setEditDesignation(
+              emp.designation || ''
+            )
+
+            setEditDivision(
+              emp.division || ''
+            )
+
+            setEditEmail(
+              emp.email || ''
+            )
+
+            setEditStatus(
+              emp.status || 'active'
+            )
+          }}
+
+          className="
+            flex-1
+
+            bg-blue-600
+            hover:bg-blue-700
+
+            text-white
+
+            py-3
+
+            rounded-xl
+
+            text-sm
+            font-semibold
+          "
+        >
+
+          Edit
+
+        </button>
+
+        <button
+
+          onClick={() =>
+            deleteEmployee(
+              emp.id
+            )
+          }
+
+          className="
+            flex-1
+
+            bg-red-500
+            hover:bg-red-600
+
+            text-white
+
+            py-3
+
+            rounded-xl
+
+            text-sm
+            font-semibold
+          "
+        >
+
+          Delete
+
+        </button>
+
+      </div>
+
+    </div>
+
+  ))}
+
+</div>
+
+          <div className="
+  hidden
+  lg:block
+
+  overflow-x-auto
+">
+
             <table className="
-              w-full
-            ">
+  min-w-275
+  w-full
+">
 
               <thead className="
                 bg-blue-50
@@ -1509,6 +1853,7 @@ export default function Page() {
                     <td className="
                       p-4
                       font-semibold
+                      wrap-break-word
                     ">
 
                       {emp.name}
@@ -1596,6 +1941,7 @@ export default function Page() {
 
                           text-sm
                           font-semibold
+                          wrap-break-word
 
                           ${
                             emp.status ===
@@ -1638,7 +1984,10 @@ export default function Page() {
 
                       <div className="
                         flex
-                        gap-2
+flex-col
+lg:flex-row
+
+gap-2
                       ">
 
                         <button
