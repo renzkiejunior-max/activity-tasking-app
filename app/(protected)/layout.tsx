@@ -119,7 +119,7 @@ export default function ProtectedLayout({
 
   p-4
   md:p-8
-
+    
   pt-24
   lg:pt-8
 

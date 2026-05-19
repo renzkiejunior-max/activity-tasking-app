@@ -30,6 +30,14 @@ export default function Page() {
     setSelectedEvent] =
     useState<any>(null)
 
+    const [calendarView,
+  setCalendarView] =
+  useState('dayGridMonth')
+
+const [visibleRange,
+  setVisibleRange] =
+  useState<any>(null)
+
   // FETCH EVENTS
   const fetchEvents =
     async () => {
@@ -415,6 +423,43 @@ allDay: false,
 
   }, [])
 
+// FILTERED EVENTS
+const filteredEvents =
+
+  events.filter(
+    (event: any) => {
+
+      if (
+        !visibleRange ||
+        !visibleRange.start ||
+        !visibleRange.end
+      ) {
+
+        return true
+      }
+
+      const eventDate =
+        new Date(
+          event.start
+        )
+
+      return (
+
+        eventDate >=
+          new Date(
+            visibleRange.start
+          )
+
+        &&
+
+        eventDate <
+          new Date(
+            visibleRange.end
+          )
+      )
+    }
+  )
+
   return (
 
     <div className="
@@ -590,6 +635,28 @@ eventClassNames={() => [
   'border-0',
 ]}
 
+datesSet={(arg) => {
+
+  if (
+    arg?.start &&
+    arg?.end
+  ) {
+
+    setCalendarView(
+      arg.view.type
+    )
+
+    setVisibleRange({
+
+      start: arg.start,
+
+      end: arg.end,
+
+    })
+  }
+
+}}
+
 buttonText={{
   today: 'Today',
   month: 'Month',
@@ -635,7 +702,19 @@ buttonText={{
         mt-1
       ">
 
-        Complete activity schedule and details
+        {
+  calendarView ===
+  'dayGridMonth'
+
+    ? 'Activities within the selected month'
+
+  : calendarView ===
+    'timeGridWeek'
+
+    ? 'Activities within the selected week'
+
+    : 'Activities scheduled for the selected day'
+}
 
       </p>
 
@@ -648,7 +727,7 @@ buttonText={{
     space-y-4
   ">
 
-    {events.map(
+    {filteredEvents.map(
       (
         event: any,
         index: number
@@ -686,14 +765,16 @@ buttonText={{
         {/* TOP */}
         <div className="
           flex
-          justify-between
-          items-start
+          flex-col
+
+          lg:flex-row
 
           gap-4
         ">
 
           {/* LEFT */}
           <div className="
+            w-full
             min-w-0
             flex-1
           ">
@@ -861,6 +942,182 @@ buttonText={{
 
           </div>
 
+          {/* ATTENDEES */}
+{event.extendedProps
+  ?.attendees?.length > 0 && (
+
+  <div className="
+    mt-4
+  ">
+
+    <p className="
+      text-xs
+      font-bold
+
+      text-gray-500
+
+      mb-3
+
+      uppercase
+      tracking-wider
+    ">
+
+      Attendees
+
+    </p>
+
+    <div className="
+      flex
+      items-center
+      flex-wrap
+
+      gap-2
+    ">
+
+      {event.extendedProps
+        .attendees
+        .slice(0, 5)
+        .map(
+          (
+            attendee: any,
+            index: number
+          ) => (
+
+          <div
+
+            key={index}
+
+            className="
+              flex
+              items-center
+
+              gap-2
+
+              bg-orange-50
+
+              border
+              border-orange-100
+
+              rounded-full
+
+              px-2.5
+              py-1.5
+            "
+          >
+
+            {/* AVATAR */}
+{attendee.photo_url ? (
+
+  <img
+
+    src={
+      attendee.photo_url
+    }
+
+    alt="Attendee"
+
+    className="
+      w-7
+      h-7
+
+      rounded-full
+
+      object-cover
+
+      border
+      border-white
+
+      shrink-0
+    "
+  />
+
+) : (
+
+  <div className="
+    w-7
+    h-7
+
+    rounded-full
+
+    bg-orange-400
+
+    text-white
+
+    flex
+    items-center
+    justify-center
+
+    text-xs
+    font-bold
+
+    shrink-0
+  ">
+
+    {
+      attendee
+        ?.attendee_name?.[0]
+          ?.toUpperCase()
+    }
+
+  </div>
+
+)}
+
+            {/* NAME */}
+            <span className="
+              text-xs
+              font-semibold
+
+              text-orange-900
+
+              truncate
+
+              max-w-25
+            ">
+
+              {
+                attendee.attendee_name
+              }
+
+            </span>
+
+          </div>
+
+        ))}
+
+      {/* OVERFLOW */}
+      {event.extendedProps
+        ?.attendees?.length > 5 && (
+
+        <div className="
+          bg-blue-100
+          text-blue-800
+
+          rounded-full
+
+          px-3
+          py-1.5
+
+          text-xs
+          font-bold
+        ">
+
+          +
+          {
+            event.extendedProps
+              .attendees.length - 5
+          }
+
+        </div>
+
+      )}
+
+    </div>
+
+  </div>
+
+)}
+
           {/* COLOR BAR */}
           <div
             style={{
@@ -869,9 +1126,11 @@ buttonText={{
             }}
 
             className="
-              w-3
+              w-full
+              h-2
 
-              self-stretch
+              lg:w-3
+              lg:h-auto
 
               rounded-full
 
