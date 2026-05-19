@@ -102,7 +102,7 @@ export default function ProtectedLayout({
   w-full
   min-w-0
 
-  lg:ml-64
+  md:ml-64
 ">
 
         {/* TOPBAR */}

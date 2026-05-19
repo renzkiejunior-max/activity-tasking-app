@@ -279,95 +279,57 @@ const uniqueLinks =
 
     <>
 
-      {/* MOBILE HEADER */}
-      <div className="
-        md:hidden
+      {/* MOBILE MENU BUTTON */}
+<div className="
+  md:hidden
 
-        fixed
-        top-0
-        left-0
-        right-0
+  fixed
+  top-4
+  left-4
 
-        z-50
+  z-50
+">
 
-        bg-blue-900
+  <button
 
-        px-4
-        py-3
+    onClick={() =>
+      setOpen(!open)
+    }
 
-        flex
-        items-center
-        justify-between
+    className="
+      w-14
+      h-14
 
-        shadow-lg
-      ">
+      rounded-2xl
 
-        {/* LEFT */}
-        <div className="
-          flex
-          items-center
-          gap-3
-        ">
+      bg-blue-900
+      hover:bg-blue-800
 
-          {/* LOGO */}
-          <img
-            src="/PDRRMO.png"
-            alt="PDRRMO"
-            className="
-              w-16
-              h-16
-            "
-          />
+      text-white
 
-          {/* TITLE */}
-          <div>
+      shadow-2xl
 
-            <h1 className="
-              text-lg
-              font-bold
-              text-orange-400
-              leading-tight
-            ">
-              TMS
-            </h1>
+      flex
+      items-center
+      justify-center
 
-            <p className="
-              text-xs
-              text-blue-100
-            ">
-              Task Management System
-            </p>
+      text-2xl
 
-          </div>
+      border
+      border-white/10
 
-        </div>
+      backdrop-blur
 
-        {/* BUTTON */}
-        <button
+      transition-all
+      duration-300
+    "
+  >
 
-          onClick={() =>
-            setOpen(!open)
-          }
+    {open ? '✕' : '☰'}
 
-          className="
-            bg-blue-800
-            hover:bg-blue-700
+  </button>
 
-            px-3
-            py-2
-
-            rounded-xl
-
-            text-white
-            text-xl
-          "
-        >
-
-          {open ? '✕' : '☰'}
-
-        </button>
-
-      </div>
+</div>
 
       {/* OVERLAY */}
       {open && (
@@ -400,7 +362,11 @@ const uniqueLinks =
         left-0
 
         h-screen
-        w-64
+        w-[85vw]
+        max-w-[320px]
+
+        md:w-64
+        md:max-w-none
 
         bg-blue-900
         text-white
@@ -473,19 +439,13 @@ const uniqueLinks =
 
         </div>
 
-        {/* MOBILE SPACING */}
-        <div className="
-          h-20
-          md:hidden
-        " />
-
         {/* NAVIGATION */}
         <nav className="
           flex-1
 
           overflow-y-auto
 
-          p-5
+          p-4
 
           space-y-3
         ">
@@ -513,8 +473,8 @@ const uniqueLinks =
 
                     block
 
-                    px-5
-                    py-4
+                    px-4
+                    py-3
 
                     rounded-2xl
 
@@ -556,7 +516,56 @@ const uniqueLinks =
                   `}
                 >
 
-                  {link.name}
+                  <div className="
+  flex
+  items-center
+  gap-3
+">
+
+  <span className="
+    text-lg
+  ">
+
+    {
+      link.name === 'Dashboard'
+        ? '🏠'
+
+      : link.name === 'Calendar'
+        ? '📅'
+
+      : link.name === 'Employees'
+        ? '👥'
+
+      : link.name === 'Assignments'
+        ? '📌'
+
+      : link.name === 'Notifications'
+        ? '🔔'
+
+      : link.name === 'Activities'
+        ? '🗂️'
+
+      : link.name === 'Operations Map'
+        ? '🗺️'
+
+      : link.name === 'Reports'
+        ? '📄'
+
+      : link.name === 'Kanban Board'
+        ? '📋'
+
+      : '•'
+    }
+
+  </span>
+
+  <span>
+
+    {link.name}
+
+  </span>
+
+</div>
 
                 </Link>
 

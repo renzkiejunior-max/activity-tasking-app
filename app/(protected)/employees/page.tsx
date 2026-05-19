@@ -1,9 +1,6 @@
 'use client'
 
-import {
-  useEffect,
-  useState,
-} from 'react'
+import { useEffect, useState,} from 'react'
 
 import { supabase }
 from '../../../lib/supabase'
@@ -86,6 +83,21 @@ export default function Page() {
   setSearchTimeout] =
   useState<any>(null)
 
+  const [assignedEmployees,
+  setAssignedEmployees] =
+  useState<any[]>([])
+
+const [selectedPersonnel,
+  setSelectedPersonnel] =
+  useState<any>(null)
+
+const [personnelAssignments,
+  setPersonnelAssignments] =
+  useState<any[]>([])
+
+  const [assignmentSearch,
+  setAssignmentSearch] =
+  useState('')
 
   // FETCH EMPLOYEES
   const fetchEmployees =
@@ -116,6 +128,81 @@ export default function Page() {
         data || []
       )
     }
+
+// FETCH ASSIGNED PERSONNEL
+const fetchAssignedPersonnel =
+  async () => {
+
+    const {
+      data,
+    } = await supabase
+
+      .from('assignments')
+
+      .select(`
+        *,
+        employees(
+          id,
+          name,
+          photo_url,
+          designation
+        ),
+        activities(
+          title,
+          status,
+          activity_date,
+          location_name,
+          venue_details
+        )
+      `)
+
+    if (!data)
+      return
+
+    // GROUP EMPLOYEES
+    const grouped =
+      Object.values(
+
+        data.reduce(
+          (
+            acc: any,
+            item: any
+          ) => {
+
+            const emp =
+              item.employees
+
+            if (!emp)
+              return acc
+
+            if (
+              !acc[emp.id]
+            ) {
+
+              acc[emp.id] = {
+
+                ...emp,
+
+                assignments: [],
+              }
+            }
+
+            acc[emp.id]
+              .assignments
+              .push(item)
+
+            return acc
+
+          },
+
+          {}
+        )
+      )
+
+    setAssignedEmployees(
+      grouped
+    )
+  }
 
   // ADD EMPLOYEE
   const addEmployee =
@@ -394,7 +481,47 @@ export default function Page() {
 
     fetchEmployees()
 
+    fetchAssignedPersonnel()
+
   }, [])
+
+const filteredAssignedEmployees =
+
+  assignedEmployees.filter(
+    (emp: any) => {
+
+      const search =
+
+        assignmentSearch
+          .toLowerCase()
+
+      return (
+
+        emp.name
+          ?.toLowerCase()
+          .includes(search)
+
+        ||
+
+        emp.designation
+          ?.toLowerCase()
+          .includes(search)
+
+        ||
+
+        emp.assignments
+          ?.some(
+            (assign: any) =>
+
+              assign.activities
+                ?.title
+                ?.toLowerCase()
+                .includes(search)
+          )
+      )
+    }
+  )
+
 
   return (
 
@@ -561,6 +688,334 @@ lg:p-8
   </div>
 
 </div>
+
+{/* ASSIGNED PERSONNEL */}
+<div className="
+  bg-white
+
+  rounded-3xl
+
+  shadow-xl
+
+  border
+
+  p-6
+">
+
+  {/* HEADER */}
+  <div className="
+    flex
+    items-center
+    justify-between
+
+    mb-6
+  ">
+
+    <div>
+
+      <h2 className="
+        text-2xl
+        font-black
+        text-blue-900
+      ">
+
+        Active Personnel Assignments
+
+      </h2>
+
+      <p className="
+        text-gray-500
+        mt-1
+      ">
+
+        Personnel currently assigned to operational activities
+
+      </p>
+
+    </div>
+
+  </div>
+
+  {/* SEARCH */}
+<div className="
+  mb-6
+">
+
+  <div className="
+    relative
+  ">
+
+    <input
+
+      placeholder="
+      Search personnel,
+      designation,
+      or activity...
+      "
+
+      value={assignmentSearch}
+
+      onChange={(e) =>
+        setAssignmentSearch(
+          e.target.value
+        )
+      }
+
+      className="
+        w-full
+
+        border
+        border-gray-200
+
+        rounded-2xl
+
+        px-5
+        py-4
+
+        pl-14
+
+        text-lg
+
+        focus:outline-none
+        focus:ring-4
+        focus:ring-blue-100
+      "
+    />
+
+    <div className="
+      absolute
+
+      left-5
+      top-1/2
+
+      -translate-y-1/2
+
+      text-gray-400
+
+      text-xl
+    ">
+
+      🔍
+
+    </div>
+
+  </div>
+
+</div>
+
+  {/* PERSONNEL GRID */}
+  <div className="
+    flex
+    gap-5
+
+    overflow-x-auto
+
+    pb-2
+  ">
+
+    {filteredAssignedEmployees.map(
+      (emp: any) => (
+
+      <button
+
+        key={emp.id}
+
+        onClick={() => {
+
+          setSelectedPersonnel(
+            emp
+          )
+
+          setPersonnelAssignments(
+            emp.assignments || []
+          )
+        }}
+
+        className="
+          shrink-0
+
+          bg-linear-to-br
+          from-blue-50
+          to-white
+
+          border
+
+          rounded-3xl
+
+          p-5
+
+          w-52
+
+          hover:shadow-xl
+
+          transition
+
+          text-left
+        "
+      >
+
+        
+
+        {/* PHOTO */}
+        <div className="
+          flex
+          justify-center
+        ">
+
+          {emp.photo_url ? (
+
+            <img
+              src={emp.photo_url}
+              alt={emp.name}
+
+              className="
+                w-24
+                h-24
+
+                rounded-full
+
+                object-cover
+
+                border-4
+                border-blue-100
+              "
+            />
+
+          ) : (
+
+            <div className="
+              w-24
+              h-24
+
+              rounded-full
+
+              bg-blue-100
+              text-blue-700
+
+              flex
+              items-center
+              justify-center
+
+              text-3xl
+              font-black
+            ">
+
+              {
+                emp.name?.charAt(0)
+              }
+
+            </div>
+
+          )}
+
+        </div>
+
+        {/* INFO */}
+        <div className="
+          mt-4
+          text-center
+        ">
+
+          <h3 className="
+            font-bold
+            text-blue-900
+            text-lg
+          ">
+
+            {emp.name}
+
+          </h3>
+
+          <p className="
+            text-sm
+            text-gray-500
+            mt-1
+          ">
+
+            {emp.designation}
+
+          </p>
+
+          <div className="
+            mt-4
+
+            bg-orange-100
+            text-orange-700
+
+            px-4
+            py-2
+
+            rounded-full
+
+            text-sm
+            font-bold
+
+            inline-block
+          ">
+
+            {
+              emp.assignments
+                ?.length || 0
+            }
+
+            {' '}
+            Assignments
+
+          </div>
+
+        </div>
+
+      </button>
+
+    ))}
+
+  </div>
+
+</div>
+
+{filteredAssignedEmployees.length === 0 && (
+
+  <div className="
+    text-center
+
+    py-12
+  ">
+
+    <div className="
+      text-5xl
+      mb-3
+    ">
+
+      🔍
+
+    </div>
+
+    <h3 className="
+      text-xl
+      font-bold
+      text-gray-700
+    ">
+
+      No personnel found
+
+    </h3>
+
+    <p className="
+      text-gray-500
+      mt-2
+    ">
+
+      Try searching by
+      personnel,
+      designation,
+      or activity.
+
+    </p>
+
+  </div>
+
+)}
+
 
 {/* ADD EMPLOYEE MODAL */}
 {showAddForm && (
@@ -1392,6 +1847,442 @@ lg:py-4
           </div>
 
         )}
+
+{/* PERSONNEL ASSIGNMENTS MODAL */}
+{selectedPersonnel && (
+
+  <div className="
+    fixed
+    inset-0
+    z-50
+
+    bg-black/50
+    backdrop-blur-sm
+
+    flex
+    items-center
+    justify-center
+
+    p-4
+  ">
+
+    <div className="
+      bg-white
+
+      w-full
+      max-w-5xl
+
+      rounded-3xl
+
+      shadow-2xl
+
+      overflow-hidden
+
+      max-h-[90vh]
+
+      flex
+      flex-col
+    ">
+
+      {/* HEADER */}
+<div className="
+  bg-linear-to-r
+  from-blue-800
+  to-orange-500
+
+  px-4
+  py-3
+  lg:px-6
+  lg:py-4
+
+  text-white
+">
+
+  <div className="
+    flex
+    justify-between
+    items-start
+
+    gap-4
+  ">
+
+    {/* LEFT */}
+    <div className="
+      flex
+      items-center
+      gap-3
+
+      min-w-0
+      flex-1
+    ">
+
+      {/* PHOTO */}
+      {selectedPersonnel.photo_url ? (
+
+        <img
+          src={
+            selectedPersonnel.photo_url
+          }
+          alt="Personnel"
+
+          className="
+            w-14
+            h-14
+            lg:w-16
+            lg:h-16
+
+            rounded-full
+
+            object-cover
+
+            border-2
+            border-white/40
+
+            shrink-0
+          "
+        />
+
+      ) : (
+
+        <div className="
+          w-14
+          h-14
+          lg:w-16
+          lg:h-16
+
+          rounded-full
+
+          bg-white/20
+
+          flex
+          items-center
+          justify-center
+
+          text-2xl
+          font-black
+
+          shrink-0
+        ">
+
+          {
+            selectedPersonnel.name?.charAt(0)
+          }
+
+        </div>
+
+      )}
+
+      {/* INFO */}
+      <div className="
+        min-w-0
+        flex-1
+      ">
+
+        <h2 className="
+          text-xl
+          lg:text-2xl
+
+          font-black
+
+          leading-tight
+
+          wrap-break-word
+        ">
+
+          {
+            selectedPersonnel.name
+          }
+
+        </h2>
+
+        <p className="
+          text-blue-100
+
+          text-sm
+
+          mt-1
+
+          wrap-break-word
+        ">
+
+          {
+            selectedPersonnel.designation
+          }
+
+        </p>
+
+      </div>
+
+    </div>
+
+    {/* CLOSE */}
+    <button
+
+      onClick={() =>
+        setSelectedPersonnel(null)
+      }
+
+      className="
+        w-10
+        h-10
+
+        rounded-xl
+
+        bg-white/20
+        hover:bg-red-500
+
+        text-xl
+        font-bold
+
+        shrink-0
+
+        transition
+      "
+    >
+
+      ×
+
+    </button>
+
+  </div>
+
+</div>
+
+      {/* BODY */}
+      <div className="
+        p-8
+
+        overflow-y-auto
+
+        space-y-5
+      ">
+
+        {personnelAssignments.map(
+          (assign: any) => (
+
+          <div
+            key={assign.id}
+
+            className="
+              border
+
+              rounded-3xl
+
+              p-6
+
+              bg-gray-50
+            "
+          >
+
+            <div className="
+              flex
+              justify-between
+              items-start
+              gap-4
+            ">
+
+              <div>
+
+{/* STATUS */}
+<div className="
+  mb-4
+">
+
+  <span className={`
+    px-4
+    py-2
+
+    rounded-full
+
+    text-sm
+    font-bold
+
+    ${
+      assign.status ===
+      'completed'
+
+        ? `
+          bg-green-100
+          text-green-700
+        `
+
+        : `
+          bg-orange-100
+          text-orange-700
+        `
+    }
+  `}>
+
+    {
+      assign.status ||
+      'Pending'
+    }
+
+  </span>
+
+</div>
+
+                <h3 className="
+                  text-2xl
+                  font-black
+                  text-blue-900
+                ">
+
+                  {
+                    assign.activities?.title
+                  }
+
+                </h3>
+
+                <p className="
+                  text-gray-600
+                  mt-2
+                ">
+
+                  📍
+                  {' '}
+
+                  {
+                    assign.activities
+                      ?.location_name
+                  }
+
+                </p>
+
+                <p className="
+                  text-purple-700
+                  mt-2
+                  font-semibold
+                ">
+
+                  🏛️
+                  {' '}
+
+                  {
+                    assign.activities
+                      ?.venue_details ||
+
+                      'No venue specified'
+                  }
+
+                </p>
+
+              </div>
+
+              
+            </div>
+
+            {/* TASK */}
+            <div className="
+              mt-5
+
+              bg-white
+
+              border
+
+              rounded-2xl
+
+              p-5
+            ">
+
+              <p className="
+                text-sm
+                text-gray-500
+              ">
+
+                Assigned Task
+
+              </p>
+
+              <p className="
+                mt-2
+
+                text-lg
+                font-semibold
+              ">
+
+                {assign.task}
+
+              </p>
+
+            </div>
+
+            {/* PROGRESS */}
+            <div className="
+              mt-5
+            ">
+
+              <div className="
+                flex
+                justify-between
+
+                mb-2
+              ">
+
+                <span className="
+                  text-sm
+                  font-semibold
+                ">
+
+                  Progress
+
+                </span>
+
+                <span className="
+                  text-sm
+                  font-bold
+                  text-blue-700
+                ">
+
+                  {
+                    assign.progress || 0
+                  }%
+
+                </span>
+
+              </div>
+
+              <div className="
+                h-4
+
+                bg-gray-200
+
+                rounded-full
+
+                overflow-hidden
+              ">
+
+                <div
+                  style={{
+                    width:
+`${assign.progress || 0}%`
+                  }}
+
+                  className="
+                    h-full
+
+                    bg-linear-to-r
+                    from-blue-600
+                    to-orange-500
+                  "
+                />
+
+              </div>
+
+            </div>
+
+          </div>
+
+        ))}
+
+      </div>
+
+    </div>
+
+  </div>
+
+)}
+
 
         {/* TABLE */}
         <div className="

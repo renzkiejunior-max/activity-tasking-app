@@ -1,16 +1,14 @@
 'use client'
 
-import {
-  useEffect,
-  useState,
-} from 'react'
+import imageCompression
+from 'browser-image-compression'
+
+import {   useEffect,   useState, } from 'react'
 
 import { supabase }
 from '../../../lib/supabase'
 
-import {
-  offlineDB,
-} from '../../../lib/offline-db'
+import {   offlineDB, } from '../../../lib/offline-db'
 
 export default function Page() {
 
@@ -41,6 +39,13 @@ const [selectedEmployees,
   setSearchTimeout] =
   useState<any>(null)
 
+  const [communicationFile,
+  setCommunicationFile] =
+  useState<any>(null)
+
+const [communicationUrl,
+  setCommunicationUrl] =
+  useState('')
   
   // FORM
   const [title, setTitle] =
@@ -328,6 +333,7 @@ const fetchEmployees =
     setActivityTime('')
     setEndTime('')
     setLocationName('')
+    setVenueDetails('')
     setLatitude('')
     setLongitude('')
     setStatus('upcoming')
@@ -339,6 +345,10 @@ const fetchEmployees =
     setShowSuggestions(false)
 
     setEditingId(null)
+
+    setCommunicationFile(null)
+
+    setCommunicationUrl('')
   }
 
   // SAVE
@@ -351,7 +361,83 @@ const fetchEmployees =
       )
     }
 
+// FILE URL
+let uploadedFileUrl =
+  communicationUrl || ''
+
+// UPLOAD FILE
+if (communicationFile) {
+
+  let fileToUpload =
+    communicationFile
+
+  // IMAGE COMPRESSION
+  if (
+    communicationFile.type.startsWith(
+      'image/'
+    )
+  ) {
+
+    fileToUpload =
+      await imageCompression(
+
+        communicationFile,
+
+        {
+
+          maxSizeMB: 0.7,
+
+          maxWidthOrHeight: 1920,
+
+          useWebWorker: true,
+
+        }
+      )
+  }
+
+  const fileName =
+`${Date.now()}-${fileToUpload.name}`
+
+  const {
+    error: uploadError,
+  } = await supabase.storage
+
+    .from(
+      'activity-communications'
+    )
+
+    .upload(
+      fileName,
+      fileToUpload
+    )
+
+  if (uploadError) {
+
+    return alert(
+      uploadError.message
+    )
+  }
+
+  const {
+    data: publicUrlData,
+  } = supabase.storage
+
+    .from(
+      'activity-communications'
+    )
+
+    .getPublicUrl(
+      fileName
+    )
+
+  uploadedFileUrl =
+    publicUrlData.publicUrl
+}
+
     const payload = {
+
+      communication_url:
+  uploadedFileUrl,
 
       title,
 
@@ -471,7 +557,9 @@ setEndDate(
       activity.location_name || ''
     )
 
-setVenueDetails(activity.location_name || '')
+setVenueDetails( 
+  activity.venue_details || ''
+)
 
     setLatitude(
       activity.latitude
@@ -495,6 +583,10 @@ setVenueDetails(activity.location_name || '')
       activity.status ||
       'upcoming'
     )
+
+    setCommunicationUrl(
+  activity.communication_url || ''
+)
 
     setShowSuggestions(false)
 
@@ -978,7 +1070,7 @@ ${activity.activity_time}`,
 
       text-white
 
-      mt-4
+      mt-2
     ">
 
       Activities
@@ -990,7 +1082,7 @@ ${activity.activity_time}`,
 
       text-lg
 
-      mt-3
+      mt-2
 
       max-w-2xl
     ">
@@ -1082,11 +1174,17 @@ ${activity.activity_time}`,
     bg-black/50
     backdrop-blur-sm
 
+    overflow-y-auto
+
     flex
-    items-center
+    items-start
     justify-center
 
-    p-4
+    pt-8
+    pb-6
+
+    px-3
+    lg:p-6
   ">
 
     <div className="
@@ -1095,7 +1193,7 @@ ${activity.activity_time}`,
       bg-white
 
       w-full
-      max-w-5xl
+      max-w-6xl
 
       rounded-3xl
 
@@ -1111,7 +1209,11 @@ ${activity.activity_time}`,
         via-orange-400
         to-amber-400
 
-        p-8
+        px-4
+        py-3
+
+        lg:px-6
+        lg:py-4
 
         text-white
       ">
@@ -1120,7 +1222,7 @@ ${activity.activity_time}`,
           flex
           justify-between
           items-start
-          gap-4
+          gap-3
         ">
 
           <div>
@@ -1132,12 +1234,12 @@ ${activity.activity_time}`,
 
               bg-white/20
 
-              px-4
-              py-2
+              px-3
+              py-1
 
               rounded-full
 
-              text-sm
+              text-xs
               font-semibold
             ">
 
@@ -1146,10 +1248,11 @@ ${activity.activity_time}`,
             </div>
 
             <h2 className="
-              text-4xl
+              text-2xl
+              lg:text-3xl
               font-black
 
-              mt-4
+              mt-1
             ">
 
               {
@@ -1164,7 +1267,7 @@ ${activity.activity_time}`,
 
             <p className="
               text-orange-50
-              mt-3
+              mt-2
             ">
 
               Create operational activities,
@@ -1337,6 +1440,183 @@ ${activity.activity_time}`,
             />
 
           </div>
+
+          {/* COMMUNICATION FILE */}
+<div className="
+  md:col-span-2
+">
+
+  <label className="
+    block
+    mb-3
+
+    text-sm
+    font-semibold
+    text-gray-700
+  ">
+
+    Official Communication / Reference File
+
+  </label>
+
+  <label className="
+    relative
+
+    flex
+    items-center
+    gap-5
+
+    border-2
+    border-dashed
+    border-orange-300
+
+    bg-orange-50
+
+    hover:bg-orange-100
+
+    rounded-3xl
+
+    p-6
+
+    cursor-pointer
+
+    transition
+  ">
+
+    {/* ICON */}
+    <div className="
+      w-16
+      h-16
+
+      rounded-2xl
+
+      bg-white
+
+      flex
+      items-center
+      justify-center
+
+      shadow-md
+
+      text-4xl
+    ">
+
+      📋
+
+    </div>
+
+    {/* TEXT */}
+    <div className="
+      flex-1
+      min-w-0
+    ">
+
+      <h3 className="
+        text-lg
+        font-bold
+        text-orange-700
+      ">
+
+        Upload Communication File
+
+      </h3>
+
+      <p className="
+        text-sm
+        text-gray-600
+
+        mt-1
+      ">
+
+        Upload memorandums,
+        endorsements,
+        advisories,
+        office communications,
+        PDFs,
+        or images.
+
+      </p>
+
+      <p className="
+        text-xs
+        text-gray-500
+
+        mt-2
+      ">
+
+        Images are automatically compressed
+        before upload.
+
+      </p>
+
+      {/* FILE NAME */}
+      {communicationFile && (
+
+        <div className="
+          mt-3
+
+          inline-flex
+          items-center
+          gap-2
+
+          bg-green-100
+          text-green-700
+
+          px-4
+          py-2
+
+          rounded-full
+
+          text-sm
+          font-semibold
+
+          max-w-full
+        ">
+
+          📎
+
+          <span className="
+            truncate
+          ">
+
+            {
+              communicationFile.name
+            }
+
+          </span>
+
+        </div>
+
+      )}
+
+    </div>
+
+    {/* HIDDEN INPUT */}
+    <input
+
+      type="file"
+
+      accept="
+        .pdf,
+        .doc,
+        .docx,
+        image/*
+      "
+
+      onChange={(e) =>
+        setCommunicationFile(
+          e.target.files?.[0]
+        )
+      }
+
+      className="
+        hidden
+      "
+    />
+
+  </label>
+
+</div>
 
           {/* FOCAL PERSON */}
           <div>
@@ -1591,236 +1871,250 @@ ${activity.activity_time}`,
 
   </label>
 
+  {/* MOBILE RESPONSIVE */}
   <div className="
     flex
-    gap-3
+    flex-col
+
+    gap-4
   ">
 
-    {/* INPUT */}
-    <input
+    {/* LOCATION INPUT */}
+    <div>
 
-  placeholder="
-  Example:
-  Iloilo Provincial Capitol
-  "
+      <input
 
-  value={locationName}
+        placeholder="
+        Example:
+        Iloilo Provincial Capitol
+        "
 
-  onChange={(e) => {
+        value={locationName}
 
-  const value =
-    e.target.value
+        onChange={(e) => {
 
-  setLocationName(value)
+          const value =
+            e.target.value
 
-  // CLEAR OLD TIMER
-  if (searchTimeout) {
+          setLocationName(value)
 
-    clearTimeout(
-      searchTimeout
-    )
-  }
+          // CLEAR TIMER
+          if (searchTimeout) {
 
-  // WAIT BEFORE SEARCHING
-  const timeout =
-    setTimeout(() => {
+            clearTimeout(
+              searchTimeout
+            )
+          }
 
-      if (
-        value.length >= 3
-      ) {
+          // DELAY SEARCH
+          const timeout =
+            setTimeout(() => {
 
-        searchLocation(value)
+              if (
+                value.length >= 3
+              ) {
 
-      } else {
+                searchLocation(value)
 
-        setShowSuggestions(
-          false
-        )
-      }
+              } else {
 
-    }, 700)
+                setShowSuggestions(
+                  false
+                )
+              }
 
-  setSearchTimeout(
-    timeout
-  )
+            }, 700)
 
-}}
+          setSearchTimeout(
+            timeout
+          )
 
-  className="
-    flex-1
+        }}
 
-    border
-    border-gray-200
+        className="
+          w-full
 
-    rounded-2xl
+          border
+          border-gray-200
 
-    px-4
-    py-4
+          rounded-2xl
 
-    focus:outline-none
-    focus:ring-4
-    focus:ring-orange-100
-  "
-/>
+          px-4
+          py-4
 
-{/* VENUE DETAILS */}
-<div className="
-  md:col-span-2
-">
+          focus:outline-none
+          focus:ring-4
+          focus:ring-orange-100
+        "
+      />
 
-  <label className="
-    block
-    mb-2
+      <p className="
+        text-xs
+        text-gray-500
 
-    text-sm
-    font-semibold
-    text-gray-700
-  ">
+        mt-2
+      ">
 
-    Venue / Room Details
+        Tip:
+        Add barangay,
+        municipality,
+        or “Iloilo”
+        for better search results.
 
-  </label>
+      </p>
 
-  <input
+    </div>
 
-    placeholder="
-    Example:
-    Building A,
-    4th Floor,
-    Conference Room A
-    "
+    {/* VENUE */}
+    <div>
 
-    value={venueDetails}
+      <label className="
+        block
+        mb-2
 
-    onChange={(e) =>
-      setVenueDetails(
-        e.target.value
-      )
-    }
-
-    className="
-      w-full
-
-      border
-      border-gray-200
-
-      rounded-2xl
-
-      px-4
-      py-4
-
-      focus:outline-none
-      focus:ring-4
-      focus:ring-orange-100
-    "
-  />
-
-  <p className="
-    text-xs
-    text-gray-500
-
-    mt-2
-  ">
-
-    Specify the exact venue,
-    room,
-    floor,
-    building,
-    or meeting hall.
-
-  </p>
-
-</div>
-
-    {/* SEARCH BUTTON */}
-    <button
-
-      type="button"
-
-      onClick={() =>
-        searchLocation(
-          `${locationName} Iloilo`
-        )
-      }
-
-      className="
-        bg-orange-500
-        hover:bg-orange-600
-
-        text-white
-
-        px-6
-        py-4
-
-        rounded-2xl
-
+        text-sm
         font-semibold
+        text-gray-700
+      ">
 
-        whitespace-nowrap
-      "
-    >
+        Venue / Room Details
 
-      Search
+      </label>
 
-    </button>
+      <input
 
-    {/* MAP BUTTON */}
-    <button
+        placeholder="
+        Building A,
+        4th Floor,
+        Conference Room A
+        "
 
-      type="button"
+        value={venueDetails}
 
-      onClick={() => {
+        onChange={(e) =>
+          setVenueDetails(
+            e.target.value
+          )
+        }
 
-        if (!locationName)
-          return
+        className="
+          w-full
 
-        window.open(
+          border
+          border-gray-200
 
-          `https://www.google.com/maps/search/${encodeURIComponent(locationName)}`,
+          rounded-2xl
 
-          '_blank'
-        )
+          px-4
+          py-4
 
-      }}
+          focus:outline-none
+          focus:ring-4
+          focus:ring-orange-100
+        "
+      />
 
-      className="
-        bg-blue-600
-        hover:bg-blue-700
+      <p className="
+        text-xs
+        text-gray-500
 
-        text-white
+        mt-2
+      ">
 
-        px-6
-        py-4
+        Specify exact room,
+        building,
+        floor,
+        or meeting hall.
 
-        rounded-2xl
+      </p>
 
-        font-semibold
+    </div>
 
-        whitespace-nowrap
-      "
-    >
+    {/* BUTTONS */}
+    <div className="
+      flex
+      flex-col
 
-      Map
+      sm:flex-row
 
-    </button>
+      gap-3
+    ">
+
+      {/* SEARCH */}
+      <button
+
+        type="button"
+
+        onClick={() =>
+          searchLocation(
+            `${locationName} Iloilo`
+          )
+        }
+
+        className="
+          flex-1
+
+          bg-orange-500
+          hover:bg-orange-600
+
+          text-white
+
+          px-6
+          py-4
+
+          rounded-2xl
+
+          font-semibold
+        "
+      >
+
+        Search Location
+
+      </button>
+
+      {/* MAP */}
+      <button
+
+        type="button"
+
+        onClick={() => {
+
+          if (!locationName)
+            return
+
+          window.open(
+
+            `https://www.google.com/maps/search/${encodeURIComponent(locationName)}`,
+
+            '_blank'
+          )
+
+        }}
+
+        className="
+          flex-1
+
+          bg-blue-600
+          hover:bg-blue-700
+
+          text-white
+
+          px-6
+          py-4
+
+          rounded-2xl
+
+          font-semibold
+        "
+      >
+
+        Open Map
+
+      </button>
+
+    </div>
 
   </div>
-
-  {/* HELPER */}
-  <p className="
-    text-xs
-    text-gray-500
-
-    mt-2
-  ">
-
-    Tip:
-    Add barangay,
-    municipality,
-    or “Iloilo”
-    for better search results.
-
-  </p>
 
   {/* SUGGESTIONS */}
   {showSuggestions &&
@@ -1896,7 +2190,10 @@ ${activity.activity_time}`,
             text-blue-900
           ">
 
-            📍 {place.name || 'Location'}
+            📍
+            {' '}
+
+            {place.name || 'Location'}
 
           </div>
 
@@ -1918,18 +2215,6 @@ ${activity.activity_time}`,
   )}
 
 </div>
-
-{/* DEBUG */}
-<p className="
-  text-xs
-  text-gray-400
-  mt-2
-">
-
-  Suggestions:
-  {locationSuggestions.length}
-
-</p>
 
           {/* STATUS */}
           <div>
@@ -2174,6 +2459,48 @@ ${activity.activity_time}`,
     ">
 
       {activity.venue_details}
+
+      {activity.communication_url && (
+
+  <div className="
+    mt-3
+  ">
+
+    <a
+
+      href={
+        activity.communication_url
+      }
+
+      target="_blank"
+
+      className="
+        inline-flex
+        items-center
+        gap-2
+
+        bg-blue-100
+        hover:bg-blue-200
+
+        text-blue-800
+
+        px-4
+        py-2
+
+        rounded-xl
+
+        text-sm
+        font-semibold
+      "
+    >
+
+      📄 View Communication
+
+    </a>
+
+  </div>
+
+)}
 
     </span>
 

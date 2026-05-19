@@ -284,29 +284,35 @@ const clearNotifications =
       {/* DESKTOP TOPBAR */}
       <header className="
 
-        hidden
-        md:flex
+  hidden
+  md:flex
 
-        sticky
-        top-0
+  sticky
+  top-0
 
-        z-30
+  z-30
 
-        bg-white/95
-        backdrop-blur
+  w-full
 
-        border-b
-        border-gray-200
+  bg-linear-to-r
+  from-orange-700
+  via-orange-600
+  to-orange-700
 
-        shadow-sm
+  backdrop-blur
 
-        px-8
-        py-4
+  border-b
+  border-orange-400/30
 
-        items-center
-        justify-between
+  shadow-md
 
-      ">
+  px-8
+  py-2
+
+  items-center
+  justify-between
+
+">
 
         {/* LEFT */}
         <div>
@@ -314,7 +320,7 @@ const clearNotifications =
           <h1 className="
             text-2xl
             font-bold
-            text-blue-900
+            text-white
           ">
 
             PDRRMO Operations Portal
@@ -323,7 +329,7 @@ const clearNotifications =
 
           <p className="
             text-sm
-            text-gray-500
+            text-orange-100
             mt-1
           ">
 
@@ -358,8 +364,8 @@ const clearNotifications =
 
                 rounded-2xl
 
-                bg-orange-100
-                hover:bg-orange-200
+                bg-white/10
+                hover:bg-white/20
 
                 transition
 
@@ -368,6 +374,7 @@ const clearNotifications =
                 justify-center
 
                 text-xl
+              text-white
 
                 shadow-sm
               "
@@ -420,8 +427,9 @@ const clearNotifications =
             items-center
             gap-3
 
-            bg-gray-50
+            bg-blue-900
             border
+          border-white/10
 
             rounded-2xl
 
@@ -491,7 +499,7 @@ const clearNotifications =
 
               <p className="
                 font-bold
-                text-blue-900
+                text-white
 
                 truncate
               ">
@@ -505,7 +513,7 @@ const clearNotifications =
 
               <p className="
                 text-xs
-                text-gray-500
+                text-orange-100
 
                 truncate
               ">
@@ -518,7 +526,7 @@ const clearNotifications =
 
               <p className="
                 text-xs
-                text-orange-600
+                text-yellow-200
 
                 capitalize
                 font-medium
@@ -591,7 +599,7 @@ userData?.roles
         backdrop-blur
 
         border-t
-        border-gray-200
+        border-orange-400/30
 
         shadow-2xl
 

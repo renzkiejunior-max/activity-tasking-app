@@ -489,7 +489,14 @@ allDay: false,
 
             ]}
 
-            initialView="dayGridMonth"
+            initialView={
+  typeof window !== 'undefined' &&
+  window.innerWidth < 768
+
+    ? 'timeGridWeek'
+
+    : 'dayGridMonth'
+}
 
             headerToolbar={{
 
@@ -595,6 +602,293 @@ buttonText={{
 
 
         </div>
+
+
+{/* ACTIVITY TIMELINE */}
+<div className="
+  mt-8
+">
+
+  {/* HEADER */}
+  <div className="
+    flex
+    items-center
+    justify-between
+
+    mb-5
+  ">
+
+    <div>
+
+      <h2 className="
+        text-2xl
+        font-black
+        text-blue-900
+      ">
+
+        Operational Activities
+
+      </h2>
+
+      <p className="
+        text-gray-500
+        mt-1
+      ">
+
+        Complete activity schedule and details
+
+      </p>
+
+    </div>
+
+  </div>
+
+  {/* LIST */}
+  <div className="
+    space-y-4
+  ">
+
+    {events.map(
+      (
+        event: any,
+        index: number
+      ) => (
+
+      <button
+
+        key={index}
+
+        onClick={() =>
+          setSelectedEvent(event)
+        }
+
+        className="
+          w-full
+
+          bg-white
+
+          border
+
+          rounded-3xl
+
+          p-5
+
+          shadow-sm
+
+          hover:shadow-xl
+
+          transition
+
+          text-left
+        "
+      >
+
+        {/* TOP */}
+        <div className="
+          flex
+          justify-between
+          items-start
+
+          gap-4
+        ">
+
+          {/* LEFT */}
+          <div className="
+            min-w-0
+            flex-1
+          ">
+
+            {/* STATUS */}
+            <div className="
+              mb-3
+            ">
+
+              <span
+                className={`
+                  px-3
+                  py-1
+
+                  rounded-full
+
+                  text-xs
+                  font-bold
+
+                  ${
+                    event.extendedProps
+                      ?.status ===
+                    'Completed'
+
+                      ? `
+                        bg-green-100
+                        text-green-700
+                      `
+
+                      : event.extendedProps
+                          ?.status ===
+                        'Ongoing'
+
+                        ? `
+                          bg-orange-100
+                          text-orange-700
+                        `
+
+                        : `
+                          bg-blue-100
+                          text-blue-700
+                        `
+                  }
+                `}
+              >
+
+                {
+                  event.extendedProps
+                    ?.status
+                }
+
+              </span>
+
+            </div>
+
+            {/* TITLE */}
+            <h3 className="
+              text-xl
+              font-black
+              text-blue-900
+
+              wrap-break-word
+            ">
+
+              {event.title}
+
+            </h3>
+
+            {/* DATE */}
+            <p className="
+              text-gray-600
+              mt-2
+            ">
+
+              📅
+              {' '}
+
+              {
+                new Date(
+                  event.start
+                ).toLocaleDateString(
+                  'en-US',
+                  {
+                    weekday: 'long',
+                    month: 'long',
+                    day: 'numeric',
+                    year: 'numeric',
+                  }
+                )
+              }
+
+            </p>
+
+            {/* TIME */}
+            <p className="
+              text-gray-600
+              mt-2
+            ">
+
+              ⏰
+              {' '}
+
+              {
+                event.extendedProps
+                  ?.time
+
+                  ? new Date(
+`1970-01-01T${event.extendedProps.time}`
+                    ).toLocaleTimeString(
+                      'en-US',
+                      {
+                        hour: 'numeric',
+                        minute: '2-digit',
+                        hour12: true,
+                      }
+                    )
+
+                  : 'No time specified'
+              }
+
+            </p>
+
+            {/* LOCATION */}
+            {event.extendedProps
+              ?.location && (
+
+              <p className="
+                text-blue-700
+                mt-2
+
+                wrap-break-word
+              ">
+
+                📍
+                {' '}
+
+                {
+                  event.extendedProps
+                    ?.location
+                }
+
+              </p>
+
+            )}
+
+            {/* VENUE */}
+            <p className="
+              text-purple-700
+              mt-2
+
+              wrap-break-word
+            ">
+
+              🏛️
+              {' '}
+
+              {
+                event.extendedProps
+                  ?.venue ||
+
+                  'No venue specified'
+              }
+
+            </p>
+
+          </div>
+
+          {/* COLOR BAR */}
+          <div
+            style={{
+              background:
+                event.backgroundColor
+            }}
+
+            className="
+              w-3
+
+              self-stretch
+
+              rounded-full
+
+              shrink-0
+            "
+          />
+
+        </div>
+
+      </button>
+
+    ))}
+
+  </div>
+
+</div>
+
 
         {/* EVENT MODAL */}
 {selectedEvent && (
@@ -1284,8 +1578,8 @@ buttonText={{
   }
 
   .fc-daygrid-day-frame {
-    min-height: 90px !important;
-  }
+  min-height: 70px !important;
+}
 
 }
 
