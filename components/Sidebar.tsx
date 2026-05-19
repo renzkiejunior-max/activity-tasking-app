@@ -271,9 +271,144 @@ const uniqueLinks =
 
   )
 
+// GROUPED MENUS
+const groupedLinks = {
+
+  OPERATIONS:
+
+    uniqueLinks.filter(
+      (item: any) => [
+
+        'Activities',
+        'Calendar',
+        'Timeline',
+        'Kanban Board',
+
+      ].includes(item.name)
+    ),
+
+  PERSONNEL:
+
+    uniqueLinks.filter(
+      (item: any) => [
+
+        'Employees',
+        'Assignments',
+        'My Task',
+
+      ].includes(item.name)
+    ),
+
+  MONITORING:
+
+    uniqueLinks.filter(
+      (item: any) => [
+
+        'Notifications',
+        'Operations Map',
+        'Reports',
+
+      ].includes(item.name)
+    ),
+
+  ADMIN:
+
+    uniqueLinks.filter(
+      (item: any) => [
+
+        'User Management',
+        'Activity Requests',
+
+      ].includes(item.name)
+    ),
+
+}
+
+const icons: any = {
+
+  Dashboard: '🏠',
+
+  Calendar: '📅',
+
+  Employees: '👥',
+
+  Assignments: '📌',
+
+  Notifications: '🔔',
+
+  Activities: '🗂️',
+
+  'Operations Map': '🗺️',
+
+  Reports: '📄',
+
+  'Kanban Board': '📋',
+
+  Timeline: '⏱️',
+
+  'My Task': '💼',
+
+  'User Management': '⚙️',
+
+  'Activity Requests': '📨',
+
+}
+
 
   const [open, setOpen] =
     useState(false)
+
+  const detectGroup = () => {
+
+  if (
+
+    [
+      '/employees',
+      '/assignments',
+      '/my-task',
+
+    ].includes(pathname)
+
+  ) {
+
+    return 'PERSONNEL'
+  }
+
+  if (
+
+    [
+      '/notifications',
+      '/operations-map',
+      '/reports',
+
+    ].includes(pathname)
+
+  ) {
+
+    return 'MONITORING'
+  }
+
+  if (
+
+    [
+      '/user-management',
+      '/activity-requests',
+
+    ].includes(pathname)
+
+  ) {
+
+    return 'ADMIN'
+  }
+
+  return 'OPERATIONS'
+}
+
+const [openGroup,
+  setOpenGroup] =
+  useState(
+    detectGroup()
+  )
 
   return (
 
@@ -284,8 +419,8 @@ const uniqueLinks =
   md:hidden
 
   fixed
-  top-4
-  left-4
+  top-3
+  right-3
 
   z-50
 ">
@@ -297,13 +432,14 @@ const uniqueLinks =
     }
 
     className="
-      w-14
-      h-14
+      w-12
+      h-12
 
       rounded-2xl
 
-      bg-blue-900
-      hover:bg-blue-800
+      bg-blue-900/90
+        backdrop-blur
+      hover:bg-blue-800/80
 
       text-white
 
@@ -317,8 +453,6 @@ const uniqueLinks =
 
       border
       border-white/10
-
-      backdrop-blur
 
       transition-all
       duration-300
@@ -399,58 +533,350 @@ const uniqueLinks =
           items-center
           gap-4
 
-          p-6
+          px-4
+          py-3
 
           border-b
           border-blue-800
         ">
 
-          {/* LOGO */}
-          <img
-            src="/PDRRMO.png"
-            alt="PDRRMO"
-            className="
-              w-24
-              h-24
-            "
-          />
-
-          {/* TITLE */}
-          <div>
-
-            <h1 className="
-              text-3xl
-              font-bold
-              text-orange-400
-              leading-tight
-            ">
-              TMS
-            </h1>
-
-            <p className="
-              text-sm
-              text-blue-100
-              mt-1
-            ">
-              Task Management System
-            </p>
-
-          </div>
-
         </div>
 
+{/* APP HEADER */}
+<div className="
+  px-4
+  py-2
+
+  bg-blue-950/50
+
+  border-b
+  border-blue-800
+">
+
+  <p className="
+    text-[15px]
+    font-bold
+
+    uppercase
+
+    tracking-[0.25em]
+
+    text-white
+
+    text-center
+  ">
+
+    TASK MANAGEMENT SYSTEM
+
+  </p>
+
+</div>
+
+
         {/* NAVIGATION */}
-        <nav className="
-          flex-1
+<nav className="
+  flex-1
 
-          overflow-y-auto
+  overflow-y-auto
 
-          p-4
+  p-3
 
-          space-y-3
+  space-y-2
+">
+
+{/* MAIN DASHBOARD */}
+{uniqueLinks
+  .filter(
+    (item: any) =>
+      item.name ===
+      'Dashboard'
+  )
+  .map((link: any) => {
+
+    const active =
+      pathname ===
+      link.href
+
+    return (
+
+      <Link
+
+        key={link.href}
+
+        href={link.href}
+
+        onClick={() =>
+          setOpen(false)
+        }
+
+        className={`
+
+          group
+
+          flex
+          items-center
+          gap-3
+
+          px-4
+          py-3
+
+          rounded-2xl
+
+          transition-all
+          duration-300
+
+          font-bold
+
+          border
+
+          shadow-lg
+
+          mb-2
+
+          ${
+            active
+
+              ? `
+                bg-linear-to-r
+                from-orange-400
+                to-orange-300
+
+                text-blue-950
+
+                border-orange-200
+
+                ring-2
+                ring-orange-200/40
+              `
+
+              : `
+                bg-orange-400
+                hover:bg-orange-300
+
+                text-blue-950
+
+                border-orange-300
+
+                hover:scale-[1.02]
+
+                hover:shadow-orange-200/40
+              `
+          }
+        `}
+      >
+
+        {/* ICON */}
+        <span className="
+          text-lg
+
+          transition-transform
+          duration-200
+
+          group-hover:scale-125
         ">
 
-          {uniqueLinks.map(
+          🏠
+
+        </span>
+
+        {/* TITLE */}
+        <span>
+
+          Dashboard
+
+        </span>
+
+      </Link>
+
+    )
+  })}
+  
+
+  {Object.entries(
+    groupedLinks
+  ).map(
+
+    ([group, items]: any) => (
+
+    <div
+      key={group}
+      className="
+        bg-blue-950/40
+
+        rounded-2xl
+
+        overflow-hidden
+      "
+    >
+
+      
+
+      {/* GROUP BUTTON */}
+<button
+
+  onClick={() =>
+
+    setOpenGroup(
+
+      openGroup === group
+        ? ''
+        : group
+    )
+  }
+
+  className={`
+
+    w-full
+
+    flex
+    items-center
+    justify-between
+
+    px-4
+    py-3
+
+    rounded-2xl
+
+    transition-all
+    duration-300
+
+    border
+
+    shadow-md
+
+    transform
+
+    ${
+      openGroup === group
+
+        ? `
+
+          bg-linear-to-r
+          from-orange-400
+          to-orange-300
+
+          border-orange-300
+
+          text-white
+
+          shadow-orange-500/20
+
+        `
+
+        : `
+
+          bg-blue-900/90
+            backdrop-blur
+          hover:bg-orange-300
+          hover:text-blue-950
+
+          hover:shadow-md
+          hover:shadow-black/20
+
+          hover:-translate-y-0.5
+
+          border-blue-800
+
+          text-blue-100
+        `
+    }
+  `}
+>
+
+
+
+  {/* LEFT */}
+  <div className="
+    flex
+    items-center
+
+    gap-3
+  ">
+
+    {/* ICON */}
+    <div className="
+      text-lg
+    ">
+
+      {
+        group ===
+        'OPERATIONS'
+
+          ? '📊'
+
+        : group ===
+          'PERSONNEL'
+
+          ? '👥'
+
+        : group ===
+          'MONITORING'
+
+          ? '📡'
+
+        : group ===
+          'ADMIN'
+
+          ? '⚙️'
+
+        : '•'
+      }
+
+    </div>
+
+    {/* TITLE */}
+    <span className="
+      text-md
+
+      font-bold
+
+      tracking-widest
+
+      uppercase
+    ">
+
+      {group}
+
+    </span>
+
+  </div>
+
+  {/* ARROW */}
+  <div className={`
+    text-sm
+
+    transition-transform
+    duration-300
+
+    ${
+      openGroup === group
+
+        ? 'rotate-180'
+
+        : ''
+    }
+  `}>
+
+    ▼
+
+  </div>
+
+</button>
+
+      {/* LINKS */}
+      {openGroup === group && (
+
+        <div className="
+  p-2
+
+  space-y-1
+
+  animate-in
+  slide-in-from-top-2
+  duration-200
+">
+
+          {items.map(
             (link: any) => {
 
               const active =
@@ -471,101 +897,81 @@ const uniqueLinks =
 
                   className={`
 
-                    block
+                    group
 
-                    px-4
-                    py-3
+                    flex
+                    items-center
+                    gap-3
+
+                    px-3
+                    py-2.5
 
                     rounded-2xl
 
                     transition-all
-                    duration-200
 
+                    text-sm
                     font-medium
 
                     ${
-  link.name === 'My Task'
+                      active
 
-    ? active
+                      
+                        ? `
+                          bg-linear-to-r
+                          from-orange-400
+                          to-orange-300
 
-      ? `
-        bg-purple-600
-        text-white
-        shadow-lg
-      `
+                          border-white/20
 
-      : `
-        bg-purple-500
-        hover:bg-purple-600
-        text-white
-      `
+                          shadow-lg
+                          shadow-orange-500/20
+                          text-white
+                          border
 
-    : active
+                          ring-2
+                        ring-orange-300/30
+                        `
 
-      ? `
-        bg-orange-500
-        text-white
-        shadow-lg
-      `
+                        : `
+                          hover:bg-orange-300
+                          hover:text-blue-950
 
-      : `
-        bg-blue-800
-        hover:bg-blue-700
-      `
-}
+                        hover:shadow-lg
+                        hover:shadow-blue-900/40
+
+                        hover:-translate-y-0.5
+                          text-blue-100
+                          hover:scale-[1.02]
+                        `
+                    }
                   `}
                 >
 
-                  <div className="
-  flex
-  items-center
-  gap-3
-">
+                  <span className="
+                  text-base
 
-  <span className="
-    text-lg
-  ">
+                  transition-transform
+                  duration-200
 
-    {
-      link.name === 'Dashboard'
-        ? '🏠'
+                  group-hover:scale-125
+                ">
 
-      : link.name === 'Calendar'
-        ? '📅'
+                    {
+                      icons[
+                        link.name
+                      ] || '•'
+                    }
 
-      : link.name === 'Employees'
-        ? '👥'
+                  </span>
 
-      : link.name === 'Assignments'
-        ? '📌'
+                  <span className="
+                    truncate
+                  ">
 
-      : link.name === 'Notifications'
-        ? '🔔'
+                    {link.name}
 
-      : link.name === 'Activities'
-        ? '🗂️'
-
-      : link.name === 'Operations Map'
-        ? '🗺️'
-
-      : link.name === 'Reports'
-        ? '📄'
-
-      : link.name === 'Kanban Board'
-        ? '📋'
-
-      : '•'
-    }
-
-  </span>
-
-  <span>
-
-    {link.name}
-
-  </span>
-
-</div>
+                  </span>
 
                 </Link>
 
@@ -573,25 +979,71 @@ const uniqueLinks =
             }
           )}
 
-        </nav>
-
-        {/* FOOTER */}
-        <div className="
-          p-5
-
-          border-t
-          border-blue-800
-
-          text-center
-          text-sm
-
-          text-blue-200
-        ">
-
-          Provincial Disaster Risk
-          Reduction and Management Office
-
         </div>
+
+      )}
+
+    </div>
+
+  ))}
+
+</nav>
+
+{/* FOOTER */}
+<div className="
+  px-4
+  py-3
+
+  border-t
+  border-blue-800
+
+  bg-blue-950
+">
+
+  <div className="
+    flex
+    items-center
+    justify-center
+
+    gap-2
+  ">
+
+    {/* LOGO */}
+    <img
+      src="/PDRRMO.png"
+      alt="PDRRMO"
+
+      className="
+        w-8
+        h-8
+
+        object-contain
+
+        shrink-0
+
+        opacity-90
+      "
+    />
+
+    {/* TEXT */}
+    <p className="
+      text-[11px]
+
+      leading-tight
+
+      text-blue-100
+
+      text-left
+    ">
+
+      Provincial Disaster Risk
+      Reduction and Management Office
+
+    </p>
+
+  </div>
+
+</div>
 
       </aside>
 

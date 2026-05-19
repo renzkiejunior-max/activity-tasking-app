@@ -364,8 +364,8 @@ const clearNotifications =
 
                 rounded-2xl
 
-                bg-white/10
-                hover:bg-white/20
+                bg-blue-900
+                hover:bg-white/50
 
                 transition
 
