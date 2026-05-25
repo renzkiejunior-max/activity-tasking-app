@@ -20,6 +20,9 @@ from 'react'
 import { supabase }
 from '../../../lib/supabase'
 
+import { useAuth }
+from '@/contexts/AuthContext'
+
 import ProtectedRoute
 from '../../../components/ProtectedRoute'
 
@@ -94,11 +97,29 @@ function FlyToLocation({
 
 export default function Page() {
 
+  const {
+  userData
+} = useAuth()
+
   const [activities, setActivities] =
     useState<any[]>([])
 
+    const [employee,
+  setEmployee] =
+  useState<any>(null)
+
+  const [myActivityIds,
+  setMyActivityIds] =
+  useState<string[]>([])
+
   const [selectedActivity, setSelectedActivity] =
     useState<any>(null)
+
+    const [mapFilter,
+  setMapFilter] =
+  useState<'mine' | 'all'>(
+    'all'
+  )
 
   const [customIcon, setCustomIcon] =
   useState<any>(null)
@@ -161,8 +182,81 @@ useEffect(() => {
   }
 
   useEffect(() => {
-    loadActivities()
-  }, [])
+
+  const loadEmployee =
+    async () => {
+
+      if (
+        !userData?.email
+      ) return
+
+      const {
+        data,
+      } = await supabase
+
+        .from('employees')
+
+        .select('*')
+
+        .eq(
+          'email',
+          userData.email
+        )
+
+        .single()
+
+      if (data) {
+
+        setEmployee(data)
+
+      }
+
+      // LOAD USER ASSIGNMENTS
+const {
+  data: assignments,
+} = await supabase
+
+  .from('assignments')
+
+  .select('activity_id')
+
+  .eq(
+    'employee_id',
+    data.id
+  )
+
+const ids =
+
+  assignments?.map(
+    (a: any) =>
+      a.activity_id
+  ) || []
+
+setMyActivityIds(ids)
+
+    }
+
+  loadEmployee()
+
+  loadActivities()
+
+}, [userData])
+
+// FILTERED MAP ACTIVITIES
+const filteredActivities =
+
+  mapFilter ===
+  'all'
+
+    ? activities
+
+    : activities.filter(
+    (activity: any) =>
+
+      myActivityIds.includes(
+        activity.id
+      )
+  )
 
   // TODAY
   const today = new Date()
@@ -180,13 +274,17 @@ useEffect(() => {
 
   return (
 
+
+    // PROTECTED ROUTE - ALL ROLES
     <ProtectedRoute
-      allowedRoles={[
-        'admin',
-        'office_chief',
-        'chief',
-      ]}
-    >
+  allowedRoles={[
+    'admin',
+    'office_chief',
+    'chief',
+    'division_chief',
+    'staff',
+  ]}
+>
 
       <div className="
   w-full
@@ -218,6 +316,107 @@ useEffect(() => {
           </p>
 
         </div>
+
+{/* MAP FILTERS */}
+<div className="
+  flex
+  gap-3
+
+  flex-wrap
+">
+
+  {/* MY MAP */}
+  <button
+
+    onClick={() =>
+      setMapFilter(
+        'mine'
+      )
+    }
+
+    className={`
+
+      px-5
+      py-3
+
+      rounded-2xl
+
+      font-bold
+
+      shadow-md
+
+      transition-all
+
+      ${
+        mapFilter ===
+        'mine'
+
+          ? `
+            bg-orange-500
+            text-white
+          `
+
+          : `
+            bg-white
+            border
+
+            hover:bg-orange-50
+          `
+      }
+    `}
+  >
+
+    📍 My Map
+
+  </button>
+
+  {/* ALL MAP */}
+  <button
+
+    onClick={() =>
+      setMapFilter(
+        'all'
+      )
+    }
+
+    className={`
+
+      px-5
+      py-3
+
+      rounded-2xl
+
+      font-bold
+
+      shadow-md
+
+      transition-all
+
+      ${
+        mapFilter ===
+        'all'
+
+          ? `
+            bg-blue-900
+            text-white
+          `
+
+          : `
+            bg-white
+            border
+
+            hover:bg-blue-50
+          `
+      }
+    `}
+  >
+
+    🗺 All Map
+
+  </button>
+
+</div>
+
 
         {/* SUMMARY */}
         <div className="
@@ -331,7 +530,7 @@ useEffect(() => {
               overflow-y-auto
             ">
 
-              {activities.map(
+              {filteredActivities.map(
                 (activity: any) => (
 
                 <button
@@ -472,7 +671,7 @@ useEffect(() => {
                 )}
 
                 {/* MARKERS */}
-                {activities.map(
+                {filteredActivities.map(
                   (activity: any) => {
 
                   if (

@@ -29,8 +29,9 @@ export default function Page() {
     useState<any[]>([])
 
   // FORM
-  const [employeeId, setEmployeeId] =
-    useState('')
+  const [employeeIds,
+  setEmployeeIds] =
+  useState<string[]>([])
 
   const [activityId, setActivityId] =
     useState('')
@@ -50,6 +51,14 @@ export default function Page() {
   const [remarks, setRemarks] =
     useState('')
 
+    const [taskType,
+  setTaskType] =
+  useState<
+    'activity'
+    |
+    'personal'
+  >('activity')
+
     // SHOW FORM
 const [showForm,
   setShowForm] =
@@ -59,6 +68,42 @@ const [showForm,
   showAnalytics,
   setShowAnalytics
 ] = useState(false)
+
+const [currentUser,
+  setCurrentUser] =
+  useState<any>(null)
+
+  // FETCH CURRENT USER
+const fetchCurrentUser =
+  async () => {
+
+    const {
+      data: {
+        user,
+      },
+    } = await supabase
+      .auth
+      .getUser()
+
+    if (!user) return
+
+    const {
+      data,
+    } = await supabase
+
+      .from('employees')
+
+      .select('*')
+
+      .eq(
+        'user_id',
+        user.id
+      )
+
+      .single()
+
+    setCurrentUser(data)
+  }
 
   // FETCH EMPLOYEES
   const fetchEmployees = async () => {
@@ -147,13 +192,11 @@ const [showForm,
   }
 
 
-
 // CREATE ASSIGNMENT
 const assignEmployee = async () => {
 
   if (
-    !employeeId ||
-    !activityId ||
+    employeeIds.length === 0 ||
     !task
   ) {
 
@@ -162,64 +205,6 @@ const assignEmployee = async () => {
     )
   }
 
-  // INSERT ASSIGNMENT
-  const {
-    data: assignmentData,
-    error,
-  } = await supabase
-
-    .from('assignments')
-
-    .insert([
-      {
-        employee_id:
-          employeeId,
-
-        activity_id:
-          activityId,
-
-        task,
-
-        deadline,
-
-        progress,
-
-        priority,
-
-        remarks,
-
-        status:
-          progress === 100
-            ? 'completed'
-            : 'pending',
-
-        completed_at:
-          progress === 100
-            ? new Date()
-                .toISOString()
-            : null,
-      },
-    ])
-
-    .select()
-
-    .single()
-
-  // ERROR
-  if (error) {
-
-    return alert(
-      error.message
-    )
-  }
-
-  // GET EMPLOYEE INFO
-  const employee =
-    employees.find(
-      (emp: any) =>
-        emp.id === employeeId
-    )
-
   // GET ACTIVITY INFO
   const activity =
     activities.find(
@@ -227,56 +212,250 @@ const assignEmployee = async () => {
         act.id === activityId
     )
 
-  // GET USER ID
-  const {
-    data: employeeUser,
-  } = await supabase
+  // LOOP EMPLOYEES
+  for (const employeeId of employeeIds) {
 
-    .from('employees')
+    // INSERT ASSIGNMENT
+    const {
+      error,
+    } = await supabase
 
-    .select('user_id')
+      .from('assignments')
 
-    .eq(
-      'id',
-      employeeId
-    )
+      .insert([
+        {
+          employee_id:
+            employeeId,
 
-    .single()
+          activity_id:
 
-  // CREATE NOTIFICATION
-  if (
-    employeeUser?.user_id
-  ) {
+          taskType ===
+          'activity'
 
-    await supabase
+            ? activityId
 
-      .from('notifications')
+            : null,
 
-      .insert({
+          task,
 
-        user_id:
-          employeeUser.user_id,
+          deadline,
 
-        employee_id:
-          employeeId,
+          progress,
 
-        title:
-          'New Assignment',
+          priority,
 
-        message:
-          `${task} assigned for ${activity?.title || 'Activity'}`,
+          remarks,
 
-        type:
-          'assignment',
+          assigned_by_name:
+            currentUser?.name ||
+            'Unknown',
 
-        is_read:
-          false,
+          assigned_by_role:
+            currentUser?.role ||
+            'Division Chief',
 
-      })
+          status:
+            progress === 100
+              ? 'completed'
+              : 'pending',
+
+          completed_at:
+            progress === 100
+              ? new Date()
+                  .toISOString()
+              : null,
+        },
+      ])
+
+    // ERROR
+    if (error) {
+
+      return alert(
+        error.message
+      )
+    }
+
+    // GET EMPLOYEE INFO
+    const employee =
+      employees.find(
+        (emp: any) =>
+          emp.id === employeeId
+      )
+
+    // GET USER ID
+    const {
+      data: employeeUser,
+    } = await supabase
+
+      .from('employees')
+
+      .select('user_id')
+
+      .eq(
+        'id',
+        employeeId
+      )
+
+      .single()
+
+    // CREATE NOTIFICATION
+    if (
+      employeeUser?.user_id
+    ) {
+
+      await supabase
+
+        .from('notifications')
+
+        .insert({
+
+          user_id:
+            employeeUser.user_id,
+
+          employee_id:
+            employeeId,
+
+          title:
+            'New Assignment',
+
+          message:
+            `${task} assigned for ${activity?.title || 'Activity'}`,
+
+          type:
+            'assignment',
+
+          is_read:
+            false,
+        })
+    }
+
+    // SEND EMAIL
+    if (employee?.email) {
+
+      try {
+
+        await fetch(
+          '/api/send-email',
+          {
+
+            method: 'POST',
+
+            headers: {
+              'Content-Type':
+                'application/json',
+            },
+
+            body: JSON.stringify({
+
+              to:
+                employee.email,
+
+              subject:
+                'New Task Assignment',
+
+              html: `
+
+                <div style="
+                  font-family:
+                  Arial,
+                  sans-serif;
+
+                  padding:
+                  20px;
+                ">
+
+                  <h2 style="
+                    color:
+                    #1e3a8a;
+                  ">
+
+                    New Task Assignment
+
+                  </h2>
+
+                  <p>
+                    Good day
+                    <b>
+                      ${employee.name}
+                    </b>,
+                  </p>
+
+                  <p>
+                    You have been assigned
+                    a new operational task.
+                  </p>
+
+                  <hr />
+
+                  <p>
+                    <b>Activity:</b>
+                    ${
+                      activity?.title ||
+                      'N/A'
+                    }
+                  </p>
+
+                  <p>
+                    <b>Task:</b>
+                    ${task}
+                  </p>
+
+                  <p>
+                    <b>Deadline:</b>
+                    ${
+                      deadline || 'N/A'
+                    }
+                  </p>
+
+                  <p>
+                    <b>Priority:</b>
+                    ${priority}
+                  </p>
+
+                  <p>
+                    <b>Focal Person:</b>
+                    ${
+                      activity?.focal_person ||
+                      'N/A'
+                    }
+                  </p>
+
+                  <p>
+                    <b>Location:</b>
+                    ${
+                      activity?.location_name ||
+                      'N/A'
+                    }
+                  </p>
+
+                  <hr />
+
+                  <p>
+                    Please login to the
+                    Activity Tasking
+                    System for further
+                    details.
+                  </p>
+
+                </div>
+
+              `,
+            }),
+          }
+        )
+
+      } catch (emailError) {
+
+        console.log(
+          'EMAIL ERROR:',
+          emailError
+        )
+      }
+    }
   }
 
   // RESET FORM
-  setEmployeeId('')
+  setEmployeeIds([])
   setActivityId('')
   setTask('')
   setDeadline('')
@@ -287,130 +466,8 @@ const assignEmployee = async () => {
   // REFRESH
   fetchAssignments()
 
-  // SEND EMAIL
-  if (employee?.email) {
-
-    try {
-
-      await fetch(
-        '/api/send-email',
-        {
-
-          method: 'POST',
-
-          headers: {
-            'Content-Type':
-              'application/json',
-          },
-
-          body: JSON.stringify({
-
-            to:
-              employee.email,
-
-            subject:
-              'New Task Assignment',
-
-            html: `
-
-              <div style="
-                font-family:
-                Arial,
-                sans-serif;
-
-                padding:
-                20px;
-              ">
-
-                <h2 style="
-                  color:
-                  #1e3a8a;
-                ">
-
-                  New Task Assignment
-
-                </h2>
-
-                <p>
-                  Good day
-                  <b>
-                    ${employee.name}
-                  </b>,
-                </p>
-
-                <p>
-                  You have been assigned
-                  a new operational task.
-                </p>
-
-                <hr />
-
-                <p>
-                  <b>Activity:</b>
-                  ${
-                    activity?.title ||
-                    'N/A'
-                  }
-                </p>
-
-                <p>
-                  <b>Task:</b>
-                  ${task}
-                </p>
-
-                <p>
-                  <b>Deadline:</b>
-                  ${
-                    deadline || 'N/A'
-                  }
-                </p>
-
-                <p>
-                  <b>Priority:</b>
-                  ${priority}
-                </p>
-
-                <p>
-                  <b>Focal Person:</b>
-                  ${
-                    activity?.focal_person ||
-                    'N/A'
-                  }
-                </p>
-
-                <p>
-                  <b>Location:</b>
-                  ${
-                    activity?.location_name ||
-                    'N/A'
-                  }
-                </p>
-
-                <hr />
-
-                <p>
-                  Please login to the
-                  Activity Tasking
-                  System for further
-                  details.
-                </p>
-
-              </div>
-
-            `,
-          }),
-        }
-      )
-
-    } catch (emailError) {
-
-      console.log(
-        'EMAIL ERROR:',
-        emailError
-      )
-
-    }
-  }
+  // CLOSE MODAL
+  setShowForm(false)
 }
 
 
@@ -643,11 +700,11 @@ const groupedAssignments =
         assign: any
       ) => {
 
-        const key = `
-          ${assign.activity_id}
-          -
-          ${assign.task}
-        `
+        const key =
+        `${
+          assign.activity_id ||
+          'personal'
+        }-${assign.task}`
 
         if (!acc[key]) {
 
@@ -694,7 +751,10 @@ const groupedAssignments =
   rounded-3xl
   shadow-2xl
 
-  p-8
+  px-5
+  py-4
+
+  md:p-8
 
   flex
   flex-col
@@ -718,7 +778,8 @@ const groupedAssignments =
 
       text-white
 
-      px-4 py-2
+      px-4
+      py-2
 
       rounded-full
 
@@ -1069,11 +1130,17 @@ const groupedAssignments =
       w-full
       max-w-5xl
 
+      h-[95vh]
+      md:h-auto
+
       rounded-3xl
 
       shadow-2xl
 
       overflow-hidden
+
+      flex
+      flex-col
     ">
 
       {/* HEADER */}
@@ -1083,7 +1150,8 @@ const groupedAssignments =
         via-green-600
         to-green-500
 
-        p-8
+        p-5
+        md:p-8
 
         text-white
       ">
@@ -1118,10 +1186,10 @@ const groupedAssignments =
             </div>
 
             <h2 className="
-              text-4xl
+              text-2xl
               font-black
 
-              mt-4
+              mt-2
             ">
 
               Assign Personnel Task
@@ -1130,7 +1198,8 @@ const groupedAssignments =
 
             <p className="
               text-green-50
-              mt-3
+              max-w-md
+              mt-1
             ">
 
               Create operational assignments,
@@ -1177,9 +1246,11 @@ const groupedAssignments =
 
       {/* BODY */}
       <div className="
-        p-8
+        flex-1
 
-        max-h-[80vh]
+        p-4
+        md:p-8
+
         overflow-y-auto
       ">
 
@@ -1200,7 +1271,7 @@ const groupedAssignments =
 
           <p className="
             text-gray-500
-            mt-2
+            mt-1
           ">
 
             Fill out personnel tasking details below.
@@ -1217,65 +1288,223 @@ const groupedAssignments =
           gap-5
         ">
 
-          {/* EMPLOYEE */}
-          <div>
+{/* TASK TYPE */}
+<div className="
+  mb-6
+">
 
-            <label className="
-              block
-              mb-2
+  <label className="
+    block
+    mb-2
 
-              text-sm
-              font-semibold
-              text-gray-700
-            ">
+    text-sm
+    font-semibold
+    text-gray-700
+  ">
 
-              Employee
+    Task Type
 
-            </label>
+  </label>
 
-            <select
-              value={employeeId}
-              onChange={(e) =>
-                setEmployeeId(
-                  e.target.value
+  <div className="
+    flex
+    gap-3
+  ">
+
+    {/* ACTIVITY */}
+    <button
+
+      type="button"
+
+      onClick={() =>
+        setTaskType(
+          'activity'
+        )
+      }
+
+      className={`
+        px-5
+        py-3
+
+        rounded-2xl
+
+        font-semibold
+
+        transition
+
+        ${
+          taskType ===
+          'activity'
+
+            ? `
+              bg-blue-600
+              text-white
+            `
+
+            : `
+              bg-gray-100
+            `
+        }
+      `}
+    >
+
+      📅 Activity Assignment
+
+    </button>
+
+    {/* PERSONAL */}
+    <button
+
+      type="button"
+
+      onClick={() =>
+        setTaskType(
+          'personal'
+        )
+      }
+
+      className={`
+        px-5
+        py-3
+
+        rounded-2xl
+
+        font-semibold
+
+        transition
+
+        ${
+          taskType ===
+          'personal'
+
+            ? `
+              bg-purple-600
+              text-white
+            `
+
+            : `
+              bg-gray-100
+            `
+        }
+      `}
+    >
+
+      👤 Personal Task
+
+    </button>
+
+  </div>
+
+</div>
+
+
+          {/* EMPLOYEES */}
+<div>
+
+  <label className="
+    block
+    mb-2
+
+    text-sm
+    font-semibold
+    text-gray-700
+  ">
+
+    Employees
+
+  </label>
+
+  <div className="
+    border
+    border-gray-200
+
+    rounded-2xl
+
+    p-4
+
+    max-h-64
+    overflow-y-auto
+
+    space-y-3
+  ">
+
+    {employees.map(
+      (emp: any) => (
+
+      <label
+
+        key={emp.id}
+
+        className="
+          flex
+          items-center
+          gap-3
+
+          cursor-pointer
+
+          hover:bg-blue-50
+
+          rounded-xl
+
+          p-2
+        "
+      >
+
+        <input
+
+          type="checkbox"
+
+          checked={
+            employeeIds.includes(
+              emp.id
+            )
+          }
+
+          onChange={(e) => {
+
+            if (
+              e.target.checked
+            ) {
+
+              setEmployeeIds([
+                ...employeeIds,
+                emp.id,
+              ])
+
+            } else {
+
+              setEmployeeIds(
+
+                employeeIds.filter(
+                  (id) =>
+                    id !== emp.id
                 )
-              }
-              className="
-                w-full
+              )
+            }
+          }}
+        />
 
-                border
-                border-gray-200
+        <span className="
+          font-medium
+    
+        ">
 
-                rounded-2xl
+          {emp.name}
 
-                px-4
-                py-4
-              "
-            >
+        </span>
 
-              <option value="">
-                Select Employee
-              </option>
+      </label>
+    ))}
 
-              {employees.map(
-                (emp: any) => (
+  </div>
 
-                <option
-                  key={emp.id}
-                  value={emp.id}
-                >
+</div>
 
-                  {emp.name}
 
-                </option>
+          {taskType ===
+  'activity' && (
 
-              ))}
-
-            </select>
-
-          </div>
-
-          {/* ACTIVITY */}
+<>
           <div>
 
             <label className="
@@ -1287,7 +1516,7 @@ const groupedAssignments =
               text-gray-700
             ">
 
-              Activity
+              Activity (Optional)
 
             </label>
 
@@ -1332,6 +1561,9 @@ const groupedAssignments =
             </select>
 
           </div>
+
+          </>
+)}
 
           {/* TASK */}
           <div>
@@ -1708,7 +1940,9 @@ const groupedAssignments =
 
     {
       assign.activities
-        ?.title
+      ?.title ||
+
+    'Personal Task'
     }
 
   </h2>
@@ -1852,6 +2086,61 @@ const groupedAssignments =
     </div>
 
   </div>
+
+{/* ASSIGNED BY */}
+<div className="
+  mt-5
+
+  inline-flex
+  items-center
+  gap-2
+
+  bg-green-50
+
+  border
+  border-green-100
+
+  rounded-full
+
+  px-4
+  py-2
+
+  text-sm
+">
+
+  👨‍💼
+
+  <span className="
+    font-semibold
+    text-green-800
+  ">
+
+    Assigned by:
+
+  </span>
+
+  <span className="
+    text-green-700
+  ">
+
+    {
+      assign
+        .assigned_by_name
+    }
+
+    {' '}
+
+    (
+    {
+      assign
+        .assigned_by_role
+    }
+    )
+
+  </span>
+
+</div>
+
 
   {/* ASSIGNED EMPLOYEES */}
   <div className="
@@ -2049,33 +2338,7 @@ const groupedAssignments =
 
 
 
-              {/* ACTIONS */}
-              <div className="
-                mt-6
-                flex
-                gap-3
-              ">
-
-                <button
-                  onClick={() =>
-                    deleteAssignment(
-                      assign.id
-                    )
-                  }
-                  className="
-                    bg-red-500
-                    hover:bg-red-600
-                    text-white
-                    px-5 py-3
-                    rounded-2xl
-                  "
-                >
-
-                  Delete
-
-                </button>
-
-              </div>
+              
 
             </div>
 

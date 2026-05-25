@@ -88,53 +88,52 @@ const roleLinks: any = {
 
   office_chief: [
 
-    {
-      name: 'Dashboard',
-      href: '/admin-dashboard',
-    },
+  {
+    name: 'Office Dashboard',
+    href: '/office-chief-dashboard',
+  },
 
-        {
-      name: 'My Task',
-      href: '/my-task',
-      icon: 'briefcase',
-    },
+  {
+    name: 'Activity Review',
+    href: '/activities',
+  },
 
-    {
-      name: 'Activities',
-      href: '/activities',
-    },
+  {
+    name: 'Office Assignments',
+    href: '/office-assignments',
+  },
 
-    {
-      name: 'Assignments',
-      href: '/assignments',
-    },
+  {
+    name: 'Personnel Monitoring',
+    href: '/office-personnel',
+  },
 
-    {
-      name: 'Calendar',
-      href: '/calendar',
-    },
+  {
+    name: 'Divisions',
+    href: '/office-divisions',
+  },
 
-    {
-      name: 'Kanban Board',
-      href: '/kanban',
-    },
+  {
+    name: 'Notifications',
+    href: '/notifications',
+  },
 
-    {
-      name: 'Notifications',
-      href: '/notifications',
-    },
+  {
+    name: 'Operations Map',
+    href: '/operations-map',
+  },
 
-    {
-      name: 'Operations Map',
-      href: '/operations-map',
-    },
+  {
+    name: 'Reports & Analytics',
+    href: '/office-analytics',
+  },
 
-    {
-      name: 'Activity Requests',
-      href: '/activity-requests',
-    },
+  {
+    name: 'Timeline',
+    href: '/timeline',
+  },
 
-  ],
+],
 
   // ======================
   // DIVISION CHIEF
@@ -186,27 +185,42 @@ const roleLinks: any = {
   ],
 
   // ======================
-  // STAFF
-  // ======================
+// STAFF
+// ======================
 
-  staff: [
+staff: [
 
-    {
-      name: 'My Dashboard',
-      href: '/staff-dashboard',
-    },
+  {
+    name: 'My Calendar',
+    href: '/calendar',
+  },
 
-    {
-      name: 'Calendar',
-      href: '/calendar',
-    },
+  {
+    name: 'My Tasks',
+    href: '/my-task',
+  },
 
-    {
-      name: 'Notifications',
-      href: '/notifications',
-    },
+  {
+    name: 'Activities',
+    href: '/activities',
+  },
 
-  ],
+  {
+    name: 'Notifications',
+    href: '/notifications',
+  },
+
+  {
+    name: 'Timeline',
+    href: '/timeline',
+  },
+
+  {
+    name: 'Operations Map',
+    href: '/operations-map',
+  },
+
+]
 
 }
 
@@ -269,6 +283,24 @@ const uniqueLinks =
 
     ).values()
 
+  )
+
+  const simpleSidebar =
+
+  userRoles.includes(
+    'staff'
+  )
+
+  ||
+
+  userRoles.includes(
+    'division_chief'
+  )
+
+  ||
+
+  userRoles.includes(
+    'office_chief'
   )
 
 // GROUPED MENUS
@@ -351,6 +383,23 @@ const icons: any = {
   'User Management': '⚙️',
 
   'Activity Requests': '📨',
+
+  'My Calendar': '📅',
+
+  'My Tasks': '📌',
+
+
+  'Office Dashboard': '🏢',
+
+  'Activity Review': '📅',
+
+  'Office Assignments': '📌',
+
+  'Personnel Monitoring': '👥',
+
+  'Divisions': '🏢',
+
+  'Reports & Analytics': '📈',
 
 }
 
@@ -588,8 +637,16 @@ const [openGroup,
 {uniqueLinks
   .filter(
     (item: any) =>
-      item.name ===
-      'Dashboard'
+      
+      [
+  'Dashboard',
+  'Office Dashboard',
+  'Division Dashboard',
+].includes(
+  item.name
+)
+
+
   )
   .map((link: any) => {
 
@@ -692,300 +749,377 @@ const [openGroup,
   })}
   
 
-  {Object.entries(
+  {/* STAFF SIMPLE SIDEBAR */}
+{simpleSidebar ? (
+  <div className="
+    space-y-2
+  ">
+
+    {uniqueLinks.map(
+      (link: any) => {
+
+        const active =
+          pathname ===
+          link.href
+
+        return (
+
+          <Link
+
+            key={link.href}
+
+            href={link.href}
+
+            onClick={() =>
+              setOpen(false)
+            }
+
+            className={`
+
+              group
+
+              flex
+              items-center
+
+              gap-3
+
+              px-4
+              py-3
+
+              rounded-2xl
+
+              transition-all
+              duration-300
+
+              border
+
+              shadow-md
+
+              font-medium
+
+              ${
+                active
+
+                  ? `
+                    bg-linear-to-r
+                    from-orange-400
+                    to-orange-300
+
+                    text-white
+
+                    border-orange-300
+
+                    shadow-lg
+                    shadow-orange-500/20
+                  `
+
+                  : `
+                    bg-blue-900/80
+
+                    hover:bg-orange-300
+                    hover:text-blue-950
+
+                    border-blue-800
+
+                    text-blue-100
+
+                    hover:scale-[1.02]
+                  `
+              }
+            `}
+          >
+
+            {/* ICON */}
+            <span className="
+              text-lg
+
+              transition-transform
+              duration-200
+
+              group-hover:scale-125
+            ">
+
+              {
+                icons[
+                  link.name
+                ] || '•'
+              }
+
+            </span>
+
+            {/* TITLE */}
+            <span>
+
+              {link.name}
+
+            </span>
+
+          </Link>
+        )
+      }
+    )}
+
+  </div>
+
+) : (
+
+  Object.entries(
     groupedLinks
   ).map(
 
     ([group, items]: any) => (
 
-    <div
-      key={group}
-      className="
-        bg-blue-950/40
+      <div
+        key={group}
+        className="
+          bg-blue-950/40
 
-        rounded-2xl
+          rounded-2xl
 
-        overflow-hidden
-      "
-    >
+          overflow-hidden
+        "
+      >
 
-      
+        {/* GROUP BUTTON */}
+        <button
 
-      {/* GROUP BUTTON */}
-<button
+          onClick={() =>
 
-  onClick={() =>
+            setOpenGroup(
 
-    setOpenGroup(
+              openGroup === group
+                ? ''
+                : group
+            )
+          }
 
-      openGroup === group
-        ? ''
-        : group
-    )
-  }
+          className={`
 
-  className={`
+            w-full
 
-    w-full
+            flex
+            items-center
+            justify-between
 
-    flex
-    items-center
-    justify-between
+            px-4
+            py-3
 
-    px-4
-    py-3
+            rounded-2xl
 
-    rounded-2xl
+            transition-all
+            duration-300
 
-    transition-all
-    duration-300
+            border
 
-    border
+            shadow-md
 
-    shadow-md
+            transform
 
-    transform
+            ${
+              openGroup === group
 
-    ${
-      openGroup === group
+                ? `
 
-        ? `
+                  bg-linear-to-r
+                  from-orange-400
+                  to-orange-300
 
-          bg-linear-to-r
-          from-orange-400
-          to-orange-300
+                  border-orange-300
 
-          border-orange-300
+                  text-white
 
-          text-white
+                  shadow-orange-500/20
 
-          shadow-orange-500/20
+                `
 
-        `
+                : `
 
-        : `
+                  bg-blue-900/90
+                  backdrop-blur
 
-          bg-blue-900/90
-            backdrop-blur
-          hover:bg-orange-300
-          hover:text-blue-950
+                  hover:bg-orange-300
+                  hover:text-blue-950
 
-          hover:shadow-md
-          hover:shadow-black/20
+                  border-blue-800
 
-          hover:-translate-y-0.5
-
-          border-blue-800
-
-          text-blue-100
-        `
-    }
-  `}
->
-
-
-
-  {/* LEFT */}
-  <div className="
-    flex
-    items-center
-
-    gap-3
-  ">
-
-    {/* ICON */}
-    <div className="
-      text-lg
-    ">
-
-      {
-        group ===
-        'OPERATIONS'
-
-          ? '📊'
-
-        : group ===
-          'PERSONNEL'
-
-          ? '👥'
-
-        : group ===
-          'MONITORING'
-
-          ? '📡'
-
-        : group ===
-          'ADMIN'
-
-          ? '⚙️'
-
-        : '•'
-      }
-
-    </div>
-
-    {/* TITLE */}
-    <span className="
-      text-md
-
-      font-bold
-
-      tracking-widest
-
-      uppercase
-    ">
-
-      {group}
-
-    </span>
-
-  </div>
-
-  {/* ARROW */}
-  <div className={`
-    text-sm
-
-    transition-transform
-    duration-300
-
-    ${
-      openGroup === group
-
-        ? 'rotate-180'
-
-        : ''
-    }
-  `}>
-
-    ▼
-
-  </div>
-
-</button>
-
-      {/* LINKS */}
-      {openGroup === group && (
-
-        <div className="
-  p-2
-
-  space-y-1
-
-  animate-in
-  slide-in-from-top-2
-  duration-200
-">
-
-          {items.map(
-            (link: any) => {
-
-              const active =
-                pathname ===
-                link.href
-
-              return (
-
-                <Link
-
-                  key={link.href}
-
-                  href={link.href}
-
-                  onClick={() =>
-                    setOpen(false)
-                  }
-
-                  className={`
-
-                    group
-
-                    flex
-                    items-center
-                    gap-3
-
-                    px-3
-                    py-2.5
-
-                    rounded-2xl
-
-                    transition-all
-
-                    text-sm
-                    font-medium
-
-                    ${
-                      active
-
-                      
-                        ? `
-                          bg-linear-to-r
-                          from-orange-400
-                          to-orange-300
-
-                          border-white/20
-
-                          shadow-lg
-                          shadow-orange-500/20
-                          text-white
-                          border
-
-                          ring-2
-                        ring-orange-300/30
-                        `
-
-                        : `
-                          hover:bg-orange-300
-                          hover:text-blue-950
-
-                        hover:shadow-lg
-                        hover:shadow-blue-900/40
-
-                        hover:-translate-y-0.5
-                          text-blue-100
-                          hover:scale-[1.02]
-                        `
-                    }
-                  `}
-                >
-
-                  <span className="
-                  text-base
-
-                  transition-transform
-                  duration-200
-
-                  group-hover:scale-125
-                ">
-
-                    {
-                      icons[
-                        link.name
-                      ] || '•'
-                    }
-
-                  </span>
-
-                  <span className="
-                    truncate
-                  ">
-
-                    {link.name}
-
-                  </span>
-
-                </Link>
-
-              )
+                  text-blue-100
+                `
             }
-          )}
+          `}
+        >
 
-        </div>
+          {/* LEFT */}
+          <div className="
+            flex
+            items-center
 
-      )}
+            gap-3
+          ">
 
-    </div>
+            <div className="
+              text-lg
+            ">
 
-  ))}
+              {
+                group ===
+                'OPERATIONS'
+
+                  ? '📊'
+
+                : group ===
+                  'PERSONNEL'
+
+                  ? '👥'
+
+                : group ===
+                  'MONITORING'
+
+                  ? '📡'
+
+                : group ===
+                  'ADMIN'
+
+                  ? '⚙️'
+
+                : '•'
+              }
+
+            </div>
+
+            <span className="
+              text-md
+
+              font-bold
+
+              tracking-widest
+
+              uppercase
+            ">
+
+              {group}
+
+            </span>
+
+          </div>
+
+          {/* ARROW */}
+          <div className={`
+            text-sm
+
+            transition-transform
+            duration-300
+
+            ${
+              openGroup === group
+
+                ? 'rotate-180'
+
+                : ''
+            }
+          `}>
+
+            ▼
+
+          </div>
+
+        </button>
+
+        {/* LINKS */}
+        {openGroup === group && (
+
+          <div className="
+            p-2
+
+            space-y-1
+          ">
+
+            {items.map(
+              (link: any) => {
+
+                const active =
+                  pathname ===
+                  link.href
+
+                return (
+
+                  <Link
+
+                    key={link.href}
+
+                    href={link.href}
+
+                    onClick={() =>
+                      setOpen(false)
+                    }
+
+                    className={`
+
+                      flex
+                      items-center
+
+                      gap-3
+
+                      px-3
+                      py-2.5
+
+                      rounded-2xl
+
+                      transition-all
+
+                      text-sm
+                      font-medium
+
+                      ${
+                        active
+
+                          ? `
+                            bg-linear-to-r
+                            from-orange-400
+                            to-orange-300
+
+                            text-white
+                          `
+
+                          : `
+                            hover:bg-orange-300
+                            hover:text-blue-950
+
+                            text-blue-100
+                          `
+                      }
+                    `}
+                  >
+
+                    <span>
+
+                      {
+                        icons[
+                          link.name
+                        ] || '•'
+                      }
+
+                    </span>
+
+                    <span>
+
+                      {link.name}
+
+                    </span>
+
+                  </Link>
+                )
+              }
+            )}
+
+          </div>
+
+        )}
+
+      </div>
+    )
+  )
+
+)}
 
 </nav>
 

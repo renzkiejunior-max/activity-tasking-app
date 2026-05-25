@@ -116,30 +116,68 @@ export default function Page() {
 
     } else {
 
-      // CREATE
-      const { error } =
-        await supabase
+      // CREATE USER USING API
+try {
 
-          .from('users')
+  setLoading(true)
 
-          .insert([
-            {
-              email,
-              roles,
-              division,
-            },
-          ])
+  const response =
+    await fetch(
 
-      if (error) {
+      '/api/create-user',
 
-        return alert(
-          error.message
-        )
+      {
+
+        method: 'POST',
+
+        headers: {
+
+          'Content-Type':
+            'application/json',
+
+        },
+
+        body: JSON.stringify({
+
+          email,
+
+          role: roles,
+
+          division,
+
+        }),
+
       }
+    )
 
-      alert(
-        'User created successfully'
-      )
+  const result =
+    await response.json()
+
+  setLoading(false)
+
+  if (!response.ok) {
+
+    return alert(
+      result.error
+    )
+  }
+
+  alert(
+
+    `User created successfully.
+
+Temporary Password:
+${result.temporaryPassword}`
+  )
+
+} catch (error: any) {
+
+  setLoading(false)
+
+  return alert(
+    error.message
+  )
+}
     }
 
     resetForm()

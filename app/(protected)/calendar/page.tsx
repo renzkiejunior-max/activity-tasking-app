@@ -26,6 +26,20 @@ export default function Page() {
     setEvents] =
     useState<any[]>([])
 
+  const [calendarFilter,
+  setCalendarFilter] =
+  useState<
+
+    'mine'
+
+    | 'division'
+
+    | 'all'
+
+  >(
+    'mine'
+  )
+
   const [selectedEvent,
     setSelectedEvent] =
     useState<any>(null)
@@ -37,6 +51,18 @@ export default function Page() {
 const [visibleRange,
   setVisibleRange] =
   useState<any>(null)
+
+  const [employeeId,
+  setEmployeeId] =
+  useState<string | null>(
+    null
+  )
+
+  const [division,
+  setDivision] =
+  useState<string | null>(
+    null
+  )
 
   // FETCH EVENTS
   const fetchEvents =
@@ -56,6 +82,7 @@ const [visibleRange,
         data: employee,
       } = await supabase
 
+      
         .from('employees')
 
         .select('*')
@@ -66,6 +93,15 @@ const [visibleRange,
         )
 
         .single()
+
+        setEmployeeId(
+  employee?.id || null
+)
+
+setDivision(
+  employee?.division ||
+  null
+)
 
       // GET USER
       const {
@@ -319,6 +355,9 @@ const activityEvents =
           description:
             item.description,
 
+          division:
+            item.division,
+
           status:
 
             new Date(
@@ -372,7 +411,9 @@ const activityEvents =
                 id: item.id,
 
                 title:
-'You are selected to attend',
+`${item.activities?.title}
+
+Assigned to You`,
 
                 start:
 `${item.activities?.activity_date}T${item.activities?.activity_time || '00:00'}`,
@@ -423,10 +464,66 @@ allDay: false,
 
   }, [])
 
+// FILTER CALENDAR EVENTS
+const calendarEvents =
+
+  // ALL OFFICE
+  calendarFilter ===
+  'all'
+
+    ? events.filter(
+        (event: any) =>
+
+          event.extendedProps
+            ?.type ===
+          'Activity'
+      )
+
+  // DIVISION ACTIVITIES
+  : calendarFilter ===
+    'division'
+
+    ? events.filter(
+        (event: any) =>
+
+          event.extendedProps
+            ?.division ===
+          division
+      )
+
+  // MY ACTIVITIES
+  : events.filter(
+      (event: any) => {
+
+        // ASSIGNMENTS
+        if (
+          event.extendedProps
+            ?.type ===
+          'Assignment'
+        ) {
+
+          return true
+        }
+
+        // ATTENDEE
+        return event
+          .extendedProps
+          ?.attendees?.some(
+
+            (
+              attendee: any
+            ) =>
+
+              attendee.employee_id ===
+              employeeId
+          )
+      }
+    )
+
 // FILTERED EVENTS
 const filteredEvents =
 
-  events.filter(
+  calendarEvents.filter(
     (event: any) => {
 
       if (
@@ -504,6 +601,157 @@ const filteredEvents =
   w-full
 ">
 
+  {/* CALENDAR FILTERS */}
+<div className="
+  flex
+  gap-3
+
+  mb-5
+
+  flex-wrap
+">
+
+  {/* MY ACTIVITIES */}
+  <button
+
+    onClick={() =>
+      setCalendarFilter(
+        'mine'
+      )
+    }
+
+    className={`
+
+      px-5
+      py-3
+
+      rounded-2xl
+
+      font-bold
+
+      transition-all
+
+      shadow-md
+
+      ${
+        calendarFilter ===
+        'mine'
+
+          ? `
+            bg-orange-500
+            text-white
+          `
+
+          : `
+            bg-white
+            border
+            border-gray-200
+
+            hover:bg-orange-50
+          `
+      }
+    `}
+  >
+
+    📌 My Activities
+
+  </button>
+
+{/* DIVISION ACTIVITIES */}
+<button
+
+  onClick={() =>
+    setCalendarFilter(
+      'division'
+    )
+  }
+
+  className={`
+
+    px-5
+    py-3
+
+    rounded-2xl
+
+    font-bold
+
+    transition-all
+
+    shadow-md
+
+    ${
+      calendarFilter ===
+      'division'
+
+        ? `
+          bg-purple-600
+          text-white
+        `
+
+        : `
+          bg-white
+          border
+          border-gray-200
+
+          hover:bg-purple-50
+        `
+    }
+  `}
+>
+
+  🏢 Division Activities
+
+</button>
+
+
+  {/* ALL ACTIVITIES */}
+  <button
+
+    onClick={() =>
+      setCalendarFilter(
+        'all'
+      )
+    }
+
+    className={`
+
+      px-5
+      py-3
+
+      rounded-2xl
+
+      font-bold
+
+      transition-all
+
+      shadow-md
+
+      ${
+        calendarFilter ===
+        'all'
+
+          ? `
+            bg-blue-900
+            text-white
+          `
+
+          : `
+            bg-white
+            border
+            border-gray-200
+
+            hover:bg-blue-50
+          `
+      }
+    `}
+  >
+
+    📅 All Activities
+
+  </button>
+
+</div>
+
         {/* CALENDAR */}
 <div className="
   w-full
@@ -556,7 +804,7 @@ const filteredEvents =
 
             }}
 
-            events={events}
+            events={calendarEvents}
 
             eventDidMount={(info) => {
 

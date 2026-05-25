@@ -38,6 +38,49 @@ export default function Topbar() {
     setShowMobileBar] =
     useState(true)
 
+const homeRoute =
+
+  userData?.roles
+    ?.includes('staff')
+
+    ? '/calendar'
+
+  : userData?.roles
+      ?.includes(
+        'division_chief'
+      )
+
+      ? '/division-chief-dashboard'
+
+  : userData?.roles
+      ?.includes('admin')
+
+      ? '/admin-dashboard'
+
+  : '/dashboard'
+
+
+    // SECURITY MODAL
+const [showSecurityModal,
+  setShowSecurityModal] =
+  useState(false)
+
+const [currentPassword,
+  setCurrentPassword] =
+  useState('')
+
+const [newPassword,
+  setNewPassword] =
+  useState('')
+
+const [confirmPassword,
+  setConfirmPassword] =
+  useState('')
+
+const [changingPassword,
+  setChangingPassword] =
+  useState(false)
+
   // FETCH EMPLOYEE
   const fetchEmployee =
     async () => {
@@ -546,6 +589,41 @@ userData?.roles
 
             </div>
 
+
+            {/* SECURITY */}
+<button
+
+  onClick={() =>
+    setShowSecurityModal(
+      true
+    )
+  }
+
+  className="
+    ml-2
+
+    bg-orange-400
+    hover:bg-orange-500
+
+    text-white
+
+    px-4
+    py-2
+
+    rounded-xl
+
+    text-sm
+    font-medium
+
+    transition
+  "
+>
+
+  Security
+
+</button>
+            
+            
             {/* LOGOUT */}
             <button
 
@@ -582,6 +660,284 @@ userData?.roles
         </div>
 
       </header>
+
+{/* SECURITY MODAL */}
+{showSecurityModal && (
+
+  <div className="
+  fixed
+  inset-0
+  z-9999
+
+  bg-black/50
+  backdrop-blur-sm
+
+  overflow-y-auto
+
+  flex
+  items-center
+  justify-center
+
+  pb-10
+
+  px-4
+">
+
+    <div className="
+  bg-white
+
+  w-full
+  max-w-md
+
+  rounded-3xl
+
+  shadow-2xl
+
+  my-auto
+">
+
+      {/* HEADER */}
+      <div className="
+        bg-linear-to-r
+        from-blue-900
+        to-orange-500
+
+        p-5
+
+        text-white
+      ">
+
+        <div className="
+          flex
+          items-center
+          justify-between
+        ">
+
+          <div>
+
+            <h2 className="
+              text-2xl
+              font-black
+            ">
+
+              Account Security
+
+            </h2>
+
+            <p className="
+              text-sm
+              text-white/80
+
+              mt-1
+            ">
+
+              Password can only
+              be changed once
+
+            </p>
+
+          </div>
+
+          {/* CLOSE */}
+          <button
+
+            onClick={() =>
+              setShowSecurityModal(
+                false
+              )
+            }
+
+            className="
+              text-2xl
+            "
+          >
+
+            ×
+
+          </button>
+
+        </div>
+
+      </div>
+
+      {/* BODY */}
+      <div className="
+        p-6
+
+        space-y-5
+      ">
+
+        {/* LOCKED */}
+        {userData
+          ?.password_change_count >= 1 ? (
+
+          <div className="
+            bg-red-50
+
+            border
+            border-red-200
+
+            rounded-2xl
+
+            p-5
+          ">
+
+            <h3 className="
+              font-bold
+              text-red-700
+            ">
+
+              Password Changes Locked
+
+            </h3>
+
+            <p className="
+              text-sm
+              text-red-600
+
+              mt-2
+            ">
+
+              Please contact the
+              administrator for
+              password recovery.
+
+            </p>
+
+          </div>
+
+        ) : (
+
+          <>
+
+            {/* CURRENT */}
+            <input
+
+              type="password"
+
+              placeholder="Current Password"
+
+              value={currentPassword}
+
+              onChange={(e) =>
+                setCurrentPassword(
+                  e.target.value
+                )
+              }
+
+              className="
+                w-full
+
+                border
+
+                rounded-2xl
+
+                px-4
+                py-3
+              "
+            />
+
+            {/* NEW */}
+            <input
+
+              type="password"
+
+              placeholder="New Password"
+
+              value={newPassword}
+
+              onChange={(e) =>
+                setNewPassword(
+                  e.target.value
+                )
+              }
+
+              className="
+                w-full
+
+                border
+
+                rounded-2xl
+
+                px-4
+                py-3
+              "
+            />
+
+            {/* CONFIRM */}
+            <input
+
+              type="password"
+
+              placeholder="Confirm Password"
+
+              value={confirmPassword}
+
+              onChange={(e) =>
+                setConfirmPassword(
+                  e.target.value
+                )
+              }
+
+              className="
+                w-full
+
+                border
+
+                rounded-2xl
+
+                px-4
+                py-3
+              "
+            />
+
+            {/* SAVE */}
+            <button
+
+              disabled={
+                changingPassword
+              }
+
+              className="
+                w-full
+
+                bg-orange-500
+                hover:bg-orange-600
+
+                text-white
+
+                font-bold
+
+                rounded-2xl
+
+                py-3
+
+                transition
+              "
+            >
+
+              {
+                changingPassword
+
+                  ? 'Updating...'
+
+                  : 'Update Password'
+              }
+
+            </button>
+
+          </>
+
+        )}
+
+      </div>
+
+    </div>
+
+  </div>
+
+)}
+
 
       {/* MOBILE FOOTER */}
       <div className={`
@@ -623,7 +979,7 @@ userData?.roles
 
         {/* HOME */}
         <Link
-          href="/dashboard"
+          href={homeRoute}
         >
 
           <button className="

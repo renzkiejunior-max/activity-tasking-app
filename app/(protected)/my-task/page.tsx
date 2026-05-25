@@ -132,6 +132,9 @@ const [tempAssignments,
 
         .select(`
           *,
+          assigned_by_name,
+          assigned_by_role,
+
           activities(
             title,
             activity_date,
@@ -829,6 +832,67 @@ lg:p-5
             </div>
 
           </div>
+
+{/* ASSIGNED BY */}
+<div className="
+  md:col-span-2
+">
+
+  <div className="
+    mt-2
+
+    inline-flex
+    items-center
+    gap-2
+
+    bg-green-50
+
+    border
+    border-green-100
+
+    rounded-full
+
+    px-4
+    py-2
+
+    text-sm
+  ">
+
+    👨‍💼
+
+    <span className="
+      font-semibold
+      text-green-800
+    ">
+
+      Assigned by:
+
+    </span>
+
+    <span className="
+      text-green-700
+    ">
+
+      {
+        item
+          .assigned_by_name
+      }
+
+      {' '}
+
+      (
+      {
+        item
+          .assigned_by_role
+      }
+      )
+
+    </span>
+
+  </div>
+
+</div>
+
 
           {/* PROGRESS */}
 <div className="

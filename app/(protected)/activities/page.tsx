@@ -1,5 +1,8 @@
 'use client'
 
+import { useAuth }
+from '@/contexts/AuthContext'
+
 import imageCompression
 from 'browser-image-compression'
 
@@ -11,6 +14,37 @@ from '../../../lib/supabase'
 import {   offlineDB, } from '../../../lib/offline-db'
 
 export default function Page() {
+
+  const {
+  userData
+} = useAuth()
+
+const isStaff =
+
+  userData?.roles
+    ?.includes(
+      'staff'
+    )
+
+    const isOfficeChief =
+
+  userData?.roles
+    ?.includes(
+      'office_chief'
+    )
+
+const isAdmin =
+
+  userData?.roles
+    ?.includes(
+      'admin'
+    )
+
+  const canManageActivities =
+
+  isAdmin ||
+
+  isOfficeChief
 
   const [activities, setActivities] =
     useState<any[]>([])
@@ -46,6 +80,11 @@ const [selectedEmployees,
 const [communicationUrl,
   setCommunicationUrl] =
   useState('')
+
+  const [
+  previewImage,
+  setPreviewImage,
+] = useState('')
   
   // FORM
   const [title, setTitle] =
@@ -128,19 +167,30 @@ const [communicationUrl,
     }
 
     // ONLINE
-    const { data } =
-      await supabase
+    let query =
 
-        .from('activities')
+  supabase
 
-        .select('*')
+    .from('activities')
 
-        .order(
-          'activity_date',
-          {
-            ascending: true,
-          }
-        )
+    .select('*')
+
+if (isStaff) {
+
+  query = query.or(`
+    approval_status.eq.approved,
+    approval_status.is.null
+  `)
+}
+
+const { data } =
+
+  await query.order(
+    'activity_date',
+    {
+      ascending: true,
+    }
+  )
 
     setActivities(
       data || []
@@ -395,8 +445,17 @@ if (communicationFile) {
       )
   }
 
-  const fileName =
-`${Date.now()}-${fileToUpload.name}`
+  const cleanFileName =
+
+  fileToUpload.name
+
+    .replace(/\s+/g, '-')
+
+    .replace(/[^a-zA-Z0-9.-]/g, '')
+
+const fileName =
+
+`${Date.now()}-${cleanFileName}`
 
   const {
     error: uploadError,
@@ -407,9 +466,15 @@ if (communicationFile) {
     )
 
     .upload(
-      fileName,
-      fileToUpload
-    )
+
+  fileName,
+
+  fileToUpload,
+
+  {
+    upsert: true,
+  }
+)
 
   if (uploadError) {
 
@@ -459,7 +524,7 @@ if (communicationFile) {
         locationName,
 
         venue_details:
-  venueDetails,
+      venueDetails,
 
       latitude:
         latitude
@@ -479,6 +544,15 @@ if (communicationFile) {
 
       status,
 
+      approval_status:
+
+  editingId &&
+  editingId !== 'new'
+
+    ? undefined
+
+    : 'pending',
+
     }
 
     // UPDATE
@@ -494,12 +568,22 @@ if (communicationFile) {
           .eq('id', editingId)
 
       if (error) {
-        return alert(error.message)
+        return console.log(error)
+
+alert(
+  JSON.stringify(
+    error,
+    null,
+    2
+  )
+)
       }
 
       alert(
         'Updated successfully'
       )
+
+      setCommunicationFile(null)
 
     } else {
 
@@ -510,7 +594,7 @@ if (communicationFile) {
           .insert([payload])
 
       if (error) {
-        return alert(error.message)
+        return console.log(error)
       }
 
       alert(
@@ -596,6 +680,75 @@ setVenueDetails(
     })
   }
 
+// APPROVE ACTIVITY
+const approveActivity =
+  async (
+    activityId: string
+  ) => {
+
+    const {
+      data: {
+        user,
+      },
+    } = await supabase
+      .auth.getUser()
+
+    if (!user) return
+
+    // GET EMPLOYEE
+    const {
+      data: employee,
+    } = await supabase
+
+      .from('employees')
+
+      .select('*')
+
+      .eq(
+        'user_id',
+        user.id
+      )
+
+      .single()
+
+    const { error } =
+      await supabase
+
+        .from('activities')
+
+        .update({
+
+          approval_status:
+            'approved',
+
+          reviewed_by:
+            employee?.name,
+
+          approved_at:
+            new Date()
+              .toISOString(),
+        })
+
+        .eq(
+          'id',
+          activityId
+        )
+
+    if (error) {
+
+      return alert(
+        error.message
+      )
+    }
+
+    alert(
+      'Activity approved'
+    )
+
+    fetchActivities()
+  }
+
+
   // DELETE
   const deleteActivity = async (
     id: string
@@ -615,7 +768,7 @@ setVenueDetails(
         .eq('id', id)
 
     if (error) {
-      return alert(error.message)
+      return console.log(error)
     }
 
     fetchActivities()
@@ -1097,7 +1250,12 @@ ${activity.activity_time}`,
 
   </div>
 
+  </div>
+
   {/* RIGHT */}
+
+{canManageActivities && (
+
   <div>
 
     <button
@@ -1161,7 +1319,7 @@ ${activity.activity_time}`,
 
   </div>
 
-</div>
+)}
 
 {/* ACTIVITY MODAL */}
 {editingId && (
@@ -2398,34 +2556,214 @@ ${activity.activity_time}`,
                   {activity.description}
                 </p>
 
+
+      {/* COMMUNICATION PREVIEW */}
+{activity.communication_url && (
+
+  <div className="
+    mt-4
+  ">
+
+    <p className="
+      text-sm
+      font-semibold
+      text-gray-500
+
+      mb-3
+    ">
+
+      Official Communication
+
+    </p>
+
+    {/* IMAGE FILE */}
+    {(activity.communication_url
+      .includes('.jpg') ||
+
+      activity.communication_url
+      .includes('.jpeg') ||
+
+      activity.communication_url
+      .includes('.png') ||
+
+      activity.communication_url
+      .includes('.webp'))
+
+      ? (
+
+      <img
+
+        src={
+          activity.communication_url
+        }
+
+        alt="Communication"
+
+        onClick={() =>
+
+          setPreviewImage(
+            activity.communication_url
+          )
+        }
+
+        className="
+          w-44
+          h-44
+
+          object-cover
+
+          rounded-2xl
+
+          border
+
+          shadow-md
+
+          cursor-pointer
+
+          hover:scale-105
+
+          transition
+        "
+      />
+
+    ) : (
+
+      /* PDF / DOC FILE */
+      <a
+
+        href={
+          activity.communication_url
+        }
+
+        target="_blank"
+
+        className="
+          inline-flex
+          items-center
+          gap-2
+
+          bg-blue-100
+          hover:bg-blue-200
+
+          text-blue-800
+
+          px-4
+          py-3
+
+          rounded-2xl
+
+          font-semibold
+        "
+      >
+
+        📄 View Official Communication
+
+      </a>
+
+    )}
+
+  </div>
+
+)}
+
+
               </div>
 
-              <span className={`
-  inline-flex
-  items-center
-  justify-center
+              <div className="
+  flex
+  flex-wrap
+  gap-2
+">
 
-  min-w-30
-  h-12
+  {/* APPROVAL STATUS */}
+  <span className={`
+    inline-flex
+    items-center
+    justify-center
 
-  px-6
+    h-12
 
-  rounded-full
+    px-5
 
-  text-sm
-  font-bold
-  uppercase
+    rounded-full
 
-  whitespace-nowrap
+    text-sm
+    font-bold
+    uppercase
 
-  ${getStatusColor(
-    activity.status
-  )}
-`}>
+    whitespace-nowrap
 
-                {activity.status}
+    ${
+      activity.approval_status ===
+      'approved'
 
-              </span>
+        ? `
+          bg-green-100
+          text-green-700
+        `
+
+        : activity.approval_status ===
+          'rejected'
+
+        ? `
+          bg-red-100
+          text-red-700
+        `
+
+        : `
+          bg-yellow-100
+          text-yellow-700
+        `
+    }
+  `}>
+
+    {
+      activity.approval_status ===
+      'approved'
+
+        ? 'Approved'
+
+        : activity.approval_status ===
+          'rejected'
+
+        ? 'Rejected'
+
+        : 'Pending Review'
+    }
+
+  </span>
+
+  {/* ACTIVITY STATUS */}
+  
+      <span className={`
+        inline-flex
+        items-center
+        justify-center
+
+        h-12
+
+        px-5
+
+        rounded-full
+
+        text-sm
+        font-bold
+        uppercase
+
+        whitespace-nowrap
+
+        ${getStatusColor(
+          activity.status
+        )}
+      `}>
+
+        {
+          activity.status
+        }
+
+      </span>
+
+    </div>
 
             </div>
 
@@ -2460,47 +2798,7 @@ ${activity.activity_time}`,
 
       {activity.venue_details}
 
-      {activity.communication_url && (
 
-  <div className="
-    mt-3
-  ">
-
-    <a
-
-      href={
-        activity.communication_url
-      }
-
-      target="_blank"
-
-      className="
-        inline-flex
-        items-center
-        gap-2
-
-        bg-blue-100
-        hover:bg-blue-200
-
-        text-blue-800
-
-        px-4
-        py-2
-
-        rounded-xl
-
-        text-sm
-        font-semibold
-      "
-    >
-
-      📄 View Communication
-
-    </a>
-
-  </div>
-
-)}
 
     </span>
 
@@ -2607,7 +2905,12 @@ ${activity.activity_time}`,
 
               </div>
 
+
+
  {/* ATTENDEE ACTIONS */}
+ 
+{canManageActivities && (
+
 <div className="
   mt-5
 ">
@@ -2793,6 +3096,8 @@ ${activity.activity_time}`,
 
       </div>
 
+
+
       {/* BUTTONS */}
       <div className="
         flex
@@ -2866,8 +3171,8 @@ ${activity.activity_time}`,
 
 </div>
 
-            </div>
 
+          )}
             {/* CHECKLIST */}
             <div className="
               mt-6
@@ -2918,6 +3223,8 @@ ${activity.activity_time}`,
                         item.completed
                       }
 
+                      disabled={isStaff}
+
                       onChange={() =>
 
                         toggleChecklist(
@@ -2956,124 +3263,177 @@ ${activity.activity_time}`,
               </div>
 
               {/* ADD ITEM */}
-              <div className="
-                mt-4
-                flex
-                gap-3
-              ">
+{canManageActivities && (
 
-                <input
+  <div className="
+    mt-4
+    flex
+    gap-3
+  ">
 
-                  type="text"
+    <input
 
-                  placeholder="
-                  Add checklist item
-                  "
+      type="text"
 
-                  value={
-                    newChecklist[
-                      activity.id
-                    ] || ''
-                  }
+      placeholder="
+      Add checklist item
+      "
 
-                  onChange={(e) =>
+      value={
+        newChecklist[
+          activity.id
+        ] || ''
+      }
 
-                    setNewChecklist({
+      onChange={(e) =>
 
-                      ...newChecklist,
+        setNewChecklist({
 
-                      [activity.id]:
-                        e.target.value,
+          ...newChecklist,
 
-                    })
+          [activity.id]:
+            e.target.value,
 
-                  }
+        })
 
-                  className="
-                    flex-1
-                    border
-                    rounded-2xl
-                    px-4 py-3
-                  "
-                />
+      }
 
-                <button
+      className="
+        flex-1
+        border
+        rounded-2xl
+        px-4 py-3
+      "
+    />
 
-                  onClick={() =>
+    <button
 
-                    addChecklist(
-                      activity.id
-                    )
+      onClick={() =>
 
-                  }
+        addChecklist(
+          activity.id
+        )
 
-                  className="
-                    bg-blue-600
-                    hover:bg-blue-700
-                    text-white
-                    px-5 py-3
-                    rounded-2xl
-                  "
-                >
+      }
 
-                  Add
+      className="
+        bg-blue-600
+        hover:bg-blue-700
+        text-white
+        px-5 py-3
+        rounded-2xl
+      "
+    >
 
-                </button>
+      Add
+
+    </button>
+
+  </div>
+
+)}
 
               </div>
 
             </div>
 
-            {/* ACTIONS */}
-            <div className="
-              flex
-              gap-3
-              pt-4
-            ">
 
-              <button
+{/* ACTIONS */}
 
-                onClick={() =>
-                  editActivity(
-                    activity
-                  )
-                }
+{canManageActivities && (
 
-                className="
-                  bg-blue-600
-                  hover:bg-blue-700
-                  text-white
-                  px-5 py-3
-                  rounded-2xl
-                "
-              >
+  <div className="
+    flex
+    flex-wrap
+    gap-3
+    pt-4
+  ">
 
-                Edit
+    {/* APPROVE */}
+    {isOfficeChief &&
+      activity.approval_status ===
+      'pending' && (
 
-              </button>
+      <button
 
-              <button
+        onClick={() =>
+          approveActivity(
+            activity.id
+          )
+        }
 
-                onClick={() =>
-                  deleteActivity(
-                    activity.id
-                  )
-                }
+        className="
+          bg-green-600
+          hover:bg-green-700
 
-                className="
-                  bg-red-500
-                  hover:bg-red-600
-                  text-white
-                  px-5 py-3
-                  rounded-2xl
-                "
-              >
+          text-white
 
-                Delete
+          px-5 py-3
 
-              </button>
+          rounded-2xl
+        "
+      >
 
-            </div>
+        Approve
+
+      </button>
+
+    )}
+
+    {/* EDIT */}
+    <button
+
+      onClick={() =>
+        editActivity(
+          activity
+        )
+      }
+
+      className="
+        bg-blue-600
+        hover:bg-blue-700
+
+        text-white
+
+        px-5 py-3
+
+        rounded-2xl
+      "
+    >
+
+      Edit
+
+    </button>
+
+    {/* DELETE */}
+    <button
+
+      onClick={() =>
+        deleteActivity(
+          activity.id
+        )
+      }
+
+      className="
+        bg-red-500
+        hover:bg-red-600
+
+        text-white
+
+        px-5 py-3
+
+        rounded-2xl
+      "
+    >
+
+      Delete
+
+    </button>
+
+  </div>
+
+)}
+            
 
           </div>
 
@@ -3081,6 +3441,76 @@ ${activity.activity_time}`,
 
       </div>
 
+{/* IMAGE PREVIEW MODAL */}
+{previewImage && (
+
+  <div className="
+    fixed
+    inset-0
+
+    z-9999
+
+    bg-black/80
+
+    flex
+    items-center
+    justify-center
+
+    p-6
+  ">
+
+    {/* CLOSE */}
+    <button
+
+      onClick={() =>
+        setPreviewImage('')
+      }
+
+      className="
+        absolute
+        top-5
+        right-5
+
+        w-12
+        h-12
+
+        rounded-full
+
+        bg-white
+
+        text-2xl
+        font-bold
+      "
+    >
+
+      ×
+
+    </button>
+
+    <img
+
+      src={previewImage}
+
+      alt="Preview"
+
+      className="
+        max-w-full
+        max-h-full
+
+        rounded-2xl
+
+        shadow-2xl
+      "
+    />
+
+  </div>
+
+)}
+
+
+
     </div>
+
   )
+
 }
