@@ -150,6 +150,19 @@ if (
   return
 }
 
+
+if (
+  roles.includes(
+    'office_chief'
+  )
+) {
+
+  window.location.href =
+    '/office-chief-dashboard'
+
+  return
+}
+
 // STAFF REDIRECT - GO TO CALENDAR
 
 if (
@@ -164,7 +177,7 @@ if (
 
 // DEFAULT
 window.location.href =
-  '/dashboard'
+  '/calendar'
 
 }
 

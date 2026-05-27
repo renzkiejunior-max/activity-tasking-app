@@ -104,6 +104,11 @@ const roleLinks: any = {
   },
 
   {
+  name: 'Calendar',
+  href: '/calendar',
+},
+
+  {
     name: 'Personnel Monitoring',
     href: '/office-personnel',
   },
@@ -284,7 +289,7 @@ const uniqueLinks =
     ).values()
 
   )
-
+//SIDEBAR TYPE
   const simpleSidebar =
 
   userRoles.includes(
@@ -297,14 +302,13 @@ const uniqueLinks =
     'division_chief'
   )
 
-  ||
-
-  userRoles.includes(
-    'office_chief'
-  )
 
 // GROUPED MENUS
-const groupedLinks = {
+const groupedLinks =
+
+userRoles.includes('admin')
+
+? {
 
   OPERATIONS:
 
@@ -324,9 +328,9 @@ const groupedLinks = {
     uniqueLinks.filter(
       (item: any) => [
 
+        'My Task',
         'Employees',
         'Assignments',
-        'My Task',
 
       ].includes(item.name)
     ),
@@ -337,8 +341,8 @@ const groupedLinks = {
       (item: any) => [
 
         'Notifications',
-        'Operations Map',
         'Reports',
+        'Operations Map',
 
       ].includes(item.name)
     ),
@@ -349,7 +353,57 @@ const groupedLinks = {
       (item: any) => [
 
         'User Management',
-        'Activity Requests',
+
+      ].includes(item.name)
+    ),
+
+}
+
+: {
+
+  // OFFICE CHIEF ONLY
+
+  OPERATIONS:
+
+    uniqueLinks.filter(
+      (item: any) => [
+
+        'Activity Review',
+        'Timeline',
+        'Operations Map',
+
+      ].includes(item.name)
+    ),
+
+  CALENDAR:
+
+    uniqueLinks.filter(
+      (item: any) => [
+
+        'Calendar',
+
+      ].includes(item.name)
+    ),
+
+  PERSONNEL:
+
+    uniqueLinks.filter(
+      (item: any) => [
+
+        'Office Assignments',
+        'Personnel Monitoring',
+        'Divisions',
+
+      ].includes(item.name)
+    ),
+
+  MONITORING:
+
+    uniqueLinks.filter(
+      (item: any) => [
+
+        'Notifications',
+        'Reports & Analytics',
 
       ].includes(item.name)
     ),
@@ -412,9 +466,9 @@ const icons: any = {
   if (
 
     [
-      '/employees',
-      '/assignments',
-      '/my-task',
+      '/office-assignments',
+      '/office-personnel',
+      '/office-divisions',
 
     ].includes(pathname)
 
@@ -427,8 +481,7 @@ const icons: any = {
 
     [
       '/notifications',
-      '/operations-map',
-      '/reports',
+      '/office-analytics',
 
     ].includes(pathname)
 
@@ -440,24 +493,23 @@ const icons: any = {
   if (
 
     [
-      '/user-management',
-      '/activity-requests',
+      '/calendar',
 
     ].includes(pathname)
 
   ) {
 
-    return 'ADMIN'
+    return 'CALENDAR'
   }
 
   return 'OPERATIONS'
 }
 
-const [openGroup,
-  setOpenGroup] =
-  useState(
+const [openGroups,
+  setOpenGroups] =
+  useState<string[]>([
     detectGroup()
-  )
+  ])
 
   return (
 
@@ -755,7 +807,19 @@ const [openGroup,
     space-y-2
   ">
 
-    {uniqueLinks.map(
+    {uniqueLinks
+
+  .filter(
+    (link: any) =>
+
+      ![
+        'Dashboard',
+        'Division Dashboard',
+        'Office Dashboard',
+      ].includes(link.name)
+  )
+
+  .map(
       (link: any) => {
 
         const active =
@@ -883,15 +947,30 @@ const [openGroup,
         {/* GROUP BUTTON */}
         <button
 
-          onClick={() =>
+          onClick={() => {
 
-            setOpenGroup(
+  if (
+    openGroups.includes(
+      group
+    )
+  ) {
 
-              openGroup === group
-                ? ''
-                : group
-            )
-          }
+    setOpenGroups(
+
+      openGroups.filter(
+        (g) =>
+          g !== group
+      )
+    )
+
+  } else {
+
+    setOpenGroups([
+      ...openGroups,
+      group,
+    ])
+  }
+}}
 
           className={`
 
@@ -916,7 +995,9 @@ const [openGroup,
             transform
 
             ${
-              openGroup === group
+              openGroups.includes(
+              group
+            )
 
                 ? `
 
@@ -961,28 +1042,28 @@ const [openGroup,
             ">
 
               {
-                group ===
-                'OPERATIONS'
+                    group === 'OPERATIONS'
 
-                  ? '📊'
+                      ? '📊'
 
-                : group ===
-                  'PERSONNEL'
+                    : group === 'CALENDAR'
 
-                  ? '👥'
+                      ? '📅'
 
-                : group ===
-                  'MONITORING'
+                    : group === 'PERSONNEL'
 
-                  ? '📡'
+                      ? '👥'
 
-                : group ===
-                  'ADMIN'
+                    : group === 'MONITORING'
 
-                  ? '⚙️'
+                      ? '📡'
 
-                : '•'
-              }
+                    : group === 'ADMIN'
+
+                      ? '⚙️'
+
+                    : '•'
+                  }
 
             </div>
 
@@ -1010,7 +1091,9 @@ const [openGroup,
             duration-300
 
             ${
-              openGroup === group
+            openGroups.includes(
+              group
+            )
 
                 ? 'rotate-180'
 
@@ -1025,7 +1108,7 @@ const [openGroup,
         </button>
 
         {/* LINKS */}
-        {openGroup === group && (
+        {openGroups.includes(group) && (
 
           <div className="
             p-2

@@ -205,13 +205,19 @@ useEffect(() => {
 
         .single()
 
-      if (data) {
+      if (!data) {
 
-        setEmployee(data)
+  setEmployee(null)
 
-      }
+  setMyActivityIds([])
 
-      // LOAD USER ASSIGNMENTS
+  return
+}
+
+// SET EMPLOYEE
+setEmployee(data)
+
+// LOAD USER ASSIGNMENTS
 const {
   data: assignments,
 } = await supabase

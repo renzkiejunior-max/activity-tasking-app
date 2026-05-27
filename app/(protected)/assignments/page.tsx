@@ -2299,6 +2299,33 @@ const groupedAssignments =
 
   </span>
 
+{/* OVERDUE */}
+{overdue && (
+
+  <div className="
+    h-10
+
+    px-4
+
+    rounded-xl
+
+    flex
+    items-center
+
+    bg-red-100
+    text-red-700
+
+    text-sm
+    font-bold
+  ">
+
+    OVERDUE
+
+  </div>
+
+)}
+
+
   {/* STATUS */}
 <div className={`
   h-10

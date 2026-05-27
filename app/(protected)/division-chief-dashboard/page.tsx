@@ -892,9 +892,9 @@ export default function Page() {
 
         {/* CHART */}
         <div className="
-  w-full
-  h-87.5
-">
+          w-full
+          h-87.5
+        ">
 
   <ResponsiveContainer
     width="100%"

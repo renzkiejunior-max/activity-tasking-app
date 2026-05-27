@@ -8,7 +8,23 @@ from '../../../lib/supabase'
 import ProtectedRoute
 from '../../../components/ProtectedRoute'
 
+import { useAuth }
+from '@/contexts/AuthContext'
+
 export default function Page() {
+
+  const { userData } =
+  useAuth()
+
+const canManageEmployees =
+
+  userData?.roles?.includes(
+    'admin'
+  ) ||
+
+  userData?.roles?.includes(
+    'office_chief'
+  )
 
   // EMPLOYEES
   const [employees,
@@ -208,6 +224,13 @@ const fetchAssignedPersonnel =
   const addEmployee =
     async () => {
 
+      if (!canManageEmployees) {
+
+  return alert(
+    'Unauthorized action'
+  )
+}
+
       if (!name) {
 
         return alert(
@@ -350,6 +373,13 @@ const fetchAssignedPersonnel =
   const updateEmployee =
     async () => {
 
+      if (!canManageEmployees) {
+
+  return alert(
+    'Unauthorized action'
+  )
+}
+
       if (!editingEmployee)
         return
 
@@ -448,6 +478,13 @@ const fetchAssignedPersonnel =
       id: string
     ) => {
 
+      if (!canManageEmployees) {
+
+  return alert(
+    'Unauthorized action'
+  )
+}
+
       const confirmDelete =
         confirm(
           'Delete employee?'
@@ -529,6 +566,7 @@ const filteredAssignedEmployees =
       allowedRoles={[
         'admin',
         'office_chief',
+        'division_chief',
       ]}
     >
 
@@ -632,6 +670,8 @@ lg:p-8
   </div>
 
   {/* RIGHT */}
+{canManageEmployees && (
+
   <div>
 
     <button
@@ -686,6 +726,8 @@ lg:p-8
     </button>
 
   </div>
+
+)}
 
 </div>
 
@@ -1018,7 +1060,8 @@ lg:p-8
 
 
 {/* ADD EMPLOYEE MODAL */}
-{showAddForm && (
+{showAddForm &&
+canManageEmployees && (
 
   <div className="
     fixed
@@ -2531,7 +2574,12 @@ lg:py-4
 
       )}
 
+
+
       {/* ACTIONS */}
+
+      {canManageEmployees && (
+
       <div className="
         mt-5
 
@@ -2620,7 +2668,10 @@ lg:py-4
 
       </div>
 
+)}
+
     </div>
+    
 
   ))}
 
@@ -2673,9 +2724,13 @@ lg:py-4
                     Status
                   </th>
 
-                  <th className="text-left p-4">
-                    Actions
-                  </th>
+                  {canManageEmployees && (
+
+<th className="text-left p-4">
+  Actions
+</th>
+
+)}
 
                 </tr>
 
@@ -2868,7 +2923,12 @@ lg:py-4
 
                     </td>
 
+
+
                     {/* ACTIONS */}
+
+                    {canManageEmployees && (
+                      
                     <td className="
                       p-4
                     ">
@@ -2953,6 +3013,8 @@ gap-2
                       </div>
 
                     </td>
+
+                        )}
 
                   </tr>
 
