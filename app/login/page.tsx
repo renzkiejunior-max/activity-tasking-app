@@ -205,7 +205,11 @@ return (
 ">
 
       <div className="
-        bg-white
+  relative
+
+  z-10
+
+  bg-white
         rounded-3xl
         shadow-2xl
         p-8
@@ -217,6 +221,8 @@ return (
         {/* BACKGROUND GLOW */}
 <div className="
   absolute
+
+  pointer-events-none
 
   top-0
   left-0
@@ -233,6 +239,8 @@ return (
 
 <div className="
   absolute
+
+  pointer-events-none
 
   bottom-0
   right-0
