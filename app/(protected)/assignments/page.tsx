@@ -615,81 +615,45 @@ const assignEmployee = async () => {
   }
 
   // REALTIME
-  useEffect(() => {
+  
 
-    fetchEmployees()
-    fetchActivities()
-    fetchAssignments()
-    fetchComments()
-    fetchChecklists()
+  // AUTO REFRESH
+useEffect(() => {
 
-    const channel = supabase
+  // INITIAL FETCH
+  fetchEmployees()
+  fetchActivities()
+  fetchAssignments()
+  fetchComments()
+  fetchChecklists()
 
-      .channel(
-        'assignments-realtime'
-      )
+  // AUTO REFRESH
+  const interval =
+    setInterval(async () => {
 
-      .on(
-        'postgres_changes',
+      // ONLY REFRESH
+      // WHEN TAB ACTIVE
+      if (
+        document.visibilityState ===
+        'visible'
+      ) {
 
-        {
-          event: '*',
-          schema: 'public',
-          table: 'assignments',
-        },
+        await fetchAssignments()
 
-        () => {
+        await fetchComments()
 
-          fetchAssignments()
+        await fetchChecklists()
+      }
 
-        }
-      )
+    }, 5000)
 
-      .on(
-        'postgres_changes',
+  // CLEANUP
+  return () => {
 
-        {
-          event: '*',
-          schema: 'public',
-          table:
-            'assignment_comments',
-        },
+    clearInterval(interval)
+  }
 
-        () => {
-
-          fetchComments()
-
-        }
-      )
-
-      .on(
-        'postgres_changes',
-
-        {
-          event: '*',
-          schema: 'public',
-          table:
-            'activity_checklists',
-        },
-
-        () => {
-
-          fetchChecklists()
-
-        }
-      )
-
-      .subscribe()
-
-    return () => {
-
-      supabase.removeChannel(
-        channel
-      )
-
-    }
-
-  }, [])
+}, [])
 
 const groupedAssignments =
   Object.values(
@@ -2298,33 +2262,7 @@ const groupedAssignments =
     {assign.priority}
 
   </span>
-
-{/* OVERDUE */}
-{overdue && (
-
-  <div className="
-    h-10
-
-    px-4
-
-    rounded-xl
-
-    flex
-    items-center
-
-    bg-red-100
-    text-red-700
-
-    text-sm
-    font-bold
-  ">
-
-    OVERDUE
-
-  </div>
-
-)}
-
+  
 
   {/* STATUS */}
 <div className={`

@@ -185,16 +185,69 @@ if (isStaff) {
 
 const { data } =
 
-  await query.order(
-    'activity_date',
-    {
-      ascending: true,
+  await query
+    .order(
+      'approval_status',
+      {
+        ascending: true,
+      }
+    )
+    .order(
+      'activity_date',
+      {
+        ascending: true,
+      }
+    )
+
+const sortedActivities =
+
+  (data || []).sort(
+    (
+      a: any,
+      b: any
+    ) => {
+
+      // PENDING FIRST
+      if (
+        a.approval_status ===
+        'pending' &&
+
+        b.approval_status !==
+        'pending'
+      ) {
+
+        return -1
+      }
+
+      if (
+        a.approval_status !==
+        'pending' &&
+
+        b.approval_status ===
+        'pending'
+      ) {
+
+        return 1
+      }
+
+      // THEN BY DATE
+      return (
+        new Date(
+          a.activity_date
+        ).getTime()
+
+        -
+
+        new Date(
+          b.activity_date
+        ).getTime()
+      )
     }
   )
 
-    setActivities(
-      data || []
-    )
+setActivities(
+  sortedActivities
+)
 
     // SAVE CACHE
     await offlineDB
@@ -1110,6 +1163,69 @@ ${activity.activity_time}`,
 
       fetchChecklists()
     }
+
+// FORMAT DATE
+const formatDate = (
+  date: string
+) => {
+
+  if (!date)
+    return 'N/A'
+
+  return new Date(date)
+    .toLocaleDateString(
+
+      'en-US',
+
+      {
+
+        year: 'numeric',
+
+        month: 'long',
+
+        day: 'numeric',
+      }
+    )
+}
+
+// FORMAT TIME
+const formatTime = (
+  time: string
+) => {
+
+  if (!time)
+    return 'N/A'
+
+  const [hours, minutes] =
+    time.split(':')
+
+  const date =
+    new Date()
+
+  date.setHours(
+    Number(hours)
+  )
+
+  date.setMinutes(
+    Number(minutes)
+  )
+
+  return date
+    .toLocaleTimeString(
+
+      'en-US',
+
+      {
+
+        hour: 'numeric',
+
+        minute: '2-digit',
+
+        hour12: true,
+      }
+    )
+}
+
 
   // STATUS COLORS
   const getStatusColor = (
@@ -2774,11 +2890,19 @@ ${activity.activity_time}`,
             ">
 
               <div>
-                📅 {activity.activity_date}
+                📅 {
+                    formatDate(
+                      activity.activity_date
+                    )
+                  }
               </div>
 
               <div>
-                🕒 {activity.activity_time}
+                🕒 {
+                    formatTime(
+                      activity.activity_time
+                    )
+                  }
               </div>
 
               <div>

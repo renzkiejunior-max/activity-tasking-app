@@ -546,15 +546,32 @@ const divisionStats =
   ">
 
     {/* PENDING REVIEWS */}
+<Link
+  href="/activities"
+>
+
+  <div className="
+    bg-orange-50
+
+    border
+    border-orange-200
+
+    rounded-2xl
+
+    p-4
+
+    cursor-pointer
+
+    hover:scale-[1.02]
+    hover:shadow-lg
+
+    transition
+  ">
+
     <div className="
-      bg-orange-50
-
-      border
-      border-orange-200
-
-      rounded-2xl
-
-      p-4
+      flex
+      items-center
+      justify-between
     ">
 
       <h3 className="
@@ -567,30 +584,58 @@ const divisionStats =
 
       </h3>
 
-      <p className="
-        text-4xl
-        font-black
-        text-orange-600
-
-        mt-3
+      <span className="
+        text-xl
       ">
 
-        {pendingReviews}
-
-      </p>
+        →
+      </span>
 
     </div>
 
+    <p className="
+      text-4xl
+      font-black
+      text-orange-600
+
+      mt-3
+    ">
+
+      {pendingReviews}
+
+    </p>
+
+  </div>
+
+</Link>
+
     {/* OVERDUE */}
+<Link
+  href="/office-assignments"
+>
+
+  <div className="
+    bg-red-50
+
+    border
+    border-red-200
+
+    rounded-2xl
+
+    p-4
+
+    cursor-pointer
+
+    hover:scale-[1.02]
+    hover:shadow-lg
+
+    transition
+  ">
+
     <div className="
-      bg-red-50
-
-      border
-      border-red-200
-
-      rounded-2xl
-
-      p-4
+      flex
+      items-center
+      justify-between
     ">
 
       <h3 className="
@@ -603,32 +648,60 @@ const divisionStats =
 
       </h3>
 
-      <p className="
-        text-4xl
-        font-black
-        text-red-600
-
-        mt-3
+      <span className="
+        text-xl
       ">
 
-        {
-          overdueAssignments.length
-        }
-
-      </p>
+        →
+      </span>
 
     </div>
 
+    <p className="
+      text-4xl
+      font-black
+      text-red-600
+
+      mt-3
+    ">
+
+      {
+        overdueAssignments.length
+      }
+
+    </p>
+
+  </div>
+
+</Link>
+
     {/* URGENT */}
+<Link
+  href="/activities"
+>
+
+  <div className="
+    bg-blue-50
+
+    border
+    border-blue-200
+
+    rounded-2xl
+
+    p-4
+
+    cursor-pointer
+
+    hover:scale-[1.02]
+    hover:shadow-lg
+
+    transition
+  ">
+
     <div className="
-      bg-blue-50
-
-      border
-      border-blue-200
-
-      rounded-2xl
-
-      p-4
+      flex
+      items-center
+      justify-between
     ">
 
       <h3 className="
@@ -641,32 +714,60 @@ const divisionStats =
 
       </h3>
 
-      <p className="
-        text-4xl
-        font-black
-        text-blue-700
-
-        mt-3
+      <span className="
+        text-xl
       ">
 
-        {
-          urgentActivities.length
-        }
-
-      </p>
+        →
+      </span>
 
     </div>
 
+    <p className="
+      text-4xl
+      font-black
+      text-blue-700
+
+      mt-3
+    ">
+
+      {
+        urgentActivities.length
+      }
+
+    </p>
+
+  </div>
+
+</Link>
+
     {/* ACTIVE */}
+<Link
+  href="/office-personnel"
+>
+
+  <div className="
+    bg-emerald-50
+
+    border
+    border-emerald-200
+
+    rounded-2xl
+
+    p-4
+
+    cursor-pointer
+
+    hover:scale-[1.02]
+    hover:shadow-lg
+
+    transition
+  ">
+
     <div className="
-      bg-emerald-50
-
-      border
-      border-emerald-200
-
-      rounded-2xl
-
-      p-4
+      flex
+      items-center
+      justify-between
     ">
 
       <h3 className="
@@ -679,19 +780,30 @@ const divisionStats =
 
       </h3>
 
-      <p className="
-        text-4xl
-        font-black
-        text-emerald-700
-
-        mt-3
+      <span className="
+        text-xl
       ">
 
-        {employees.length}
-
-      </p>
+        →
+      </span>
 
     </div>
+
+    <p className="
+      text-4xl
+      font-black
+      text-emerald-700
+
+      mt-3
+    ">
+
+      {employees.length}
+
+    </p>
+
+  </div>
+
+</Link>
 
   </div>
 

@@ -38,12 +38,22 @@ export default function Topbar() {
     //setShowMobileBar] =
     //useState(true)
 
-const homeRoute =
+
+
+// HOME BUTTON ROUTE FOR DIFFERENT ROLES
+    const homeRoute =
 
   userData?.roles
-    ?.includes('staff')
+    ?.includes('admin')
 
-    ? '/calendar'
+    ? '/admin-dashboard'
+
+  : userData?.roles
+      ?.includes(
+        'office_chief'
+      )
+
+      ? '/office-chief-dashboard'
 
   : userData?.roles
       ?.includes(
@@ -53,9 +63,9 @@ const homeRoute =
       ? '/division-chief-dashboard'
 
   : userData?.roles
-      ?.includes('admin')
+      ?.includes('staff')
 
-      ? '/admin-dashboard'
+      ? '/staff-dashboard'
 
   : '/dashboard'
 
