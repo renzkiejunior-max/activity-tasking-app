@@ -365,10 +365,30 @@ return (
 </div>
 
         {/* FORM */}
-        <div className="space-y-4">
+        <form
+
+          onSubmit={(e) => {
+
+            e.preventDefault()
+
+            handleLogin()
+          }}
+
+          className="space-y-4"
+        >
 
           <input
-            type="email"
+
+          name="email"
+          autoCapitalize="none"
+
+          autoCorrect="off"
+
+          spellCheck={false}
+
+          autoComplete="username"
+
+          type="email"
             placeholder="Email"
             value={email}
             onChange={(e) =>
@@ -389,6 +409,10 @@ return (
 ">
 
   <input
+
+    name="password"
+
+    autoComplete="current-password"
 
     type={
       showPassword
@@ -465,7 +489,11 @@ return (
 
           <button
 
-  onClick={handleLogin}
+          type="submit"
+
+  onClick={() =>
+  handleLogin()
+  }
 
   disabled={loading}
 
@@ -528,7 +556,7 @@ return (
 
 </button>
 
-        </div>
+        </form>
 
       </div>
 
