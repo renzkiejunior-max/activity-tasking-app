@@ -528,9 +528,11 @@ const [openGroups,
 
   <button
 
-    onClick={() =>
-      setOpen(!open)
-    }
+  data-mobile-sidebar
+
+  onClick={() =>
+    setOpen(!open)
+  }
 
     className="
       w-12

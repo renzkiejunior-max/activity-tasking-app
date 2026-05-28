@@ -34,9 +34,9 @@ export default function Topbar() {
     useState(0)
 
   // MOBILE AUTO HIDE
-  const [showMobileBar,
-    setShowMobileBar] =
-    useState(true)
+  //const [showMobileBar,
+    //setShowMobileBar] =
+    //useState(true)
 
 const homeRoute =
 
@@ -269,60 +269,309 @@ const clearNotifications =
 
   }, [userData])
 
-  // MOBILE AUTO HIDE
-  useEffect(() => {
-
-    let timeout: any
-
-    const showBar = () => {
-
-      setShowMobileBar(true)
-
-      clearTimeout(timeout)
-
-      timeout = setTimeout(() => {
-
-        setShowMobileBar(false)
-
-      }, 3000)
-    }
-
-    window.addEventListener(
-      'touchstart',
-      showBar
-    )
-
-    window.addEventListener(
-      'mousemove',
-      showBar
-    )
-
-    timeout = setTimeout(() => {
-
-      setShowMobileBar(false)
-
-    }, 3000)
-
-    return () => {
-
-      window.removeEventListener(
-        'touchstart',
-        showBar
-      )
-
-      window.removeEventListener(
-        'mousemove',
-        showBar
-      )
-
-      clearTimeout(timeout)
-    }
-
-  }, [])
-
+  
   return (
 
     <>
+
+
+{/* MOBILE TOPBAR */}
+<header className="
+
+  md:hidden
+
+  fixed
+  top-0
+  left-0
+  right-0
+
+  z-50
+
+  h-16
+
+  bg-linear-to-r
+  from-orange-700
+  via-orange-600
+  to-orange-700
+
+  border-b
+  border-orange-400/30
+
+  shadow-xl
+
+  px-4
+
+  flex
+  items-center
+  justify-between
+">
+
+  {/* LEFT */}
+  <div className="
+    flex
+    items-center
+    gap-3
+  ">
+
+    {/* HAMBURGER */}
+    <button
+
+      onClick={() => {
+
+        const button =
+          document.querySelector(
+            '[data-mobile-sidebar]'
+          ) as HTMLButtonElement
+
+        button?.click()
+      }}
+
+      className="
+        w-10
+        h-10
+
+        rounded-xl
+
+        bg-blue-900/80
+
+        text-white
+
+        flex
+        items-center
+        justify-center
+
+        text-xl
+      "
+    >
+
+      ☰
+
+    </button>
+
+    {/* LOGO */}
+    <img
+      src="/PDRRMO.png"
+      alt="Logo"
+
+      className="
+        w-9
+        h-9
+
+        object-contain
+      "
+    />
+
+  </div>
+
+  {/* TITLE */}
+<div className="
+  flex
+  flex-col
+
+  leading-tight
+">
+
+  <h1 className="
+    text-[11px]
+    font-black
+
+    text-white
+  ">
+
+    PDRRMO
+
+  </h1>
+
+  <p className="
+    text-[9px]
+    text-orange-100
+  ">
+
+    Operations Portal
+
+  </p>
+
+</div>
+
+{/* RIGHT */}
+<div className="
+  flex
+  items-center
+  gap-2
+">
+
+  {/* HOME */}
+  <Link href={homeRoute}>
+
+    <button className="
+      w-10
+      h-10
+
+      rounded-xl
+
+      bg-blue-900/80
+
+      text-white
+
+      flex
+      items-center
+      justify-center
+
+      text-lg
+    ">
+
+      🏠
+
+    </button>
+
+  </Link>
+
+  {/* NOTIFICATIONS */}
+  <Link href="/notifications">
+
+    <button
+
+      onClick={
+        clearNotifications
+      }
+
+      className="
+        relative
+
+        w-10
+        h-10
+
+        rounded-xl
+
+        bg-blue-900/80
+
+        text-white
+
+        flex
+        items-center
+        justify-center
+      "
+    >
+
+      🔔
+
+      {notificationCount > 0 && (
+
+        <span className="
+          absolute
+
+          -top-1
+          -right-1
+
+          bg-red-500
+          text-white
+
+          text-[10px]
+
+          min-w-5
+          h-5
+
+          rounded-full
+
+          flex
+          items-center
+          justify-center
+        ">
+
+          {notificationCount}
+
+        </span>
+
+      )}
+
+    </button>
+
+  </Link>
+
+  {/* USER PHOTO */}
+  {employee?.photo_url ? (
+
+    <img
+      src={employee.photo_url}
+      alt="User"
+
+      className="
+        w-10
+        h-10
+
+        rounded-full
+
+        object-cover
+
+        border-2
+        border-white
+      "
+    />
+
+  ) : (
+
+    <div className="
+      w-10
+      h-10
+
+      rounded-full
+
+      bg-blue-900
+
+      text-white
+
+      flex
+      items-center
+      justify-center
+
+      font-bold
+    ">
+
+      {
+        userData?.email
+          ?.charAt(0)
+          ?.toUpperCase()
+      }
+
+    </div>
+
+  )}
+
+  {/* LOGOUT */}
+  <button
+
+    onClick={
+      handleLogout
+    }
+
+    className="
+      w-10
+      h-10
+
+      rounded-xl
+
+      bg-red-500
+
+      text-white
+
+      flex
+      items-center
+      justify-center
+
+      text-lg
+    "
+  >
+
+    🚪
+
+  </button>
+
+</div>
+
+    
+
+</header>
+
 
       {/* DESKTOP TOPBAR */}
       <header className="
@@ -939,177 +1188,6 @@ userData?.roles
 )}
 
 
-      {/* MOBILE FOOTER */}
-      <div className={`
-
-        md:hidden
-
-        fixed
-        bottom-0
-        left-0
-        right-0
-
-        z-50
-
-        bg-white/95
-        backdrop-blur
-
-        border-t
-        border-orange-400/30
-
-        shadow-2xl
-
-        px-6
-        py-3
-
-        flex
-        items-center
-        justify-between
-
-        transition-transform
-        duration-500
-
-        ${
-          showMobileBar
-            ? 'translate-y-0'
-            : 'translate-y-full'
-        }
-
-      `}>
-
-        {/* HOME */}
-        <Link
-          href={homeRoute}
-        >
-
-          <button className="
-            flex
-            flex-col
-            items-center
-
-            text-blue-900
-          ">
-
-            <span className="
-              text-2xl
-            ">
-              🏠
-            </span>
-
-            <span className="
-              text-xs
-              font-medium
-            ">
-              Home
-            </span>
-
-          </button>
-
-        </Link>
-
-        {/* ALERTS */}
-        <Link
-          href="/notifications"
-        >
-
-          <button
-
-            onClick={
-              clearNotifications
-            }
-
-            className="
-              relative
-
-              flex
-              flex-col
-              items-center
-
-              text-orange-600
-            "
-          >
-
-            <span className="
-              text-2xl
-            ">
-              🔔
-            </span>
-
-            <span className="
-              text-xs
-              font-medium
-            ">
-              Alerts
-            </span>
-
-            {notificationCount > 0 && (
-
-              <span className="
-                absolute
-
-                top-0
-                right-0
-
-                bg-red-500
-                text-white
-
-                text-[10px]
-
-                min-w-5
-                h-5
-
-                px-1
-
-                rounded-full
-
-                flex
-                items-center
-                justify-center
-              ">
-
-                {notificationCount}
-
-              </span>
-
-            )}
-
-          </button>
-
-        </Link>
-
-        {/* LOGOUT */}
-        <button
-
-          onClick={
-            handleLogout
-          }
-
-          className="
-            flex
-            flex-col
-            items-center
-
-            text-red-600
-          "
-        >
-
-          <span className="
-            text-2xl
-          ">
-            🚪
-          </span>
-
-          <span className="
-            text-xs
-            font-medium
-          ">
-            Logout
-          </span>
-
-        </button>
-
-      </div>
-
-    </>
+          </>
   )
 }

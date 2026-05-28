@@ -77,6 +77,10 @@ export default function Page() {
     setStatusData] =
     useState<any[]>([])
 
+    const [showAnalytics,
+  setShowAnalytics] =
+  useState(false)
+
   const STATUS_COLORS = [
 
     '#f97316',
@@ -344,14 +348,68 @@ export default function Page() {
 
         </div>
 
+{/* MOBILE ANALYTICS TOGGLE */}
+<div className="
+  md:hidden
+">
+
+  <button
+
+    onClick={() =>
+      setShowAnalytics(
+        !showAnalytics
+      )
+    }
+
+    className="
+      w-full
+
+      bg-linear-to-r
+      from-orange-500
+      to-orange-700
+
+      text-white
+
+      rounded-2xl
+
+      py-3
+
+      font-bold
+
+      shadow-lg
+    "
+  >
+
+    {
+      showAnalytics
+
+        ? 'Hide Analytics'
+
+        : 'Show Analytics'
+    }
+
+  </button>
+
+</div>
+
+
         {/* SUMMARY */}
-        <div className="
-          grid
-          grid-cols-1
-          sm:grid-cols-2
+        <div className={`
+
+          ${
+            showAnalytics
+
+              ? 'grid'
+
+              : 'hidden md:grid'
+          }
+
+          grid-cols-2
           xl:grid-cols-5
-          gap-6
-        ">
+
+          gap-4
+          md:gap-6
+        `}>
 
           <Card
             title="Personnel"
@@ -891,54 +949,87 @@ export default function Page() {
         </div>
 
         {/* CHART */}
-        <div className="
+        <div className={`
+
+          ${
+            showAnalytics
+
+              ? 'block'
+
+              : 'hidden md:block'
+          }
+
           w-full
-          h-87.5
-        ">
 
-  <ResponsiveContainer
-    width="100%"
-    height="100%"
-  >
+          min-h-87.5
 
-    <PieChart>
+          md:h-87.5
+        `}>
 
-      <Pie
-        data={statusData}
-        dataKey="value"
-        nameKey="name"
-        outerRadius={130}
-        label
+  {
+  (
+    showAnalytics ||
+
+    typeof window !==
+      'undefined' &&
+
+    window.innerWidth >= 768
+  ) && (
+
+    <div className="
+      w-full
+      h-87.5
+      min-w-0
+    ">
+
+      <ResponsiveContainer
+        width="100%"
+        height="100%"
       >
 
-        {statusData.map(
-          (
-            entry: any,
-            index: number
-          ) => (
+        <PieChart>
 
-            <Cell
-              key={index}
-              fill={
-                STATUS_COLORS[
-                  index %
-                  STATUS_COLORS.length
-                ]
-              }
-            />
+          <Pie
+            data={statusData}
+            dataKey="value"
+            nameKey="name"
+            outerRadius={100}
+            label
+          >
 
-          )
-        )}
+            {statusData.map(
+              (
+                entry: any,
+                index: number
+              ) => (
 
-      </Pie>
+                <Cell
+                  key={index}
+                  fill={
+                    STATUS_COLORS[
+                      index %
+                      STATUS_COLORS.length
+                    ]
+                  }
+                />
 
-      <Tooltip />
+              )
+            )}
 
-      <Legend />
+          </Pie>
 
-    </PieChart>
+          <Tooltip />
 
-  </ResponsiveContainer>
+          <Legend />
+
+        </PieChart>
+
+      </ResponsiveContainer>
+
+    </div>
+
+  )
+}
 
 </div>
 
