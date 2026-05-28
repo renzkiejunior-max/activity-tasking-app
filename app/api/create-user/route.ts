@@ -5,22 +5,43 @@ import {
   createClient,
 } from '@supabase/supabase-js'
 
+// ENV VARIABLES
+const supabaseUrl =
+  process.env
+    .NEXT_PUBLIC_SUPABASE_URL
+
+const serviceRoleKey =
+  process.env
+    .SUPABASE_SERVICE_ROLE_KEY
+
+// VALIDATE ENV
+if (
+  !supabaseUrl ||
+  !serviceRoleKey
+) {
+
+  throw new Error(
+    'Missing Supabase environment variables'
+  )
+}
+
+// ADMIN CLIENT
 const supabaseAdmin =
   createClient(
 
-    process.env
-      .NEXT_PUBLIC_SUPABASE_URL!,
+    supabaseUrl,
 
-    process.env
-      .SUPABASE_SERVICE_ROLE_KEY!
+    serviceRoleKey
   )
 
+// CREATE USER API
 export async function POST(
   request: Request
 ) {
 
   try {
 
+    // BODY
     const body =
       await request.json()
 
@@ -74,6 +95,7 @@ export async function POST(
 
       })
 
+    // AUTH ERROR
     if (
       authError ||
       !authData.user
@@ -83,7 +105,9 @@ export async function POST(
         .json({
 
           error:
-            authError?.message,
+            authError?.message ||
+
+            'Failed to create auth user',
 
         }, {
 
@@ -92,7 +116,7 @@ export async function POST(
         })
     }
 
-    // INSERT USER RECORD
+    // INSERT USER TABLE RECORD
     const {
       error: insertError,
     } = await supabaseAdmin
@@ -122,6 +146,7 @@ export async function POST(
 
       }])
 
+    // INSERT ERROR
     if (insertError) {
 
       return NextResponse
@@ -137,6 +162,7 @@ export async function POST(
         })
     }
 
+    // SUCCESS
     return NextResponse
       .json({
 
@@ -147,13 +173,18 @@ export async function POST(
 
       })
 
-  } catch (error: any) {
+  } catch (error: unknown) {
 
     return NextResponse
       .json({
 
         error:
-          error.message,
+
+          error instanceof Error
+
+            ? error.message
+
+            : 'Unknown server error',
 
       }, {
 
