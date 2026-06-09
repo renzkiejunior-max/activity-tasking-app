@@ -6,12 +6,22 @@ from '@/contexts/AuthContext'
 import imageCompression
 from 'browser-image-compression'
 
+import QRCode
+from 'qrcode'
+
 import {   useEffect,   useState, } from 'react'
 
 import { supabase }
 from '../../../lib/supabase'
 
 import {   offlineDB, } from '../../../lib/offline-db'
+
+import jsPDF
+from 'jspdf'
+
+import html2canvas
+from 'html2canvas-pro'
+
 
 export default function Page() {
 
@@ -85,6 +95,89 @@ const [communicationUrl,
   previewImage,
   setPreviewImage,
 ] = useState('')
+
+const [qrCode, setQrCode] =
+useState('')
+
+// DOCUMENT PREVIEW
+const [
+  documentPreview,
+  setDocumentPreview
+] = useState('')
+
+// TRAVEL ORDER EDITOR
+const [
+  showTravelOrderModal,
+  setShowTravelOrderModal
+] = useState(false)
+
+const [
+  selectedActivity,
+  setSelectedActivity
+] = useState<any>(null)
+
+const [
+  toNumber,
+  setToNumber
+] = useState('')
+
+const [
+  documentDate,
+  setDocumentDate
+] = useState('')
+
+const [
+  recipients,
+  setRecipients
+] = useState('')
+
+const [
+  purpose,
+  setPurpose
+] = useState('')
+
+const [
+  fundingStatement,
+  setFundingStatement
+] = useState(
+`Payment of travel expenses and services rendered by JO/JOSS/COS personnel is hereby authorized, chargeable against the current PDRRMO budget, subject to the usual accounting and auditing rules and regulations.`
+)
+
+const [
+  closingStatement,
+  setClosingStatement
+] = useState(
+  'Please be guided accordingly.'
+)
+
+const [
+  approvedBy,
+  setApprovedBy
+] = useState(
+  'PCOL CORNELIO R. SALINAS (RET), MPA, PESE'
+)
+
+const [
+  approvedPosition,
+  setApprovedPosition
+] = useState(
+  'PGDH, PDRRMO ILOILO'
+)
+
+const [
+  referenceNo,
+  setReferenceNo
+] = useState('')
+
+const [
+  isOIC,
+  setIsOIC
+] = useState(false)
+
+const [
+  showDocumentModal,
+  setShowDocumentModal
+] = useState(false)
   
   // FORM
   const [title, setTitle] =
@@ -1164,7 +1257,52 @@ ${activity.activity_time}`,
       fetchChecklists()
     }
 
-// FORMAT DATE
+// DETERMINE DOCUMENT TYPE
+const getDocumentType = (
+  location: string
+) => {
+
+  const lowerLocation =
+    location.toLowerCase()
+
+  // INSIDE ILOILO CITY
+  if (
+
+    lowerLocation.includes(
+      'iloilo city'
+    ) ||
+
+    lowerLocation.includes(
+      'lapaz'
+    ) ||
+
+    lowerLocation.includes(
+      'jaro'
+    ) ||
+
+    lowerLocation.includes(
+      'molo'
+    ) ||
+
+    lowerLocation.includes(
+      'mandurriao'
+    ) ||
+
+    lowerLocation.includes(
+      'arevalo'
+    )
+
+  ) {
+
+    return 'OO'
+  }
+
+  // OUTSIDE CITY
+  return 'TO'
+}
+
+
+    // FORMAT DATE
 const formatDate = (
   date: string
 ) => {
@@ -1226,6 +1364,538 @@ const formatTime = (
     )
 }
 
+const saveTravelOrderPDF =
+async () => {
+
+  const input =
+  document.getElementById(
+    'travel-order-preview'
+  )
+
+if (!input) return
+
+
+  const buttons =
+    input.querySelector(
+      '.no-print'
+    ) as HTMLElement
+
+
+  if (buttons)
+    buttons.style.display =
+      'none'
+
+  const canvas =
+  await html2canvas(
+  input,
+  {
+    scale: 4,
+    backgroundColor: '#ffffff',
+    useCORS: true,
+    removeContainer: true
+  }
+)
+
+  if (buttons)
+    buttons.style.display =
+      'flex'
+
+  const imgData =
+    canvas.toDataURL(
+      'image/png'
+    )
+
+  const pdf =
+    new jsPDF(
+      'p',
+      'in',
+      'letter'
+    )
+
+  const pdfWidth = 8.5
+
+const pdfHeight =
+  (canvas.height * pdfWidth)
+  / canvas.width
+
+pdf.addImage(
+  imgData,
+  'PNG',
+  0,
+  0,
+  pdfWidth,
+  pdfHeight
+)
+
+  pdf.save(
+    `Travel-Order-${
+      toNumber || 'Draft'
+    }.pdf`
+  )
+
+}
+
+useEffect(() => {
+
+  const qrContent = `
+TRAVEL ORDER
+
+Activity:
+${selectedActivity?.title || ''}
+
+Location:
+${selectedActivity?.location_name || ''}
+
+Venue:
+${selectedActivity?.venue_details || ''}
+
+Date:
+${documentDate}
+
+Time:
+${formatTime(selectedActivity?.activity_time)}
+
+Travel Order No:
+${toNumber || 'N/A'}
+
+Attendees:
+${recipients
+  .split('\n')
+  .filter(name => name.trim())
+  .join('\n')}
+`
+
+  QRCode.toDataURL(
+    qrContent,
+    {
+      width: 200,
+      margin: 1
+    }
+  ).then(
+    setQrCode
+  )
+
+}, [
+  selectedActivity,
+  documentDate,
+  toNumber,
+  recipients
+])
+
+
+const printTravelOrderAsImage =
+async () => {
+
+ const input =
+  document.getElementById(
+    'travel-order-preview'
+  ) as HTMLElement
+
+if (!input) return
+
+
+  const canvas =
+  await html2canvas(
+    input,
+    {
+      scale: 4,
+      useCORS: true,
+      backgroundColor: '#ffffff',
+      ignoreElements: (element) => {
+        return element.classList?.contains('no-print')
+      }
+    }
+  )
+
+  const image =
+    canvas.toDataURL(
+      'image/png'
+    )
+
+  const printWindow =
+    window.open(
+      '',
+      '_blank'
+    )
+
+  if (!printWindow) return
+
+  printWindow.document.write(`
+    <html>
+      <head>
+
+        <title>
+          Travel Order
+        </title>
+
+        <style>
+
+          body{
+            margin:0;
+            padding:0;
+            text-align:center;
+            background:white;
+          }
+
+          img{
+  width:8.5in;
+  display:block;
+  margin:auto;
+}
+
+          @page{
+            size:letter;
+            margin:0;
+          }
+
+        </style>
+
+      </head>
+
+      <body>
+
+        <img src="${image}" />
+
+      </body>
+
+    </html>
+  `)
+
+  printWindow.document.close()
+
+  setTimeout(() => {
+
+    printWindow.print()
+
+    printWindow.close()
+
+  }, 500)
+
+}
+
+
+// GENERATE TO / OO
+const generateDocument =
+  async (
+    activity: any
+  ) => {
+
+    const documentType =
+
+      getDocumentType(
+        activity.location_name || ''
+      )
+
+    // GET ATTENDEES
+    const activityAttendees =
+
+      attendees.filter(
+        (a: any) =>
+
+          a.activity_id ===
+          activity.id
+      )
+
+    const attendeeNames =
+
+      activityAttendees
+
+        .map(
+          (a: any) =>
+
+            a.attendee_name
+        )
+
+        .join('\n')
+
+    // QR CONTENT
+    const qrContent = `
+
+Activity:
+${activity.title}
+
+Location:
+${activity.location_name}
+
+Venue:
+${activity.venue_details || 'N/A'}
+
+Date:
+${formatDate(
+  activity.activity_date
+)}
+
+Time:
+${formatTime(
+  activity.activity_time
+)}
+
+Focal Person:
+${activity.focal_person || 'N/A'}
+
+Attendees:
+${attendeeNames}
+`
+
+    // GENERATE QR
+    const qrCodeDataUrl =
+      await QRCode.toDataURL(
+        qrContent
+      )
+
+    // OPEN WINDOW
+    const documentHTML = `
+
+<html>
+
+  <head>
+
+    <title>
+      ${documentType}
+    </title>
+
+    <style>
+
+      body {
+
+        font-family:
+          "Times New Roman",
+          serif;
+
+        padding:
+          60px;
+
+        line-height:
+          1.5;
+      }
+
+      .center {
+
+        text-align:
+          center;
+      }
+
+      .title {
+
+        font-size:
+          22px;
+
+        font-weight:
+          bold;
+      }
+
+      .section {
+
+        margin-top:
+          35px;
+      }
+
+      .names {
+
+        white-space:
+          pre-line;
+
+        font-weight:
+          bold;
+
+        margin-left:
+          120px;
+      }
+
+    </style>
+
+  </head>
+
+  <body>
+
+    <div class="center">
+
+      <div>
+        Republic of the Philippines
+      </div>
+
+      <div class="title">
+        PROVINCIAL DISASTER RISK
+        REDUCTION AND
+        MANAGEMENT OFFICE
+      </div>
+
+      <div>
+        Iloilo Provincial Government
+      </div>
+
+      <div>
+        Iloilo City
+      </div>
+
+    </div>
+
+    <div
+      style="
+        text-align:center;
+        margin-top:20px;
+      "
+    >
+
+      <img
+
+        src="${qrCodeDataUrl}"
+
+        width="120"
+
+      />
+
+      <div
+        style="
+          font-size:12px;
+          margin-top:6px;
+        "
+      >
+
+        Activity Verification QR
+
+      </div>
+
+    </div>
+
+    <hr />
+
+    <div class="section">
+
+      ${formatDate(
+        activity.activity_date
+      )}
+
+    </div>
+
+    <div class="section">
+
+      <b>
+
+        ${
+          documentType ===
+          'TO'
+
+            ? 'TRAVEL ORDER NO.'
+
+            : 'OFFICE ORDER NO.'
+        }
+
+      </b>
+
+      __________
+
+    </div>
+
+    <div class="section">
+
+      <table>
+
+        <tr>
+
+          <td width="120">
+            <b>TO</b>
+          </td>
+
+          <td class="names">
+
+            ${attendeeNames}
+
+          </td>
+
+        </tr>
+
+      </table>
+
+    </div>
+
+    <div class="section">
+
+      ${
+        documentType ===
+        'TO'
+
+          ? `
+            In the interest of the service,
+            you are hereby directed
+            to travel on official time
+          `
+
+          : `     
+            In the interest of the service,
+            you are hereby directed
+            to report on official duty
+          `
+      }
+
+      to
+
+      <b>
+        ${activity.location_name}
+      </b>
+
+      on
+
+      <b>
+        ${formatDate(
+          activity.activity_date
+        )}
+      </b>
+
+      at
+
+      <b>
+        ${formatTime(
+          activity.activity_time
+        )}
+      </b>
+
+      to participate in:
+
+      <b>
+        ${activity.title}
+      </b>.
+
+    </div>
+
+    <div class="section">
+
+      Please be guided accordingly.
+
+    </div>
+
+    <div class="section">
+
+      <b>
+  ${approvedBy}
+</b>
+
+<br />
+
+${approvedPosition}
+
+${
+  isOIC && referenceNo
+    ? `<br />${referenceNo}`
+    : ''
+}
+
+    </div>
+
+  </body>
+
+</html>
+`
+
+setDocumentPreview(
+  documentHTML
+)
+
+setShowDocumentModal(
+  true
+)
+  }
+
 
   // STATUS COLORS
   const getStatusColor = (
@@ -1272,6 +1942,10 @@ const formatTime = (
   }, [])
 
   return (
+
+
+
+    
 
     <div className="
   w-full
@@ -3504,6 +4178,99 @@ const formatTime = (
 
     )}
 
+
+{/* GENERATE DOCUMENT */}
+<button
+
+  disabled={
+    activity.approval_status !==
+    'approved'
+  }
+
+  onClick={() => {
+
+  const activityAttendees =
+
+    attendees
+
+      .filter(
+        (a:any) =>
+          a.activity_id ===
+          activity.id
+      )
+
+      .map(
+        (a:any) =>
+          a.attendee_name
+      )
+
+      .join('\n')
+
+  setSelectedActivity(
+    activity
+  )
+
+  setDocumentDate(
+    formatDate(
+      activity.activity_date
+    )
+  )
+
+  setRecipients(
+    activityAttendees
+  )
+
+  setPurpose(
+
+`In the interest of service, you are hereby authorized to travel to ${activity.location_name} to attend and participate in ${activity.title} scheduled on ${formatDate(activity.activity_date)} at ${formatTime(activity.activity_time)}.`
+  )
+
+  setShowTravelOrderModal(
+    true
+  )
+
+}}
+
+  className={`
+    px-5 py-3
+
+    rounded-2xl
+
+    text-white
+
+    ${
+      activity.approval_status ===
+      'approved'
+
+        ? `
+          bg-purple-600
+          hover:bg-purple-700
+        `
+
+        : `
+          bg-gray-300
+          cursor-not-allowed
+        `
+    }
+  `}
+>
+
+  Generate
+  {' '}
+
+  {
+    getDocumentType(
+      activity.location_name || ''
+    ) === 'TO'
+
+      ? 'TO'
+
+      : 'OO'
+  }
+
+</button>
+
+    
     {/* EDIT */}
     <button
 
@@ -3564,6 +4331,737 @@ const formatTime = (
         ))}
 
       </div>
+
+{/* DOCUMENT PREVIEW MODAL */}
+{
+  showDocumentModal && (
+
+    <div className="
+      fixed
+      inset-0
+
+      z-9999
+
+      bg-black/70
+
+      flex
+      items-center
+      justify-center
+
+      p-4
+    ">
+
+      <div className="
+        bg-white
+
+        w-full
+        max-w-6xl
+
+        h-[90vh]
+
+        rounded-3xl
+
+        overflow-hidden
+
+        flex
+        flex-col
+      ">
+
+        {/* HEADER */}
+        <div className="
+          bg-orange-500
+
+          text-white
+
+          px-6 py-4
+
+          flex
+          items-center
+          justify-between
+        ">
+
+          <h2 className="
+            text-2xl
+            font-bold
+          ">
+
+            Document Preview
+
+          </h2>
+
+          <div className="
+            flex
+            gap-3
+          ">
+
+            {/* PRINT */}
+            <button
+
+  onClick={
+  saveTravelOrderPDF
+}
+
+  className="
+  bg-green-600
+  text-white
+  px-5
+  py-2
+  rounded-xl
+  "
+>
+
+Print
+
+</button>
+
+            {/* SAVE PDF */}
+            <button
+
+              onClick={saveTravelOrderPDF}
+
+              className="
+                bg-blue-600
+                text-white
+
+                px-5 py-2
+
+                rounded-xl
+
+                font-bold
+              "
+            >
+
+              Save PDF
+
+            </button>
+
+            <button
+
+onClick={async () => {
+
+  const input =
+  document.getElementById(
+    'travel-order-preview'
+  )
+
+if (!input) return
+
+  const canvas =
+    await html2canvas(
+      input,
+      {
+        scale: 4
+      }
+    )
+
+  const link =
+    document.createElement('a')
+
+  link.download =
+    `Travel-Order-${
+      toNumber || 'Draft'
+    }.png`
+
+  link.href =
+    canvas.toDataURL(
+      'image/png'
+    )
+
+  link.click()
+
+}}
+
+className="
+bg-purple-600
+text-white
+px-5
+py-2
+rounded-xl
+"
+>
+
+Save PNG
+
+</button>
+
+            {/* CLOSE */}
+            <button
+
+              onClick={() =>
+                setShowDocumentModal(
+                  false
+                )
+              }
+
+              className="
+                bg-red-500
+
+                px-5 py-2
+
+                rounded-xl
+
+                font-bold
+              "
+            >
+
+              Close
+
+            </button>
+
+          </div>
+
+        </div>
+
+        {/* DOCUMENT */}
+        <iframe
+
+          srcDoc={
+            documentPreview
+          }
+
+          className="
+            flex-1
+            bg-white
+          "
+        />
+
+      </div>
+
+    </div>
+
+  )
+}
+
+
+{/* TRAVEL ORDER EDITOR */}
+{
+showTravelOrderModal &&
+selectedActivity && (
+
+<div className="
+fixed
+inset-0
+z-9999
+bg-black/60
+flex
+items-center
+justify-center
+p-4
+">
+
+<div className="
+bg-white
+w-full
+max-w-7xl
+h-[95vh]
+rounded-3xl
+overflow-hidden
+grid
+grid-cols-12
+">
+
+{/* LEFT PANEL */}
+
+<div className="
+col-span-4
+border-r
+overflow-y-auto
+p-6
+">
+
+<h2 className="
+text-2xl
+font-bold
+mb-6
+">
+Travel Order Editor
+</h2>
+
+<label>
+Travel Order No.
+</label>
+
+<input
+value={toNumber}
+onChange={(e)=>
+setToNumber(
+e.target.value
+)}
+className="
+w-full
+border
+rounded
+p-2
+mb-4
+"
+/>
+
+<label>
+Date
+</label>
+
+<input
+value={documentDate}
+onChange={(e)=>
+setDocumentDate(
+e.target.value
+)}
+className="
+w-full
+border
+rounded
+p-2
+mb-4
+"
+/>
+
+<label>
+Recipients
+</label>
+
+<textarea
+rows={6}
+value={recipients}
+onChange={(e)=>
+setRecipients(
+e.target.value
+)}
+className="
+w-full
+border
+rounded
+p-2
+mb-4
+"
+/>
+
+<label>
+Purpose
+</label>
+
+<textarea
+rows={8}
+value={purpose}
+onChange={(e)=>
+setPurpose(
+e.target.value
+)}
+className="
+w-full
+border
+rounded
+p-2
+mb-4
+"
+/>
+
+<label>
+Funding Statement
+</label>
+
+<textarea
+rows={6}
+value={fundingStatement}
+onChange={(e)=>
+setFundingStatement(
+e.target.value
+)}
+className="
+w-full
+border
+rounded
+p-2
+mb-4
+"
+/>
+
+<label>
+Approved By
+</label>
+
+<input
+value={approvedBy}
+onChange={(e)=>
+setApprovedBy(
+e.target.value
+)}
+className="
+w-full
+border
+rounded
+p-2
+mb-4
+"
+/>
+
+<label>
+Position
+</label>
+
+<input
+value={approvedPosition}
+onChange={(e)=>
+setApprovedPosition(
+e.target.value
+)}
+className="
+w-full
+border
+rounded
+p-2
+mb-4
+"
+/>
+
+</div>
+
+{/* PREVIEW */}
+
+<div className="
+col-span-8
+bg-gray-100
+overflow-auto
+p-8
+">
+
+<div
+  id="travel-order-preview"
+  className="mx-auto"
+  style={{
+    backgroundColor: '#ffffff',
+    color: '#000000',
+    width: '8.5in',
+    minHeight: '11in',
+    fontFamily: 'Calibri',
+    paddingTop: '0.005in'
+  }}
+>
+
+<img
+  src="/travel-order-header.png"
+  alt="Travel Order Header"
+  className="
+  w-[88%]
+  mx-auto
+  block
+  mt-5
+  mb-8
+"
+/>
+
+<div className="
+px-22
+pb-26
+">
+
+<h2 className="
+text-center
+font-bold
+text-2xl
+mb-8
+">
+
+TRAVEL ORDER
+
+</h2>
+
+<p>
+{documentDate}
+</p>
+
+<br/>
+
+<p>
+<b>
+TRAVEL ORDER NO.
+</b>
+{' '}
+{toNumber}
+</p>
+
+<br/>
+
+<div
+  style={{
+    display: 'flex',
+    alignItems: 'flex-start',
+    marginBottom: '20px'
+  }}
+>
+
+  <div
+    style={{
+      fontWeight: 'bold',
+      width: '60px'
+    }}
+  >
+    TO:
+  </div>
+
+  <div
+    style={{
+      flex: 1,
+      whiteSpace: 'pre-line'
+    }}
+  >
+    {(() => {
+
+      const names =
+        recipients
+          .split('\n')
+          .filter(
+            name =>
+              name.trim()
+          )
+
+      if (
+        names.length <= 5
+      ) {
+
+        return names.join('\n')
+      }
+
+      const midpoint =
+        Math.ceil(
+          names.length / 2
+        )
+
+      const left =
+        names.slice(
+          0,
+          midpoint
+        )
+
+      const right =
+        names.slice(
+          midpoint
+        )
+
+      const rows =
+        Math.max(
+          left.length,
+          right.length
+        )
+
+      return (
+
+        <table
+          style={{
+            width: '100%'
+          }}
+        >
+          <tbody>
+
+            {Array.from({
+              length: rows
+            }).map(
+              (_, index) => (
+
+              <tr key={index}>
+
+                <td
+                  style={{
+                    width: '50%',
+                    verticalAlign:
+                      'top'
+                  }}
+                >
+                  {
+                    left[index] || ''
+                  }
+                </td>
+
+                <td
+                  style={{
+                    width: '50%',
+                    verticalAlign:
+                      'top'
+                  }}
+                >
+                  {
+                    right[index] || ''
+                  }
+                </td>
+
+              </tr>
+
+            ))}
+
+          </tbody>
+        </table>
+
+      )
+
+    })()}
+  </div>
+
+</div>
+
+<br/>
+
+<p
+className="
+text-justify
+"
+>
+{purpose}
+</p>
+
+<br/>
+
+<p
+className="
+text-justify
+"
+>
+{fundingStatement}
+</p>
+
+<br/><br/>
+
+<p>
+{closingStatement}
+</p>
+
+<br/><br/><br/>
+
+<p>
+APPROVED:
+</p>
+
+<br/><br/>
+
+<p>
+<b>
+{approvedBy}
+</b>
+</p>
+
+<p>
+{approvedPosition}
+</p>
+
+<div
+style={{
+display:'flex',
+justifyContent:'flex-end',
+marginTop:'-30px',
+marginRight:'15px'
+}}
+>
+
+{qrCode && (
+
+<img
+
+src={qrCode}
+
+alt="QR Code"
+
+style={{
+width:'80px',
+height:'80px'
+}}
+
+/>
+
+)}
+
+</div>
+
+
+{
+referenceNo && (
+
+<p>
+{referenceNo}
+</p>
+
+
+
+)
+}
+
+</div>
+
+
+
+</div>
+
+
+
+</div>
+
+<div className="
+mt-10
+flex
+gap-3
+no-print
+">
+
+<button
+
+onClick={
+  saveTravelOrderPDF
+}
+
+className="
+bg-blue-600
+text-white
+px-5
+py-2
+rounded-xl
+"
+>
+
+Save PDF
+
+</button>
+
+<button
+
+onClick={
+  printTravelOrderAsImage
+}
+
+className="
+bg-green-600
+text-white
+px-5
+py-2
+rounded-xl
+"
+>
+
+Print
+
+</button>
+
+<button
+onClick={() =>
+setShowTravelOrderModal(
+false
+)
+}
+className="
+bg-red-600
+text-white
+px-5
+py-2
+rounded-xl
+"
+>
+Close
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+)}
+
 
 {/* IMAGE PREVIEW MODAL */}
 {previewImage && (
@@ -3631,10 +5129,7 @@ const formatTime = (
 
 )}
 
+</div>
 
-
-    </div>
-
-  )
-
+)
 }

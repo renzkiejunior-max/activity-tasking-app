@@ -1,1 +1,37 @@
 @import "tailwindcss";
+
+.some-class {
+  color: red;
+}
+
+@media print {
+
+  body * {
+
+    visibility: hidden;
+
+  }
+
+  .travel-order-print,
+  .travel-order-print * {
+
+    visibility: visible;
+
+  }
+
+  .travel-order-print {
+
+    position: absolute;
+
+    left: 0;
+    top: 0;
+
+    width: 100%;
+
+    background: white;
+
+    padding: 30px;
+
+  }
+
+}
