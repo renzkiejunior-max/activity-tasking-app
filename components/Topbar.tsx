@@ -371,37 +371,20 @@ const clearNotifications =
       "
     />
 
-  </div>
-
-  {/* TITLE */}
-<div className="
-  flex
-  flex-col
-
-  leading-tight
+    <div className="
+  text-white
+  font-bold
+  text-[12px]
+  leading-none
 ">
 
-  <h1 className="
-    text-[11px]
-    font-black
-
-    text-white
-  ">
-
-    PDRRMO
-
-  </h1>
-
-  <p className="
-    text-[9px]
-    text-orange-100
-  ">
-
-    Operations Portal
-
-  </p>
+  PDRRMO Operations Portal
 
 </div>
+
+  </div>
+
+  
 
 {/* RIGHT */}
 <div className="
@@ -410,31 +393,7 @@ const clearNotifications =
   gap-2
 ">
 
-  {/* HOME */}
-  <Link href={homeRoute}>
-
-    <button className="
-      w-10
-      h-10
-
-      rounded-xl
-
-      bg-blue-900/80
-
-      text-white
-
-      flex
-      items-center
-      justify-center
-
-      text-lg
-    ">
-
-      🏠
-
-    </button>
-
-  </Link>
+  
 
   {/* NOTIFICATIONS */}
   <Link href="/notifications">
@@ -547,20 +506,16 @@ const clearNotifications =
 
   )}
 
-  {/* LOGOUT */}
-  <button
+  {/* HOME */}
+  <Link href={homeRoute}>
 
-    onClick={
-      handleLogout
-    }
-
-    className="
+    <button className="
       w-10
       h-10
 
       rounded-xl
 
-      bg-red-500
+      bg-blue-900/80
 
       text-white
 
@@ -569,12 +524,13 @@ const clearNotifications =
       justify-center
 
       text-lg
-    "
-  >
+    ">
 
-    🚪
+      🏠
 
-  </button>
+    </button>
+
+  </Link>
 
 </div>
 
@@ -883,36 +839,7 @@ userData?.roles
 </button>
             
             
-            {/* LOGOUT */}
-            <button
 
-              onClick={
-                handleLogout
-              }
-
-              className="
-                ml-2
-
-                bg-red-500
-                hover:bg-red-600
-
-                text-white
-
-                px-4
-                py-2
-
-                rounded-xl
-
-                text-sm
-                font-medium
-
-                transition
-              "
-            >
-
-              Logout
-
-            </button>
 
           </div>
 

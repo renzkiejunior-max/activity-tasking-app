@@ -1220,12 +1220,12 @@ const [openGroups,
 ">
 
   <div className="
-    flex
-    items-center
-    justify-center
+  flex
+  items-center
+  justify-between
 
-    gap-2
-  ">
+  gap-2
+">
 
     {/* LOGO */}
     <img
@@ -1259,6 +1259,53 @@ const [openGroups,
       Reduction and Management Office
 
     </p>
+
+
+<button
+
+  onClick={async () => {
+
+    const { supabase } =
+      await import(
+        '@/lib/supabase'
+      )
+
+    await supabase.auth.signOut()
+
+    window.location.href =
+      '/login'
+  }}
+
+  className="
+    px-3
+    h-10
+
+    rounded-xl
+
+    bg-red-500
+    hover:bg-red-600
+
+    text-white
+
+    flex
+    items-center
+    justify-center
+
+    transition
+
+    shrink-0
+  "
+>
+
+  <>
+  🚪
+  <span className="ml-2 text-xs">
+    Logout
+  </span>
+</>
+
+</button>
+
 
   </div>
 
