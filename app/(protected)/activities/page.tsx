@@ -22,6 +22,13 @@ from 'jspdf'
 import html2canvas
 from 'html2canvas-pro'
 
+import ActivityDetailsModal from '@/components/activities/ActivityDetailsModal'
+
+console.log(
+  'ActivityDetailsModal =',
+  ActivityDetailsModal
+)
+
 
 export default function Page() {
 
@@ -58,6 +65,21 @@ const isAdmin =
 
   const [activities, setActivities] =
     useState<any[]>([])
+
+    const [
+  assignments,
+  setAssignments
+] = useState<any[]>([])
+
+    const [
+  selectedActivity,
+  setSelectedActivity
+] = useState<any>(null)
+
+const [
+  showActivityModal,
+  setShowActivityModal
+] = useState(false)
 
   const [checklists, setChecklists] =
     useState<any[]>([])
@@ -111,10 +133,6 @@ const [
   setShowTravelOrderModal
 ] = useState(false)
 
-const [
-  selectedActivity,
-  setSelectedActivity
-] = useState<any>(null)
 
 const [
   toNumber,
@@ -406,6 +424,31 @@ setActivities(
       )
     }
 
+
+// FETCH ASSIGNMENTS
+const fetchAssignments =
+  async () => {
+
+    const { data } =
+      await supabase
+
+        .from('assignments')
+
+        .select('*')
+
+        .order(
+          'created_at',
+          {
+            ascending: false,
+          }
+        )
+
+    setAssignments(
+      data || []
+    )
+  }
+
+
 // FETCH EMPLOYEES
 const fetchEmployees =
   async () => {
@@ -518,6 +561,20 @@ const fetchEmployees =
  setShowSuggestions(false)
     }
   }
+
+const openActivityModal = (
+  activity: any
+) => {
+
+  setSelectedActivity(
+    activity
+  )
+
+  setShowActivityModal(
+    true
+  )
+}
+
 
   // RESET
   const resetForm = () => {
@@ -1934,12 +1991,13 @@ setShowDocumentModal(
 
   useEffect(() => {
 
-    fetchActivities()
-    fetchChecklists()
-    fetchAttendees()
-    fetchEmployees()
+  fetchActivities()
+  fetchChecklists()
+  fetchAttendees()
+  fetchEmployees()
+  fetchAssignments()
 
-  }, [])
+}, [])
 
   return (
 
@@ -2087,7 +2145,7 @@ setShowDocumentModal(
       <span className="
         text-2xl
         leading-none
-      ">
+      ">activity
 
         {
           editingId
@@ -2117,7 +2175,7 @@ setShowDocumentModal(
   <div className="
     fixed
     inset-0
-    z-50
+    z-100000
 
     bg-black/50
     backdrop-blur-sm
@@ -2125,7 +2183,7 @@ setShowDocumentModal(
     overflow-y-auto
 
     flex
-    items-start
+    items-center
     justify-center
 
     pt-8
@@ -3299,1038 +3357,125 @@ setShowDocumentModal(
 
 )}
 
-      {/* LIST */}
-      <div className="
-        grid
-        grid-cols-1
-        lg:grid-cols-2
-        gap-6
-      ">
+<div className="
+  bg-white
+  rounded-3xl
+  shadow-xl
+  border
+  p-6
+">
+
+  <h2 className="
+    text-2xl
+    font-bold
+    text-blue-900
+    mb-6
+  ">
+    Activity Registry
+  </h2>
+
+  <div className="overflow-x-auto">
+
+    <table className="
+      w-full
+      text-sm
+    ">
+
+      <thead>
+
+        <tr className="
+          bg-blue-900
+          text-white
+        ">
+
+          <th className="p-4 text-left">
+            Title
+          </th>
+
+          <th className="p-4 text-left">
+            Location
+          </th>
+
+          <th className="p-4 text-left">
+            Date
+          </th>
+
+          <th className="p-4 text-left">
+            Time
+          </th>
+
+          <th className="p-4 text-left">
+            Status
+          </th>
+
+        </tr>
+
+      </thead>
+
+      <tbody>
 
         {activities.map(
-          (activity: any) => (
+          (activity:any) => (
 
-          <div
-            key={activity.id}
-            className="
-              bg-white
-              rounded-3xl
-              shadow-xl
-              border
-              p-6
-              space-y-5
-            "
-          >
+          <tr
 
-            {/* HEADER */}
-            <div className="
-              flex
-              justify-between
-              gap-4
-            ">
+  key={activity.id}
 
-              <div>
+  onClick={() => {
 
-                <h2 className="
-                  text-2xl
-                  font-bold
-                  text-blue-900
-                ">
-                  {activity.title}
-                </h2>
+  openActivityModal(activity)
 
-                <p className="
-                  text-gray-600
-                  mt-2
-                ">
-                  {activity.description}
-                </p>
+}}
 
+  className="
+    border-b
+    cursor-pointer
+    hover:bg-blue-50
+  "
+>
 
-      {/* COMMUNICATION PREVIEW */}
-{activity.communication_url && (
+            <td className="p-4 font-medium">
+              {activity.title}
+            </td>
 
-  <div className="
-    mt-4
-  ">
+            <td className="p-4">
+              {activity.location_name}
+            </td>
 
-    <p className="
-      text-sm
-      font-semibold
-      text-gray-500
+            <td className="p-4">
+              {
+                formatDate(
+                  activity.activity_date
+                )
+              }
+            </td>
 
-      mb-3
-    ">
+            <td className="p-4">
+              {
+                formatTime(
+                  activity.activity_time
+                )
+              }
+            </td>
 
-      Official Communication
+            <td className="p-4">
+              {activity.approval_status}
+            </td>
 
-    </p>
+          </tr>
 
-    {/* IMAGE FILE */}
-    {(activity.communication_url
-      .includes('.jpg') ||
+        ))}
 
-      activity.communication_url
-      .includes('.jpeg') ||
+      </tbody>
 
-      activity.communication_url
-      .includes('.png') ||
-
-      activity.communication_url
-      .includes('.webp'))
-
-      ? (
-
-      <img
-
-        src={
-          activity.communication_url
-        }
-
-        alt="Communication"
-
-        onClick={() =>
-
-          setPreviewImage(
-            activity.communication_url
-          )
-        }
-
-        className="
-          w-44
-          h-44
-
-          object-cover
-
-          rounded-2xl
-
-          border
-
-          shadow-md
-
-          cursor-pointer
-
-          hover:scale-105
-
-          transition
-        "
-      />
-
-    ) : (
-
-      /* PDF / DOC FILE */
-      <a
-
-        href={
-          activity.communication_url
-        }
-
-        target="_blank"
-
-        className="
-          inline-flex
-          items-center
-          gap-2
-
-          bg-blue-100
-          hover:bg-blue-200
-
-          text-blue-800
-
-          px-4
-          py-3
-
-          rounded-2xl
-
-          font-semibold
-        "
-      >
-
-        📄 View Official Communication
-
-      </a>
-
-    )}
+    </table>
 
   </div>
-
-)}
-
-
-              </div>
-
-              <div className="
-  flex
-  flex-wrap
-  gap-2
-">
-
-  {/* APPROVAL STATUS */}
-  <span className={`
-    inline-flex
-    items-center
-    justify-center
-
-    h-12
-
-    px-5
-
-    rounded-full
-
-    text-sm
-    font-bold
-    uppercase
-
-    whitespace-nowrap
-
-    ${
-      activity.approval_status ===
-      'approved'
-
-        ? `
-          bg-green-100
-          text-green-700
-        `
-
-        : activity.approval_status ===
-          'rejected'
-
-        ? `
-          bg-red-100
-          text-red-700
-        `
-
-        : `
-          bg-yellow-100
-          text-yellow-700
-        `
-    }
-  `}>
-
-    {
-      activity.approval_status ===
-      'approved'
-
-        ? 'Approved'
-
-        : activity.approval_status ===
-          'rejected'
-
-        ? 'Rejected'
-
-        : 'Pending Review'
-    }
-
-  </span>
-
-  {/* ACTIVITY STATUS */}
-  
-      <span className={`
-        inline-flex
-        items-center
-        justify-center
-
-        h-12
-
-        px-5
-
-        rounded-full
-
-        text-sm
-        font-bold
-        uppercase
-
-        whitespace-nowrap
-
-        ${getStatusColor(
-          activity.status
-        )}
-      `}>
-
-        {
-          activity.status
-        }
-
-      </span>
-
-    </div>
-
-            </div>
-
-            {/* DETAILS */}
-            <div className="
-              space-y-3
-              text-sm
-            ">
-
-              <div>
-                📅 {
-                    formatDate(
-                      activity.activity_date
-                    )
-                  }
-              </div>
-
-              <div>
-                🕒 {
-                    formatTime(
-                      activity.activity_time
-                    )
-                  }
-              </div>
-
-              <div>
-                📍 {activity.location_name}
-
-                {activity.venue_details && (
-
-  <div>
-
-    🏢 Venue:
-    {' '}
-
-    <span className="
-      font-semibold
-      text-blue-800
-    ">
-
-      {activity.venue_details}
-
-
-
-    </span>
-
-  </div>
-
-)}
-              </div>
-
-              <div>
-                👤 Focal Person:
-                {' '}
-                <span className="font-semibold">
-                  {activity.focal_person || 'N/A'}
-                </span>
-              </div>
-
-              <div>
-                🏢 Program:
-                {' '}
-                <span className="font-semibold">
-                  {activity.program_name || 'N/A'}
-                </span>
-              </div>
-
-            </div>
-
-            {/* ATTENDEES */}
-            <div className="
-              mt-6
-            ">
-
-              <h3 className="
-                text-lg
-                font-bold
-                text-blue-900
-                mb-4
-              ">
-
-                Attendees
-
-              </h3>
-
-              <div className="
-                space-y-3
-              ">
-
-                {attendees
-
-                  .filter(
-                    (a: any) =>
-
-                      a.activity_id ===
-                      activity.id
-                  )
-
-                  .map(
-                    (
-                      attendee: any
-                    ) => (
-
-                    <div
-                      key={attendee.id}
-                      className="
-                        bg-purple-50
-                        border
-                        border-purple-200
-                        rounded-2xl
-                        p-4
-                      "
-                    >
-
-                      <p className="
-                        font-bold
-                        text-blue-900
-                      ">
-
-                        {
-                          attendee.attendee_name
-                        }
-
-                      </p>
-
-                      <p className="
-                        text-sm
-                        text-gray-600
-                      ">
-
-                        {attendee.designation}
-
-                      </p>
-
-                      <p className="
-                        text-sm
-                        text-gray-500
-                      ">
-
-                        {attendee.division}
-
-                      </p>
-
-                    </div>
-
-                  ))}
-
-              </div>
-
-
-
- {/* ATTENDEE ACTIONS */}
- 
-{canManageActivities && (
-
-<div className="
-  mt-5
-">
-
-  {/* SHOW BUTTON */}
-  {!showSelector[
-    activity.id
-  ] && (
-
-    <button
-
-      type="button"
-
-      onClick={() =>
-
-        setShowSelector({
-
-          ...showSelector,
-
-          [activity.id]:
-            true,
-
-        })
-      }
-
-      className="
-        bg-purple-600
-        hover:bg-purple-700
-
-        text-white
-
-        px-5 py-3
-
-        rounded-2xl
-
-        font-semibold
-      "
-    >
-
-      Manage Attendees
-
-    </button>
-
-  )}
-
-  {/* SELECTOR */}
-  {showSelector[
-    activity.id
-  ] && (
-
-    <div className="
-      mt-5
-      space-y-4
-    ">
-
-      {/* CHECKLIST */}
-      <div className="
-        grid
-        grid-cols-1
-        md:grid-cols-2
-        gap-3
-
-        max-h-72
-        overflow-y-auto
-
-        border
-        rounded-2xl
-
-        p-4
-      ">
-
-        {employees.map(
-          (
-            emp: any
-          ) => {
-
-            const selected =
-
-              selectedEmployees[
-                activity.id
-              ] || []
-
-            const exists =
-
-              selected.some(
-                (
-                  s: any
-                ) =>
-
-                  s.id === emp.id
-              )
-
-            return (
-
-              <div
-                key={emp.id}
-
-                onClick={() => {
-
-                  let updated = []
-
-                  if (exists) {
-
-                    updated =
-
-                      selected.filter(
-                        (
-                          s: any
-                        ) =>
-
-                          s.id !== emp.id
-                      )
-
-                  } else {
-
-                    updated = [
-                      ...selected,
-                      emp,
-                    ]
-                  }
-
-                  setSelectedEmployees({
-
-                    ...selectedEmployees,
-
-                    [activity.id]:
-                      updated,
-
-                  })
-                }}
-
-                className={`
-                  flex
-                  items-center
-                  gap-3
-
-                  border
-                  rounded-xl
-
-                  px-4 py-3
-
-                  cursor-pointer
-                  transition
-
-                  ${
-                    exists
-
-                      ? `
-                        bg-blue-600
-                        text-white
-                        border-blue-600
-                      `
-
-                      : `
-                        bg-white
-                        hover:bg-gray-50
-                      `
-                  }
-                `}
-              >
-
-                <input
-                  type="checkbox"
-
-                  checked={exists}
-
-                  readOnly
-                />
-
-                <span className="
-                  font-medium
-                ">
-
-                  {emp.name}
-
-                </span>
-
-              </div>
-
-            )
-          }
-        )}
-
-      </div>
-
-
-
-      {/* BUTTONS */}
-      <div className="
-        flex
-        flex-wrap
-        gap-3
-      ">
-
-        <button
-
-          type="button"
-
-          onClick={() =>
-            addAttendee(
-              activity.id
-            )
-          }
-
-          className="
-            bg-green-600
-            hover:bg-green-700
-
-            text-white
-
-            px-5 py-3
-
-            rounded-2xl
-
-            font-semibold
-          "
-        >
-
-          Add Selected Employees
-
-        </button>
-
-        <button
-
-          type="button"
-
-          onClick={() =>
-
-            setShowSelector({
-
-              ...showSelector,
-
-              [activity.id]:
-                false,
-
-            })
-          }
-
-          className="
-            bg-gray-200
-            hover:bg-gray-300
-
-            px-5 py-3
-
-            rounded-2xl
-          "
-        >
-
-          Cancel
-
-        </button>
-
-      </div>
-
-    </div>
-
-  )}
 
 </div>
 
 
-          )}
-            {/* CHECKLIST */}
-            <div className="
-              mt-6
-            ">
-
-              <h3 className="
-                text-lg
-                font-bold
-                text-blue-900
-                mb-4
-              ">
-                Preparation Checklist
-              </h3>
-
-              <div className="
-                space-y-3
-              ">
-
-                {checklists
-
-                  .filter(
-                    (c: any) =>
-
-                      c.activity_id ===
-                      activity.id
-                  )
-
-                  .map((item: any) => (
-
-                  <div
-                    key={item.id}
-                    className="
-                      flex
-                      items-center
-                      gap-3
-                      bg-gray-50
-                      border
-                      rounded-2xl
-                      p-3
-                    "
-                  >
-
-                    <input
-
-                      type="checkbox"
-
-                      checked={
-                        item.completed
-                      }
-
-                      disabled={isStaff}
-
-                      onChange={() =>
-
-                        toggleChecklist(
-
-                          item.id,
-
-                          item.completed
-
-                        )
-
-                      }
-
-                      className="
-                        w-5 h-5
-                      "
-                    />
-
-                    <p className={`
-                      flex-1
-
-                      ${
-                        item.completed
-                          ? 'line-through text-gray-400'
-                          : 'text-black'
-                      }
-                    `}>
-
-                      {item.item}
-
-                    </p>
-
-                  </div>
-
-                ))}
-
-              </div>
-
-              {/* ADD ITEM */}
-{canManageActivities && (
-
-  <div className="
-    mt-4
-    flex
-    gap-3
-  ">
-
-    <input
-
-      type="text"
-
-      placeholder="
-      Add checklist item
-      "
-
-      value={
-        newChecklist[
-          activity.id
-        ] || ''
-      }
-
-      onChange={(e) =>
-
-        setNewChecklist({
-
-          ...newChecklist,
-
-          [activity.id]:
-            e.target.value,
-
-        })
-
-      }
-
-      className="
-        flex-1
-        border
-        rounded-2xl
-        px-4 py-3
-      "
-    />
-
-    <button
-
-      onClick={() =>
-
-        addChecklist(
-          activity.id
-        )
-
-      }
-
-      className="
-        bg-blue-600
-        hover:bg-blue-700
-        text-white
-        px-5 py-3
-        rounded-2xl
-      "
-    >
-
-      Add
-
-    </button>
-
-  </div>
-
-)}
-
-              </div>
-
-            </div>
-
-
-{/* ACTIONS */}
-
-{canManageActivities && (
-
-  <div className="
-    flex
-    flex-wrap
-    gap-3
-    pt-4
-  ">
-
-    {/* APPROVE */}
-    {isOfficeChief &&
-      activity.approval_status ===
-      'pending' && (
-
-      <button
-
-        onClick={() =>
-          approveActivity(
-            activity.id
-          )
-        }
-
-        className="
-          bg-green-600
-          hover:bg-green-700
-
-          text-white
-
-          px-5 py-3
-
-          rounded-2xl
-        "
-      >
-
-        Approve
-
-      </button>
-
-    )}
-
-
-{/* GENERATE DOCUMENT */}
-<button
-
-  disabled={
-    activity.approval_status !==
-    'approved'
-  }
-
-  onClick={() => {
-
-  const activityAttendees =
-
-    attendees
-
-      .filter(
-        (a:any) =>
-          a.activity_id ===
-          activity.id
-      )
-
-      .map(
-        (a:any) =>
-          a.attendee_name
-      )
-
-      .join('\n')
-
-  setSelectedActivity(
-    activity
-  )
-
-  setDocumentDate(
-    formatDate(
-      activity.activity_date
-    )
-  )
-
-  setRecipients(
-    activityAttendees
-  )
-
-  setPurpose(
-
-`In the interest of service, you are hereby authorized to travel to ${activity.location_name} to attend and participate in ${activity.title} scheduled on ${formatDate(activity.activity_date)} at ${formatTime(activity.activity_time)}.`
-  )
-
-  setShowTravelOrderModal(
-    true
-  )
-
-}}
-
-  className={`
-    px-5 py-3
-
-    rounded-2xl
-
-    text-white
-
-    ${
-      activity.approval_status ===
-      'approved'
-
-        ? `
-          bg-purple-600
-          hover:bg-purple-700
-        `
-
-        : `
-          bg-gray-300
-          cursor-not-allowed
-        `
-    }
-  `}
->
-
-  Generate
-  {' '}
-
-  {
-    getDocumentType(
-      activity.location_name || ''
-    ) === 'TO'
-
-      ? 'TO'
-
-      : 'OO'
-  }
-
-</button>
-
-    
-    {/* EDIT */}
-    <button
-
-      onClick={() =>
-        editActivity(
-          activity
-        )
-      }
-
-      className="
-        bg-blue-600
-        hover:bg-blue-700
-
-        text-white
-
-        px-5 py-3
-
-        rounded-2xl
-      "
-    >
-
-      Edit
-
-    </button>
-
-    {/* DELETE */}
-    <button
-
-      onClick={() =>
-        deleteActivity(
-          activity.id
-        )
-      }
-
-      className="
-        bg-red-500
-        hover:bg-red-600
-
-        text-white
-
-        px-5 py-3
-
-        rounded-2xl
-      "
-    >
-
-      Delete
-
-    </button>
-
-  </div>
-
-)}
-            
-
-          </div>
-
-        ))}
-
-      </div>
+      
 
 {/* DOCUMENT PREVIEW MODAL */}
 {
@@ -4541,7 +3686,7 @@ selectedActivity && (
 <div className="
 fixed
 inset-0
-z-9999
+z-100000
 bg-black/60
 flex
 items-center
@@ -5128,6 +4273,93 @@ Close
   </div>
 
 )}
+
+
+<ActivityDetailsModal
+  open={showActivityModal}
+  onClose={() =>
+    setShowActivityModal(false)
+  }
+
+  activity={selectedActivity}
+
+  attendees={attendees}
+  checklists={checklists}
+  employees={employees}
+
+  assignments={assignments}
+
+refreshAssignments={
+  fetchAssignments
+}
+
+  canManageActivities={
+    canManageActivities
+  }
+
+addAttendee={addAttendee}
+
+selectedEmployees={
+  selectedEmployees
+}
+
+setSelectedEmployees={
+  setSelectedEmployees
+}
+
+  isOfficeChief={
+    isOfficeChief
+  }
+
+  isAdmin={
+    isAdmin
+  }
+
+  editActivity={
+    editActivity
+  }
+
+  deleteActivity={
+    deleteActivity
+  }
+
+  approveActivity={
+    approveActivity
+  }
+
+  setSelectedActivity={
+    setSelectedActivity
+  }
+
+  setDocumentDate={
+    setDocumentDate
+  }
+
+  setRecipients={
+    setRecipients
+  }
+
+  setPurpose={
+    setPurpose
+  }
+
+  setShowTravelOrderModal={
+    setShowTravelOrderModal
+  }
+
+  formatDate={
+    formatDate
+  }
+
+  formatTime={
+    formatTime
+  }
+
+  getDocumentType={
+    getDocumentType
+  }
+/>
+
 
 </div>
 

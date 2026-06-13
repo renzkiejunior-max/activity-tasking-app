@@ -129,6 +129,59 @@ const activeDivisions =
 
   ).size
 
+
+// TASK MONITORING
+
+const totalTasks =
+  assignments.length
+
+const completedTasks =
+  assignments.filter(
+    (a: any) =>
+      a.status === 'completed'
+  ).length
+
+const ongoingTasks =
+  assignments.filter(
+    (a: any) =>
+      a.status === 'ongoing'
+  ).length
+
+const pendingTasks =
+  assignments.filter(
+    (a: any) =>
+      a.status === 'pending'
+  ).length
+
+const overdueTasks =
+  assignments.filter(
+    (a: any) => {
+
+      if (!a.timeline)
+        return false
+
+      return (
+        new Date(a.timeline) <
+          new Date() &&
+        a.status !==
+          'completed'
+      )
+    }
+  ).length
+
+const activityProgress =
+  totalTasks > 0
+
+    ? Math.round(
+        (
+          completedTasks /
+          totalTasks
+        ) * 100
+      )
+
+    : 0
+
+
 // URGENT ACTIVITIES
 const urgentActivities =
 
@@ -494,6 +547,9 @@ const divisionStats =
 </div>
 
 </div>
+
+
+
 
 
 {/* PENDING ACTIONS */}
