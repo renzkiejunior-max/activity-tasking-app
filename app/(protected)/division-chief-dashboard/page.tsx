@@ -72,6 +72,18 @@ export default function Page() {
     setChiefProfile] =
     useState<any>(null)
 
+    const [myPending,
+  setMyPending] =
+  useState(0)
+
+const [myOngoing,
+  setMyOngoing] =
+  useState(0)
+
+const [myCompleted,
+  setMyCompleted] =
+  useState(0)
+
   // CHART
   const [statusData,
     setStatusData] =
@@ -185,6 +197,45 @@ export default function Page() {
       setRecentAssignments(
         assignments?.slice(0, 5) || []
       )
+
+      const chiefAssignments =
+
+assignments?.filter(
+  (a:any) =>
+
+    a.employee_id ===
+    chiefData?.id
+) || []
+
+setMyPending(
+
+  chiefAssignments.filter(
+    (a:any) =>
+
+      a.status ===
+      'pending'
+  ).length
+)
+
+setMyOngoing(
+
+  chiefAssignments.filter(
+    (a:any) =>
+
+      a.status ===
+      'ongoing'
+  ).length
+)
+
+setMyCompleted(
+
+  chiefAssignments.filter(
+    (a:any) =>
+
+      a.status ===
+      'completed'
+  ).length
+)
 
       // COUNTS
       const pending =
@@ -617,6 +668,150 @@ export default function Page() {
                   </span>
 
                 </div>
+
+
+{/* MY TASKS */}
+
+<div className="
+mt-8
+
+w-full
+
+bg-white/10
+
+border
+border-white/10
+
+rounded-2xl
+
+p-5
+">
+
+<h3 className="
+font-bold
+
+text-orange-300
+
+mb-4
+">
+
+📝 My Tasks
+
+</h3>
+
+<div className="
+grid
+grid-cols-3
+
+gap-3
+
+text-center
+">
+
+<div>
+
+<p className="
+text-2xl
+font-bold
+
+text-yellow-300
+">
+
+{myPending}
+
+</p>
+
+<p className="
+text-xs
+text-blue-100
+">
+
+Pending
+
+</p>
+
+</div>
+
+<div>
+
+<p className="
+text-2xl
+font-bold
+
+text-blue-300
+">
+
+{myOngoing}
+
+</p>
+
+<p className="
+text-xs
+text-blue-100
+">
+
+Ongoing
+
+</p>
+
+</div>
+
+<div>
+
+<p className="
+text-2xl
+font-bold
+
+text-green-300
+">
+
+{myCompleted}
+
+</p>
+
+<p className="
+text-xs
+text-blue-100
+">
+
+Completed
+
+</p>
+
+</div>
+
+</div>
+
+<Link
+
+href="/my-task"
+
+className="
+block
+
+mt-5
+
+bg-orange-500
+hover:bg-orange-600
+
+text-white
+
+text-center
+
+rounded-xl
+
+py-2
+
+font-medium
+"
+>
+
+Open My Tasks
+
+</Link>
+
+</div>
+
 
               </div>
 

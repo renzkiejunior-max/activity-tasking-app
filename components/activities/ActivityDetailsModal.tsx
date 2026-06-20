@@ -88,6 +88,11 @@ const [
 ] = useState<any>(null)
 
 const [
+  taskLogs,
+  setTaskLogs
+] = useState<any[]>([])
+
+const [
   showTaskDrawer,
   setShowTaskDrawer
 ] = useState(false)
@@ -174,6 +179,85 @@ const createAssignment =
     refreshAssignments()
   }
 
+const loadTaskLogs =
+  async (
+    assignmentId:string
+  ) => {
+
+    const { data } =
+      await supabase
+
+        .from(
+          'assignment_logs'
+        )
+
+        .select('*')
+
+        .eq(
+          'assignment_id',
+          assignmentId
+        )
+
+        .order(
+          'created_at',
+          {
+            ascending:false
+          }
+        )
+
+    setTaskLogs(
+      data || []
+    )
+
+  }
+
+
+const createTaskLog =
+  async (
+
+    assignmentId:string,
+
+    action:string,
+
+    oldValue:string,
+
+    newValue:string
+
+  ) => {
+
+    await supabase
+
+      .from(
+        'assignment_logs'
+      )
+
+      .insert([
+
+        {
+
+          assignment_id:
+            assignmentId,
+
+          activity_id:
+            activity.id,
+
+          action,
+
+          old_value:
+            oldValue,
+
+          new_value:
+            newValue,
+
+          changed_by:
+            'Office Chief'
+
+        }
+
+      ])
+
+  }
+
 
 const updateTask =
   async () => {
@@ -212,6 +296,81 @@ const updateTask =
           'id',
           editTaskData.id
         )
+
+
+        if (
+
+  selectedTask.status !==
+  editTaskData.status
+
+) {
+
+  await createTaskLog(
+
+    editTaskData.id,
+
+    'Status Changed',
+
+    selectedTask.status,
+
+    editTaskData.status
+
+  )
+
+}
+
+
+if (
+
+  selectedTask.progress !==
+  editTaskData.progress
+
+) {
+
+  await createTaskLog(
+
+    editTaskData.id,
+
+    'Progress Updated',
+
+    String(
+      selectedTask.progress
+    ),
+
+    String(
+      editTaskData.progress
+    )
+
+  )
+
+}
+
+if (
+
+  selectedTask.employee_id !==
+  editTaskData.employee_id
+
+) {
+
+  await createTaskLog(
+
+    editTaskData.id,
+
+    'Personnel Reassigned',
+
+    String(
+      selectedTask.employee_id
+    ),
+
+    String(
+      editTaskData.employee_id
+    )
+
+  )
+
+}
+
+
 
     if (error) {
 
@@ -1737,6 +1896,10 @@ onClick={() => {
 
   setSelectedTask(item)
 
+  loadTaskLogs(
+  item.id
+)
+
   setEditTaskData(item)
 
   setShowTaskDrawer(true)
@@ -1950,6 +2113,10 @@ key={item.id}
 onClick={() => {
 
   setSelectedTask(item)
+
+  loadTaskLogs(
+  item.id
+)
 
   setEditTaskData(item)
 
@@ -2878,6 +3045,96 @@ mt-4
 
 Save Changes
 
+<div className="
+mt-8
+border-t
+pt-6
+">
+
+<h4 className="
+font-bold
+text-lg
+mb-4
+">
+Activity Log
+</h4>
+
+<div className="
+space-y-3
+">
+
+{taskLogs.length === 0 ? (
+
+<div className="
+text-gray-500
+text-sm
+">
+No activity recorded.
+</div>
+
+) : (
+
+taskLogs.map(
+(log:any) => (
+
+<div
+
+key={log.id}
+
+className="
+border-l-4
+border-blue-500
+
+pl-4
+py-2
+"
+>
+
+<p className="
+font-semibold
+">
+{log.action}
+</p>
+
+<p className="
+text-sm
+text-gray-600
+">
+
+{log.old_value}
+
+{' → '}
+
+{log.new_value}
+
+</p>
+
+<p className="
+text-xs
+text-gray-500
+">
+
+{log.changed_by}
+
+•
+
+{
+new Date(
+log.created_at
+).toLocaleString()
+}
+
+</p>
+
+</div>
+
+))
+)}
+
+</div>
+
+</div>
+
 </button>
 
 )}
@@ -3048,6 +3305,37 @@ Cancel
 </button>
 
 <button
+
+onClick={() => {
+
+  const selected =
+
+    employees.filter(
+      (emp:any) =>
+
+        attendeeSelection.includes(
+          emp.id
+        )
+    )
+
+  setSelectedEmployees({
+
+    ...selectedEmployees,
+
+    [activity.id]:
+      selected
+
+  })
+
+  addAttendee(
+    activity.id
+  )
+
+  setShowManageAttendees(
+    false
+  )
+
+}}
 
 className="
 px-4

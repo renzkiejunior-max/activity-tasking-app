@@ -14,6 +14,14 @@ export default function Page() {
     setNotifications] =
     useState<any[]>([])
 
+    const [
+
+notificationFilter,
+
+setNotificationFilter
+
+] = useState('all')
+
   // FORMAT DATE
   const formatDate = (
     date: string
@@ -379,6 +387,22 @@ ${formatTime(assign.activities?.activity_time)}`,
 
   }, [])
 
+
+const filteredNotifications =
+
+notificationFilter ===
+'all'
+
+? notifications
+
+: notifications.filter(
+    (notif:any) =>
+
+      notif.type ===
+      notificationFilter
+  )
+
+
   // COLORS
   const getNotificationStyle =
     (
@@ -535,8 +559,326 @@ ${formatTime(assign.activities?.activity_time)}`,
 
       </div>
 
+
+      {/* SUMMARY */}
+
+<div className="
+grid
+grid-cols-2
+lg:grid-cols-4
+
+gap-4
+">
+
+<div className="
+bg-blue-50
+border
+border-blue-200
+
+rounded-3xl
+
+p-5
+">
+
+<p className="
+text-sm
+text-blue-600
+">
+
+Total
+
+</p>
+
+<p className="
+text-3xl
+font-black
+text-blue-900
+">
+
+{notifications.length}
+
+</p>
+
+</div>
+
+<div className="
+bg-orange-50
+border
+border-orange-200
+
+rounded-3xl
+
+p-5
+">
+
+<p className="
+text-sm
+text-orange-600
+">
+
+Deadlines
+
+</p>
+
+<p className="
+text-3xl
+font-black
+text-orange-900
+">
+
+{
+notifications.filter(
+(n:any)=>
+
+n.type ===
+'deadline'
+).length
+}
+
+</p>
+
+</div>
+
+<div className="
+bg-blue-50
+border
+border-blue-200
+
+rounded-3xl
+
+p-5
+">
+
+<p className="
+text-sm
+text-blue-600
+">
+
+Ongoing
+
+</p>
+
+<p className="
+text-3xl
+font-black
+text-blue-900
+">
+
+{
+notifications.filter(
+(n:any)=>
+
+n.type ===
+'ongoing'
+).length
+}
+
+</p>
+
+</div>
+
+<div className="
+bg-green-50
+border
+border-green-200
+
+rounded-3xl
+
+p-5
+">
+
+<p className="
+text-sm
+text-green-600
+">
+
+Completed
+
+</p>
+
+<p className="
+text-3xl
+font-black
+text-green-900
+">
+
+{
+notifications.filter(
+(n:any)=>
+
+n.type ===
+'completed'
+).length
+}
+
+</p>
+
+</div>
+
+</div>
+
+{/* FILTERS */}
+
+<div className="
+flex
+flex-wrap
+
+gap-3
+">
+
+<button
+
+onClick={() =>
+setNotificationFilter(
+'all'
+)
+}
+
+className={`
+px-4
+py-2
+
+rounded-2xl
+
+font-semibold
+
+${
+notificationFilter ===
+'all'
+
+? `
+bg-blue-700
+text-white
+`
+
+: `
+bg-white
+border
+`
+}
+`}
+>
+
+All
+
+</button>
+
+<button
+
+onClick={() =>
+setNotificationFilter(
+'deadline'
+)
+}
+
+className={`
+px-4
+py-2
+
+rounded-2xl
+
+font-semibold
+
+${
+notificationFilter ===
+'deadline'
+
+? `
+bg-orange-600
+text-white
+`
+
+: `
+bg-white
+border
+`
+}
+`}
+>
+
+Deadlines
+
+</button>
+
+<button
+
+onClick={() =>
+setNotificationFilter(
+'ongoing'
+)
+}
+
+className={`
+px-4
+py-2
+
+rounded-2xl
+
+font-semibold
+
+${
+notificationFilter ===
+'ongoing'
+
+? `
+bg-blue-600
+text-white
+`
+
+: `
+bg-white
+border
+`
+}
+`}
+>
+
+Ongoing
+
+</button>
+
+<button
+
+onClick={() =>
+setNotificationFilter(
+'completed'
+)
+}
+
+className={`
+px-4
+py-2
+
+rounded-2xl
+
+font-semibold
+
+${
+notificationFilter ===
+'completed'
+
+? `
+bg-green-600
+text-white
+`
+
+: `
+bg-white
+border
+`
+}
+`}
+>
+
+Completed
+
+</button>
+
+</div>
+
+
       {/* EMPTY */}
-      {notifications.length === 0 ? (
+      {filteredNotifications.length === 0 ? (
 
         <div className="
           bg-white
@@ -573,7 +915,7 @@ ${formatTime(assign.activities?.activity_time)}`,
           space-y-4
         ">
 
-          {notifications.map(
+          {filteredNotifications.map(
             (notif: any) => (
 
             <div

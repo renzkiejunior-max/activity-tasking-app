@@ -30,18 +30,12 @@ export default function Page() {
     setActivities] =
     useState<any[]>([])
 
-    const [focalRoles,
-  setFocalRoles] =
-  useState<any[]>([])
 
     // TEMP STATES
 const [tempAssignments,
   setTempAssignments] =
   useState<any>({})
 
-  const [tempFocalTasks,
-  setTempFocalTasks] =
-  useState<any>({})
 
   // UPDATE ATTENDANCE
   const updateAttendance =
@@ -212,70 +206,7 @@ setTempAssignments(
         attendeeData || []
       )
 
-// FOCAL ROLES
-const {
-  data: focalData,
-} = await supabase
 
-  .from('focal_persons')
-
-  .select(`
-    *,
-    initiatives(
-      *,
-      initiative_tasks(*)
-    )
-  `)
-
-  .eq(
-    'employee_id',
-    employeeData.id
-  )
-
-setFocalRoles(
-  focalData || []
-)
-
-// TEMP FOCAL TASKS
-const focalTemp: any = {}
-
-;(focalData || [])
-  .forEach(
-    (focal: any) => {
-
-      focal.initiatives
-        ?.forEach(
-          (
-            initiative: any
-          ) => {
-
-            initiative
-              .initiative_tasks
-              ?.forEach(
-                (
-                  task: any
-                ) => {
-
-                  focalTemp[
-                    task.id
-                  ] = {
-
-                    progress:
-                      task.progress || 0,
-
-                    status:
-                      task.status || 'pending',
-                  }
-                }
-              )
-          }
-        )
-    }
-  )
-
-setTempFocalTasks(
-  focalTemp
-)
 
     }
 
@@ -387,73 +318,7 @@ if (
     fetchData()
 }
   
-const saveFocalTask =
-  async (
-    taskId: string
-  ) => {
 
-    const temp =
-      tempFocalTasks[
-        taskId
-      ]
-
-    const payload: any = {
-
-      progress:
-        temp.progress,
-
-      status:
-        temp.status,
-    }
-
-    // AUTO STATUS
-    if (
-      temp.progress === 100
-    ) {
-
-      payload.status =
-        'completed'
-
-    } else if (
-      temp.progress > 0
-    ) {
-
-      payload.status =
-        'ongoing'
-
-    } else {
-
-      payload.status =
-        'pending'
-    }
-
-    const { error } =
-      await supabase
-
-        .from(
-          'initiative_tasks'
-        )
-
-        .update(payload)
-
-        .eq(
-          'id',
-          taskId
-        )
-
-    if (error) {
-
-      return alert(
-        error.message
-      )
-    }
-
-    alert(
-      'Focal task updated successfully'
-    )
-
-    fetchData()
-}
 
 useEffect(() => {
 
@@ -508,7 +373,7 @@ useEffect(() => {
           text-blue-900
         ">
 
-          My Task
+          My Assignments
 
         </h1>
 
@@ -813,19 +678,40 @@ lg:p-5
 
             </p>
 
-            <div className="
-              inline-flex
+            <div className={`
 
-              px-4 py-2
+inline-flex
 
-              rounded-full
+px-4 py-2
 
-              bg-orange-100
-              text-orange-700
+rounded-full
 
-              text-sm
-              font-semibold
-            ">
+text-sm
+font-semibold
+
+${
+  item.status ===
+  'completed'
+
+    ? `
+      bg-green-100
+      text-green-700
+    `
+
+    : item.status ===
+      'ongoing'
+
+      ? `
+        bg-blue-100
+        text-blue-700
+      `
+
+      : `
+        bg-yellow-100
+        text-yellow-700
+      `
+}
+`}>
 
               {item.status}
 
@@ -969,59 +855,7 @@ lg:p-5
 
   </div>
 
-  {/* SLIDER */}
-  <input
-    type="range"
-    min={0}
-    max={100}
-    step={5}
-
-    value={
-      tempAssignments[
-        item.id
-      ]?.progress || 0
-    }
-
-    onChange={(e) => {
-
-  const progress =
-    Number(
-      e.target.value
-    )
-
-  setTempAssignments({
-
-    ...tempAssignments,
-
-    [item.id]: {
-
-      ...tempAssignments[
-        item.id
-      ],
-
-      progress,
-
-      status:
-
-        progress === 100
-
-          ? 'completed'
-
-          : progress > 0
-
-            ? 'ongoing'
-
-            : 'pending',
-    },
-  })
-
-}}
-
-    className="
-      w-full
-      mt-4
-    "
-  />
+  
 
   <p className="
     text-sm
@@ -1037,7 +871,88 @@ lg:p-5
 
   </p>
 
-  
+  <div className="
+mt-4
+">
+
+<p className="
+text-sm
+text-gray-500
+mb-2
+">
+
+Task Status
+
+</p>
+
+<select
+
+value={
+  tempAssignments[
+    item.id
+  ]?.status || 'pending'
+}
+
+onChange={(e) => {
+
+  const status =
+    e.target.value
+
+  setTempAssignments({
+
+    ...tempAssignments,
+
+    [item.id]: {
+
+      ...tempAssignments[
+        item.id
+      ],
+
+      status,
+
+      progress:
+
+        status === 'completed'
+
+          ? 100
+
+          : status === 'ongoing'
+
+          ? 50
+
+          : 0,
+    },
+  })
+
+}}
+
+className="
+w-full
+
+border
+
+rounded-xl
+
+px-4
+py-3
+"
+>
+
+<option value="pending">
+Pending
+</option>
+
+<option value="ongoing">
+Ongoing
+</option>
+
+<option value="completed">
+Completed
+</option>
+
+</select>
+
+</div>
 
   {/* REMARKS */}
   <div className="
@@ -1148,361 +1063,6 @@ lg:p-5
 
 </div>
 
-
-{/* FOCAL ROLES */}
-<div className="
-  bg-white
-  rounded-2xl
-lg:rounded-3xl
-
-shadow-xl
-border
-
-p-4
-lg:p-6
-">
-
-  <h2 className="
-    text-2xl
-    font-bold
-    text-purple-900
-    mb-5
-  ">
-
-    My Focal Roles
-
-  </h2>
-
-  <div className="
-  w-full
-  min-w-0
-
-  overflow-x-hidden
-
-  space-y-4
-  lg:space-y-6
-">
-
-    {focalRoles.map(
-      (
-        focal: any
-      ) => (
-
-      <div
-        key={focal.id}
-        className="
-          rounded-3xl
-          border
-          border-purple-200
-          bg-linear-to-br
-          from-purple-50
-          to-white
-          p-6
-        "
-      >
-
-        <h3 className="
-          text-2xl
-          font-bold
-          text-blue-900
-        ">
-
-          {focal.title}
-
-        </h3>
-
-        <p className="
-          text-gray-600
-          mt-2
-        ">
-
-          {focal.description}
-
-        </p>
-
-        {/* INITIATIVES */}
-        <div className="
-          mt-6
-          space-y-4
-        ">
-
-          {focal.initiatives
-            ?.map(
-              (
-                initiative: any
-              ) => (
-
-              <div
-                key={initiative.id}
-                className="
-                  rounded-2xl
-                  border
-                  border-orange-200
-                  bg-linear-to-br
-                  from-orange-50
-                  to-white
-                  p-5
-                "
-              >
-
-                <h4 className="
-                  text-xl
-                  font-bold
-                  text-blue-900
-                ">
-
-                  {initiative.title}
-
-                </h4>
-
-                {/* TASKS */}
-                <div className="
-                  mt-5
-                  space-y-3
-                ">
-
-                  {initiative
-                    .initiative_tasks
-                    ?.map(
-                      (
-                        task: any
-                      ) => (
-
-                      <div
-                        key={task.id}
-                        className="
-                          rounded-2xl
-                          border
-                          border-green-200
-                          bg-linear-to-br
-                          from-green-50
-                          to-white
-                          p-4
-                        "
-                      >
-
-                        <div className="
-  space-y-4
-">
-
-  <div className="
-  flex
-  flex-col
-  sm:flex-row
-
-  justify-between
-
-  sm:items-center
-
-  gap-4
-
-  min-w-0
-">
-
-    <div>
-
-      <h5 className="
-        text-lg
-        font-bold
-        text-blue-900
-      ">
-
-        {task.title}
-
-      </h5>
-
-      <p className="
-        text-sm
-        text-gray-500
-        mt-1
-      ">
-
-        Progress:
-        {' '}
-        {
-          tempFocalTasks[
-            task.id
-          ]?.progress || 0
-        }%
-
-      </p>
-
-    </div>
-
-    <div className={`
-      px-4
-      py-2
-      rounded-full
-      text-sm
-      font-semibold
-
-      ${
-        tempFocalTasks[
-          task.id
-        ]?.status ===
-        'completed'
-
-          ? `
-            bg-green-100
-            text-green-700
-          `
-
-          : tempFocalTasks[
-              task.id
-            ]?.status ===
-            'ongoing'
-
-            ? `
-              bg-blue-100
-              text-blue-700
-            `
-
-            : `
-              bg-orange-100
-              text-orange-700
-            `
-      }
-    `}>
-
-      {
-        tempFocalTasks[
-          task.id
-        ]?.status || 'pending'
-      }
-
-    </div>
-
-  </div>
-
-  {/* PROGRESS BAR */}
-  <div className="
-    w-full
-    bg-gray-200
-    rounded-full
-    h-4
-  ">
-
-    <div
-
-      className="
-        bg-purple-600
-        h-4
-        rounded-full
-      "
-
-      style={{
-        width:
-`${tempFocalTasks[task.id]?.progress || 0}%`
-      }}
-    />
-
-  </div>
-
-  {/* SLIDER */}
-  <input
-    type="range"
-    min={0}
-    max={100}
-    step={5}
-
-    value={
-      tempFocalTasks[
-        task.id
-      ]?.progress || 0
-    }
-
-    onChange={(e) => {
-
-      const progress =
-        Number(
-          e.target.value
-        )
-
-      setTempFocalTasks({
-
-        ...tempFocalTasks,
-
-        [task.id]: {
-
-          ...tempFocalTasks[
-            task.id
-          ],
-
-          progress,
-
-          status:
-
-            progress === 100
-
-              ? 'completed'
-
-              : progress > 0
-
-                ? 'ongoing'
-
-                : 'pending',
-        },
-      })
-
-    }}
-
-    className="
-      w-full
-    "
-  />
-
-  {/* SAVE */}
-  <button
-
-    onClick={() =>
-      saveFocalTask(
-        task.id
-      )
-    }
-
-    className="
-      w-full
-
-      bg-purple-600
-      hover:bg-purple-700
-
-      text-white
-
-      py-3
-
-      rounded-2xl
-
-      font-semibold
-    "
-  >
-
-    Save Focal Task
-
-  </button>
-
-</div>
-
-                      </div>
-
-                    )
-                  )}
-
-                </div>
-
-              </div>
-
-            )
-          )}
-
-      </div>
-
-      </div>
-
-    ))}
-
-  </div>
-
-</div>
 
 
       {/* ACTIVITIES */}

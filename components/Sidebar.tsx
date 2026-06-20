@@ -45,6 +45,11 @@ const roleLinks: any = {
       href: '/assignments',
     },
 
+  {
+    name: 'Focal Roles',
+    href: '/my-focal-roles',
+  },
+
     {
       name: 'Calendar',
       href: '/calendar',
@@ -89,8 +94,13 @@ const roleLinks: any = {
   office_chief: [
 
   {
-    name: 'Office Dashboard',
+    name: 'Dashboard',
     href: '/office-chief-dashboard',
+  },
+
+  {
+  name: 'Operations Center',
+  href: '/operations-center',
   },
 
   {
@@ -99,28 +109,18 @@ const roleLinks: any = {
   },
 
   {
-    name: 'Office Assignments',
-    href: '/office-assignments',
+    name: 'Activity Monitoring',
+    href: '/activity-monitoring',
   },
 
   {
-  name: 'Calendar',
-  href: '/calendar',
-},
-
-  {
-    name: 'Personnel Monitoring',
-    href: '/office-personnel',
+    name: 'Calendar',
+    href: '/calendar',
   },
 
   {
-    name: 'Divisions',
-    href: '/office-divisions',
-  },
-
-  {
-    name: 'Notifications',
-    href: '/notifications',
+    name: 'Timeline',
+    href: '/timeline',
   },
 
   {
@@ -129,13 +129,33 @@ const roleLinks: any = {
   },
 
   {
+    name: 'Office Assignments',
+    href: '/office-assignments',
+  },
+
+  {
+    name: 'Personnel Monitoring',
+    href: '/office-personnel',
+  },
+
+    {
+      name: 'Deployments',
+      href: '/office-deployments',
+    },
+
+  {
+    name: 'Divisions',
+    href: '/office-divisions',
+  },
+
+  {
     name: 'Reports & Analytics',
     href: '/office-analytics',
   },
 
   {
-    name: 'Timeline',
-    href: '/timeline',
+    name: 'Notifications',
+    href: '/notifications',
   },
 
 ],
@@ -147,19 +167,23 @@ const roleLinks: any = {
   division_chief: [
 
     {
-      name: 'Division Dashboard',
+      name: 'Dashboard',
       href: '/division-chief-dashboard',
     },
 
     {
       name: 'My Task',
       href: '/my-task',
-      icon: 'briefcase',
     },
 
     {
       name: 'Employees',
       href: '/employees',
+    },
+
+    {
+      name: 'Deployments',
+      href: '/office-deployments',
     },
 
     {
@@ -182,10 +206,6 @@ const roleLinks: any = {
       href: '/notifications',
     },
 
-    {
-      name: 'Operations Map',
-      href: '/operations-map',
-    },
 
   ],
 
@@ -196,33 +216,28 @@ const roleLinks: any = {
 staff: [
 
   {
-    name: 'My Calendar',
-    href: '/calendar',
+    name: 'Dashboard',
+    href: '/staff-dashboard',
   },
 
   {
-    name: 'My Tasks',
+    name: 'My Task',
     href: '/my-task',
   },
 
+      {
+      name: 'Calendar',
+      href: '/calendar',
+    },
+
   {
-    name: 'Activities',
-    href: '/activities',
+    name: 'Focal Roles',
+    href: '/my-focal-roles',
   },
 
   {
     name: 'Notifications',
     href: '/notifications',
-  },
-
-  {
-    name: 'Timeline',
-    href: '/timeline',
-  },
-
-  {
-    name: 'Operations Map',
-    href: '/operations-map',
   },
 
 ]
@@ -296,12 +311,6 @@ const uniqueLinks =
     'staff'
   )
 
-  ||
-
-  userRoles.includes(
-    'division_chief'
-  )
-
 
 // GROUPED MENUS
 const groupedLinks =
@@ -331,6 +340,7 @@ userRoles.includes('admin')
         'My Task',
         'Employees',
         'Assignments',
+        'Focal Roles',
 
       ].includes(item.name)
     ),
@@ -366,44 +376,36 @@ userRoles.includes('admin')
   OPERATIONS:
 
     uniqueLinks.filter(
-      (item: any) => [
+      (item:any) => [
 
+        'Operations Center',
         'Activity Review',
+        'Activity Monitoring',
+        'Calendar',
         'Timeline',
         'Operations Map',
 
       ].includes(item.name)
     ),
 
-  CALENDAR:
+  WORKFORCE:
 
     uniqueLinks.filter(
-      (item: any) => [
-
-        'Calendar',
-
-      ].includes(item.name)
-    ),
-
-  PERSONNEL:
-
-    uniqueLinks.filter(
-      (item: any) => [
-
+      (item:any) => [
         'Office Assignments',
         'Personnel Monitoring',
+        'Deployments',
         'Divisions',
-
       ].includes(item.name)
-    ),
+          ),
 
-  MONITORING:
+  REPORTING:
 
     uniqueLinks.filter(
-      (item: any) => [
+      (item:any) => [
 
-        'Notifications',
         'Reports & Analytics',
+        'Notifications',
 
       ].includes(item.name)
     ),
@@ -413,6 +415,8 @@ userRoles.includes('admin')
 const icons: any = {
 
   Dashboard: '🏠',
+
+  'Operations Center': '🎯',
 
   Calendar: '📅',
 
@@ -432,7 +436,9 @@ const icons: any = {
 
   Timeline: '⏱️',
 
-  'My Task': '💼',
+  'My Task': '📝',
+
+  'Focal Roles': '📋',
 
   'User Management': '⚙️',
 
@@ -440,16 +446,19 @@ const icons: any = {
 
   'My Calendar': '📅',
 
-  'My Tasks': '📌',
-
+  'My Activities': '📅',
 
   'Office Dashboard': '🏢',
 
   'Activity Review': '📅',
 
+  'Activity Monitoring': '📊',
+
   'Office Assignments': '📌',
 
   'Personnel Monitoring': '👥',
+
+  'Deployments': '🚚',
 
   'Divisions': '🏢',
 
@@ -469,12 +478,11 @@ const icons: any = {
       '/office-assignments',
       '/office-personnel',
       '/office-divisions',
-
     ].includes(pathname)
 
   ) {
 
-    return 'PERSONNEL'
+    return 'WORKFORCE'
   }
 
   if (
@@ -482,24 +490,11 @@ const icons: any = {
     [
       '/notifications',
       '/office-analytics',
-
     ].includes(pathname)
 
   ) {
 
-    return 'MONITORING'
-  }
-
-  if (
-
-    [
-      '/calendar',
-
-    ].includes(pathname)
-
-  ) {
-
-    return 'CALENDAR'
+    return 'REPORTING'
   }
 
   return 'OPERATIONS'
@@ -786,7 +781,7 @@ const [openGroups,
           group-hover:scale-125
         ">
 
-          🏠
+          📊
 
         </span>
 
@@ -1044,28 +1039,24 @@ const [openGroups,
             ">
 
               {
-                    group === 'OPERATIONS'
+  group === 'OPERATIONS'
 
-                      ? '📊'
+    ? '🎯'
 
-                    : group === 'CALENDAR'
+  : group === 'WORKFORCE'
 
-                      ? '📅'
+    ? '👥'
 
-                    : group === 'PERSONNEL'
+  : group === 'REPORTING'
 
-                      ? '👥'
+    ? '📈'
 
-                    : group === 'MONITORING'
+  : group === 'ADMIN'
 
-                      ? '📡'
+    ? '⚙️'
 
-                    : group === 'ADMIN'
-
-                      ? '⚙️'
-
-                    : '•'
-                  }
+  : '•'
+}
 
             </div>
 
